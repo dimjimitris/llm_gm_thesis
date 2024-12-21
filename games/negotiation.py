@@ -1,16 +1,17 @@
+from utils.funcs import content_wrapper
 from utils.globals import AgentRole
-import random
-import re
+
 from games.negotiation_msgs import (
     error_msgs,
 )
 
+import random
+import re
+
+
 class NegotiationGame:
-    def content_wrapper(self, content : str):
-        return {
-            "type" : "text",
-            "text" : content,
-        }
+    def _content_wrapper(self, content : str):
+        return content_wrapper(content)
 
     def __init__(
         self,
@@ -41,7 +42,7 @@ class NegotiationGame:
             self.contexts[i].append(
                 {
                     "role": AgentRole.SYSTEM.value,
-                    "content": self.content_wrapper(
+                    "content": self._content_wrapper(
                         system_text.format(
                             book_cnt=self.item_counts["book"],
                             hat_cnt=self.item_counts["hat"],
@@ -61,7 +62,7 @@ class NegotiationGame:
         self.proposals : list[dict[str, int]] = [None, None]
         self.final_points = [None, None]
 
-    def validate_message(self, msg : str):
+    def _validate_message(self, msg : str):
         msg = msg.lower()
         aux_idx = msg.find("[message]")
         
@@ -77,7 +78,7 @@ class NegotiationGame:
         
         return True, ""
 
-    def validate_proposal(self, msg : str, a_idx : int):
+    def _validate_proposal(self, msg : str, a_idx : int):
         if len(self.contexts[a_idx]) <= 1:
             return False, error_msgs[2]
         
@@ -114,27 +115,27 @@ class NegotiationGame:
         
         return True, ""
 
-    def validate_response(self, msg : str, idx : int):
+    def _validate_response(self, msg : str, idx : int):
         if msg.lower().strip().startswith("[message]"):
-            return self.validate_message(msg)
+            return self._validate_message(msg)
         elif msg.lower().strip().startswith("[propose]"):
-            return self.validate_proposal(msg, idx)
+            return self._validate_proposal(msg, idx)
         else:
             return False, error_msgs[1]
 
-    def player_response(self, idx : int):
-        response_text = "placeholder"
+    def _player_response(self, idx : int):
+        response_text = None
         error_cnt = 0
         while True:
             response_text = "placeholder"
-            is_valid, error_msg = self.validate_response(response_text, idx)
+            is_valid, error_msg = self._validate_response(response_text, idx)
             if is_valid:
                 break
 
             self.contexts[idx].append(
                 {
                     "role" : AgentRole.ASSISTANT.value,
-                    "content" : self.content_wrapper(
+                    "content" : self._content_wrapper(
                         response_text
                     )
                 }
@@ -142,7 +143,7 @@ class NegotiationGame:
             self.contexts[idx].append(
                 {
                     "role" : AgentRole.USER.value,
-                    "content" : self.content_wrapper(
+                    "content" : self._content_wrapper(
                         f"An error occurred. Please resend the previous message \
                         with the following correction, without indicating in any \
                         way that you have made a correction to a prior message: \n \"{error_msg}\" "
@@ -157,7 +158,7 @@ class NegotiationGame:
         return response_text
 
 
-    def parse_proposal(self, msg : str):
+    def _parse_proposal(self, msg : str):
         # assume it looks like (x, y, z)
         # use regex
         counts = re.findall(r"\d+", msg)
@@ -173,7 +174,7 @@ class NegotiationGame:
 
         # game loops until it's over
         while not self.game_over:
-            response_text = self.player_response(a_idx)
+            response_text = self._player_response(a_idx)
             self.messages.append(response_text.strip())
             # check for abort message
             if "[abort]" in response_text.strip().lower():
@@ -183,11 +184,11 @@ class NegotiationGame:
             if response_text.strip().lower().startswith("[propose]"):
                 # check if a proposal was already made
                 if self.deal_proposed:
-                    self.proposals[a_idx] = self.parse_proposal(response_text)
+                    self.proposals[a_idx] = self._parse_proposal(response_text)
                     self.game_over = True
                 else:
                     # first proposal
-                    self.proposals[a_idx] = self.parse_proposal(response_text)
+                    self.proposals[a_idx] = self._parse_proposal(response_text)
                     self.deal_proposed = True
                 
                 assistant_message = response_text.strip()
@@ -205,7 +206,7 @@ class NegotiationGame:
             self.contexts[a_idx].append(
                 {
                     "role" : AgentRole.ASSISTANT.value,
-                    "content" : self.content_wrapper(
+                    "content" : self._content_wrapper(
                         assistant_message
                     )
                 }
@@ -213,7 +214,7 @@ class NegotiationGame:
             self.contexts[u_idx].append(
                 {
                     "role" : AgentRole.USER.value,
-                    "content" : self.content_wrapper(
+                    "content" : self._content_wrapper(
                         user_message
                     )
                 }
@@ -226,7 +227,7 @@ class NegotiationGame:
         
         return
 
-    def is_valid_deal(self):
+    def _is_valid_deal(self):
         if self.proposals[0] is None or self.proposals[1] is None:
             return False
 
@@ -236,7 +237,7 @@ class NegotiationGame:
 
         return True
 
-    def calculate_player_points(
+    def _calculate_player_points(
         self,
         player_values : dict[str, int],
         proposal_counts : dict[str, int],
@@ -248,13 +249,13 @@ class NegotiationGame:
         return sum
 
     def calculate_final_points(self):
-        if not self.is_valid_deal():
+        if not self._is_valid_deal():
             self.final_points = [0, 0]
             return
 
         points = [
-            self.calculate_player_points(self.item_values[0], self.proposals[0]),
-            self.calculate_player_points(self.item_values[1], self.proposals[1]),
+            self._calculate_player_points(self.item_values[0], self.proposals[0]),
+            self._calculate_player_points(self.item_values[1], self.proposals[1]),
         ]
         if self.objective == "semi":
             self.final_points = points
@@ -287,8 +288,8 @@ class NegotiationGame:
 
             # calculate utilities based on allocation
             new_points = [
-                self.calculate_player_points(self.item_values[0], p1_cnts),
-                self.calculate_player_points(self.item_values[1], p2_cnts),
+                self._calculate_player_points(self.item_values[0], p1_cnts),
+                self._calculate_player_points(self.item_values[1], p2_cnts),
             ]
 
 
