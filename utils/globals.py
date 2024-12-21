@@ -22,3 +22,9 @@ class GameId(Enum):
 
 # game id, set during game initialization
 GAME_ID = None
+
+# agent roles
+class AgentRole(Enum):
+    SYSTEM = "system"
+    ASSISTANT = "assistant"
+    USER = "user"
