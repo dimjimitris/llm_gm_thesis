@@ -1,13 +1,40 @@
 from utils.funcs import content_wrapper
 from utils.globals import AgentRole
 
-from games.negotiation_msgs import (
-    error_msgs,
-)
-
 import random
 import re
 
+error_msgs = {
+    0: "Messages should begin with [message].",
+
+    1: "Your output should either begin with [message] or \
+    a [propose].",
+
+    2 : "Please begin the dialogue by discussing how you'll \
+    divide the items before submitting a private \
+    proposal.",
+
+    3 : "Do not include any mentions of [message] or \
+    [propose] after the initial prefix. Please just \
+    send a single message, beginning with [message].",
+
+    4 : "Opponent's proposal must be followed by a proposal \
+    of your own. Please send a proposal, beginning with \
+    [propose].",
+
+    5 : "Item counts must be sequenced in the following \
+    order: books, hats, and then balls.",
+
+    6 : "There should only be counts for three items in your \
+    proposal: books, hats, and balls.",
+
+    7 : "Item counts suggested are invalid based on game \
+    context; some of your proposal's item counts are \
+    greater than total items available.",
+
+    8 : "Proposals must begin with [propose]. You may resubmit \
+    the exact same proposal but with [propose] as a prefix.",
+}
 
 class NegotiationGame:
     def _content_wrapper(self, content : str):

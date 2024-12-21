@@ -1,12 +1,19 @@
 from utils.funcs import content_wrapper
 from utils.globals import AgentRole
 
-from games.rockpaperscissors_msgs import (
-    error_msgs,
-)
-
 import random
 
+error_msgs = {
+    0 : "Messages should begin with [move].",
+
+    1 : "Do not include any mentions of [move] \
+    after the initial prefix. Please just \
+    send a single message, beginning with [move].",
+
+    2 : "Your message should contain only one move: rock, paper, or scissors.",
+
+    3 : "Your output should begin with [move].",
+}
 
 class RockPaperScissorsGame:
     def _content_wrapper(content : str):
