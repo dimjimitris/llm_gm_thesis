@@ -306,8 +306,8 @@ class NegotiationGame:
         ]
 
         for alloc in allocations:
-            isAsGood = False
-            isBetter = False
+            is_as_good = False
+            is_better = False
 
             # decide player counts based on allocation
             p1_cnts = alloc
@@ -322,11 +322,11 @@ class NegotiationGame:
 
             # check if there is a configuration where both players do as good and at least one player does better
             if new_points[0] >= current_points[0] and new_points[1] >= current_points[1] :
-                isAsGood = True
+                is_as_good = True
             if new_points[0] > current_points[0] or new_points[1] > current_points[1]:
-                isBetter = True
+                is_better = True
 
-            if isAsGood and isBetter:
+            if is_as_good and is_better:
                 return False
 
         # if we don't find a single better allocation
