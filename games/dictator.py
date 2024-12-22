@@ -1,6 +1,9 @@
 from utils.funcs import content_wrapper
 from utils.globals import AgentRole
+from games.game import Game
 
+import time
+import os
 
 error_msgs = {
     0 : "Messages should begin with [choice].",
@@ -15,18 +18,23 @@ error_msgs = {
 
 }
 
-class DictatorGame:
-    def _content_wrapper(content : str):
+class DictatorGame(Game):
+    def _content_wrapper(self, content : str):
         return content_wrapper(content)
     
     def __init__(
         self,
-        amount00,
-        amount01,
-        amount10,
-        amount11,
+        amount00 : int,
+        amount01 : int,
+        amount10 : int,
+        amount11 : int,
         maximize : bool,
+        id : int = int(time.time() * 1_000),
+        prompt_path : str = os.path.join("prompts", "dictator.txt"),
+        log_path : str = os.path.join("logs", "dictator"), 
     ):
+        super().__init__(id, "dictator", prompt_path, log_path)
+
         self.amounts = [
             [amount00, amount01],
             [amount10, amount11]
@@ -41,7 +49,7 @@ class DictatorGame:
         self.context = list()
 
         system_text = None
-        with open("prompts/dictator.txt", "r") as f:
+        with open(self.prompt_path, "r") as f:
             system_text = f.read()
 
         self.context.append(
@@ -59,10 +67,34 @@ class DictatorGame:
             }
         )
 
+        self.log_game = os.path.join(self.log_path, "game.log")
+        self.log_agent = os.path.join(self.log_path, "agent_0.log")
+
         self.messages = list()
         self.game_over = False
         self.proposal : dict[str, int] = None
         self.final_points = None
+
+        self.final_points_logged = False
+
+        # log the initial conditions
+        self._log(
+            self.log_game,
+            "You have two choices:\n\
+            1. you receive {amount00} dollars and your partner receives {amount01} dollars.\n\
+            2. you receive {amount10} dollars and your partner receives {amount11} dollars.\n\
+            \n\
+            Your objective is to {act_perf} your money.\n"
+            .format(
+                amount00=self.amounts[0][0],
+                amount01=self.amounts[0][1],
+                amount10=self.amounts[1][0],
+                amount11=self.amounts[1][1],
+                act_perf=self.act_perf
+            )
+        )
+
+        self._log(self.log_game, "\n\n")
 
     def _validate_response(self, msg : str):
         msg_aux = msg.lower()
@@ -141,6 +173,12 @@ class DictatorGame:
             response_text = self._player_response()
             self.messages.append(response_text.strip())
 
+            self._log(
+                self.log_game,
+                f"Player {0}: {response_text.strip()}",
+                newline=True
+            )
+
             if "[abort]" in response_text.strip().lower():
                 self.game_over = True
 
@@ -165,7 +203,11 @@ class DictatorGame:
             if len(self.messages) >= 10:
                 self.game_over = True
 
-        return
+        for _ in range(1):
+            self._log(
+                self.log_agent,
+                str(self.context),
+            )
 
     def _is_valid_game(self):
         return self.proposal is not None
@@ -181,9 +223,16 @@ class DictatorGame:
     def calculate_final_points(self):
         if not self._is_valid_game():
             self.final_points = [0, 0]
-            return
-        
-        self.final_points = self._calculate_final_points(self.proposal)
+        else:
+            self.final_points = self._calculate_final_points(self.proposal)
+
+        if not self.final_points_logged:
+            self._log(
+                self.log_game,
+                f"Player 0 final points: {self.final_points[0]}" +
+                f"Player 1 final points: {self.final_points[1]}",
+            )
+            self.final_points_logged = True
 
     def is_pareto_optimal(self):
         current_points = self.final_points

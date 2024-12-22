@@ -1,6 +1,9 @@
 from utils.funcs import content_wrapper
 from utils.globals import AgentRole
+from games.game import Game
 
+import time
+import os
 import random
 import re
 
@@ -36,7 +39,7 @@ error_msgs = {
     the exact same proposal but with [propose] as a prefix.",
 }
 
-class NegotiationGame:
+class NegotiationGame(Game):
     def _content_wrapper(self, content : str):
         return content_wrapper(content)
 
@@ -44,8 +47,13 @@ class NegotiationGame:
         self,
         item_counts : dict[str, int],
         item_values : list[dict[str, int]],
-        objective : str,      
+        objective : str,
+        id : int = int(time.time() * 1_000),
+        prompt_path : str = os.path.join("prompts", "negotiation.txt"),
+        log_path : str = os.path.join("logs", "negotiation"),
     ):
+        super().__init__(id, "negotiation", prompt_path, log_path)
+
         self.item_counts = item_counts
         self.item_values = item_values
         self.objective = objective
@@ -62,7 +70,7 @@ class NegotiationGame:
         self.contexts = [list(), list()]
 
         system_text = None
-        with open("prompts/negotiation.txt", "r") as f:
+        with open(self.prompt_path, "r") as f:
             system_text = f.read()
         
         for i in range(2):
@@ -83,11 +91,43 @@ class NegotiationGame:
                 }
             )
 
+        # create the log paths: one for the game and one for each agent
+        self.log_game = os.path.join(self.log_path, "game.log")
+        self.log_agents = [
+            os.path.join(self.log_path, "agent_0.log"),
+            os.path.join(self.log_path, "agent_1.log"),
+        ]
+
         self.messages = list()
         self.game_over = False
         self.deal_proposed = False
         self.proposals : list[dict[str, int]] = [None, None]
         self.final_points = [None, None]
+
+        # a flag to be used in logging final results
+        self.final_points_logged = False
+
+        # after the init function is done, we write the initial context to the game log
+        self._log(
+            self.log_game,
+            "Item counts: there are {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls.\n"
+            .format(
+                book_cnt=self.item_counts["book"],
+                hat_cnt=self.item_counts["hat"],
+                ball_cnt=self.item_counts["ball"])
+        )
+        for i in range(2):
+            self._log(
+                self.log_game,
+                "Player {player_index} values: books are worth {book_val} points, hats are worth {hat_val} points, and balls are worth {ball_val} points.\n"
+                .format(
+                    player_index=i,
+                    book_val=self.item_values[i]["book"],
+                    hat_val=self.item_values[i]["hat"],
+                    ball_val=self.item_values[i]["ball"]
+                )
+            )
+        self._log(self.log_game, "\n\n")
 
     def _validate_message(self, msg : str):
         msg = msg.lower()
@@ -203,6 +243,13 @@ class NegotiationGame:
         while not self.game_over:
             response_text = self._player_response(a_idx)
             self.messages.append(response_text.strip())
+
+            self._log(
+                self.log_game,
+                f"Player {a_idx}: {response_text.strip()}",
+                newline=True
+            )
+
             # check for abort message
             if "[abort]" in response_text.strip().lower():
                 self.game_over = True
@@ -252,7 +299,12 @@ class NegotiationGame:
 
             a_idx, u_idx = u_idx, a_idx
         
-        return
+        # log contexts to the agent logs
+        for i in range(2):
+            self._log(
+                self.log_agents[i],
+                str(self.contexts[i])
+            )
 
     def _is_valid_deal(self):
         if self.proposals[0] is None or self.proposals[1] is None:
@@ -278,22 +330,27 @@ class NegotiationGame:
     def calculate_final_points(self):
         if not self._is_valid_deal():
             self.final_points = [0, 0]
-            return
-
-        points = [
-            self._calculate_player_points(self.item_values[0], self.proposals[0]),
-            self._calculate_player_points(self.item_values[1], self.proposals[1]),
-        ]
-        if self.objective == "semi":
-            self.final_points = points
-        elif self.objective == "coop":
-            self.final_points = [points[0] + points[1], points[1] + points[0]]
-        elif self.objective == "comp":
-            self.final_points = [points[0] - points[1], points[1] - points[0]]
         else:
-            raise ValueError("Invalid objective")
+            points = [
+                self._calculate_player_points(self.item_values[0], self.proposals[0]),
+                self._calculate_player_points(self.item_values[1], self.proposals[1]),
+            ]
+            if self.objective == "semi":
+                self.final_points = points
+            elif self.objective == "coop":
+                self.final_points = [points[0] + points[1], points[1] + points[0]]
+            elif self.objective == "comp":
+                self.final_points = [points[0] - points[1], points[1] - points[0]]
+            else:
+                raise ValueError("Invalid objective")
         
-        return
+        if not self.final_points_logged:
+            self._log(
+                self.log_game,
+                f"Player 0 final points: {self.final_points[0]}\n" +
+                f"Player 1 final points: {self.final_points[1]}\n",
+            )
+            self.final_points_logged = True
 
     def is_pareto_optimal(self):
         current_points = self.final_points

@@ -1,6 +1,10 @@
 from utils.funcs import content_wrapper
 from utils.globals import AgentRole
+from games.game import Game
 
+import time
+import os
+from tabulate import tabulate
 import random
 
 error_msgs = {
@@ -15,8 +19,8 @@ error_msgs = {
     3 : "Your output should begin with [move].",
 }
 
-class RockPaperScissorsGame:
-    def _content_wrapper(content : str):
+class RockPaperScissorsGame(Game):
+    def _content_wrapper(self, content : str):
         return content_wrapper(content)
 
     def __init__(
@@ -25,7 +29,12 @@ class RockPaperScissorsGame:
         rock_beats_scissors,
         scissors_beat_paper,
         tie,
+        id : int = int(time.time() * 1_000),
+        prompt_path : str = os.path.join("prompts", "rockpaperscissors.txt"),
+        log_path : str = os.path.join("logs", "rockpaperscissors"),
     ):
+        super().__init__(id, "rockpaperscissors", prompt_path, log_path)
+
         self.p = paper_beats_rock
         self.r = rock_beats_scissors
         self.s = scissors_beat_paper
@@ -52,12 +61,34 @@ class RockPaperScissorsGame:
                 }
             )
 
+        self.log_game = os.path.join(self.log_path, "game.log")
+        self.log_agents =[
+            os.path.join(self.log_path, "agent_0.log"),
+            os.path.join(self.log_path, "agent_1.log")
+        ]
+
         self.messages = list()
+        self.game_over = False
+        self.move_made = False
         self.moves : list[str] = [None, None]
         self.final_points = [None, None]
 
-        self.game_over = False
-        self.move_made = False
+        self.final_points_logged = False
+
+        self._log(
+            self.log_game,
+            tabulate(
+                tabular_data=[
+                    ["rock", (self.tie, self.tie), (-self.p, self.p), (self.r, -self.r)],
+                    ["paper", (self.p, -self.p), (self.tie, self.tie), (-self.s, self.s)],
+                    ["scissors", (-self.r, self.r), (self.s, -self.s), (self.tie, self.tie)]
+                ],
+                headers=["", "rock", "paper", "scissors"],
+                tablefmt="github"
+            )
+        )
+
+        self._log(self.log_game, "\n\n")
 
     def _validate_response(self, msg : str, idx : int):
         msg_aux = msg.lower()
@@ -143,6 +174,12 @@ class RockPaperScissorsGame:
             response_text = self._player_response(a_idx)
             self.messages.append(response_text.strip())
 
+            self._log(
+                self.log_game,
+                f"Player {a_idx}: {response_text.strip()}",
+                newline=True
+            )
+
             if "[abort]" in response_text.strip().lower():
                 self.game_over = True
 
@@ -181,7 +218,11 @@ class RockPaperScissorsGame:
 
             a_idx, u_idx = u_idx, a_idx
 
-        return
+        for i in range(2):
+            self._log(
+                self.log_agents[i],
+                str(self.contexts[i])
+            )
             
     def _is_valid_game(self):
         return self.moves[0] is not None and self.moves[1] is not None
@@ -211,9 +252,16 @@ class RockPaperScissorsGame:
     def calculate_final_points(self):
         if not self._is_valid_game():
             self.final_points = [self.tie, self.tie]
-            return
-        
-        self.final_points = [
-            self._calculate_player_points(self.moves[0], self.moves[1]),
-            self._calculate_player_points(self.moves[1], self.moves[0])
-        ]
+        else:
+            self.final_points = [
+                self._calculate_player_points(self.moves[0], self.moves[1]),
+                self._calculate_player_points(self.moves[1], self.moves[0])
+            ]
+
+        if not self.final_points_logged:
+            self._log(
+                self.log_game,
+                f"Player 0 final points: {self.final_points[0]}\n" +
+                f"Player 1 final points: {self.final_points[1]}\n"
+            )
+            self.final_points_logged = True
