@@ -11,7 +11,7 @@ def test_negotiation():
             {"book" : 1, "hat" : 3, "ball" : 1},
             {"book" : 2, "hat" : 1, "ball" : 2}
         ],
-        "semi"
+        "comp"
     )
     
     result = game.play()
@@ -21,12 +21,6 @@ def x():
     return
 
 if __name__ == "__main__":
-    #game_output = test_negotiation()
-#
-    #print(game_output["is_valid_deal"])
-    bedrock = boto3.client(
-        service_name='bedrock',
-        region_name='us-west-2',    
-    )
+    game_output = test_negotiation()
 
-    print(bedrock.list_foundation_models())
+    print(game_output["is_valid_deal"])
