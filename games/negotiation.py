@@ -1,4 +1,3 @@
-from utils.funcs import content_wrapper
 from utils.globals import AgentRole
 from games.game import Game
 
@@ -7,45 +6,27 @@ import os
 import random
 import re
 
-MAX_ERRORS = 5
-MAX_MESSAGES = 50
-
 error_msgs = {
     0: "Messages should begin with [message].",
 
-    1: "Your output should either begin with [message] or \
-    a [propose].",
+    1: "Your output should either begin with [message] or a [propose].",
 
-    2 : "Please begin the dialogue by discussing how you'll \
-    divide the items before submitting a private \
-    proposal.",
+    2 : "Please begin the dialogue by discussing how you'll divide the items before submitting a private proposal.",
 
-    3 : "Do not include any mentions of [message] or \
-    [propose] after the initial prefix. Please just \
-    send a single message, beginning with [message].",
+    3 : "Do not include any mentions of [message] or [propose] after the initial prefix. Please just send a single message, beginning with [message].",
 
-    4 : "Opponent's proposal must be followed by a proposal \
-    of your own. Please send a proposal, beginning with \
-    [propose].",
+    4 : "Opponent's proposal must be followed by a proposal of your own. Please send a proposal, beginning with [propose].",
 
-    5 : "Item counts must be sequenced in the following \
-    order: books, hats, and then balls.",
+    5 : "Item counts must be sequenced in the following order: books, hats, and then balls.",
 
-    6 : "There should only be counts for three items in your \
-    proposal: books, hats, and balls.",
+    6 : "There should only be counts for three items in your proposal: books, hats, and balls.",
 
-    7 : "Item counts suggested are invalid based on game \
-    context; some of your proposal's item counts are \
-    greater than total items available.",
+    7 : "Item counts suggested are invalid based on game context; some of your proposal's item counts are greater than total items available.",
 
-    8 : "Proposals must begin with [propose]. You may resubmit \
-    the exact same proposal but with [propose] as a prefix.",
+    8 : "Proposals must begin with [propose]. You may resubmit the exact same proposal but with [propose] as a prefix.",
 }
 
 class NegotiationGame(Game):
-    def _content_wrapper(self, content : str):
-        return content_wrapper(content)
-
     def __init__(
         self,
         item_counts : dict[str, int],
@@ -53,9 +34,15 @@ class NegotiationGame(Game):
         objective : str,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "negotiation.txt"),
+        system_prompt_path : str = os.path.join("prompts", "negotiation_system.txt"),
         log_path : str = os.path.join("logs", "negotiation"),
+        MAX_ERRORS=5,
+        MAX_MESSAGES=30,
     ):
         super().__init__(id, "negotiation", prompt_path, log_path)
+
+        self.MAX_ERRORS = MAX_ERRORS
+        self.MAX_MESSAGES = MAX_MESSAGES
 
         self.item_counts = item_counts
         self.item_values = item_values
@@ -94,6 +81,12 @@ class NegotiationGame(Game):
                 }
             )
 
+        system_text = None
+        with open(system_prompt_path, "r") as f:
+            system_text = f.read()
+        
+        self.system_prompt = system_text
+
         # create the log paths: one for the game and one for each agent
         self.log_game = os.path.join(self.log_path, "game.log")
         self.log_agents = [
@@ -131,6 +124,17 @@ class NegotiationGame(Game):
                 )
             )
         self._log(self.log_game, "\n\n")
+
+        for i in range(2):
+            self._log(
+                self.log_agents[i],
+                "Books are worth {book_val} points, hats are worth {hat_val} points, and balls are worth {ball_val} points.\n\n\n"
+                .format(
+                    book_val=self.item_values[i]["book"],
+                    hat_val=self.item_values[i]["hat"],
+                    ball_val=self.item_values[i]["ball"]
+                )
+            )
 
     def _validate_message(self, msg : str):
         msg = msg.lower()
@@ -185,6 +189,34 @@ class NegotiationGame(Game):
         
         return True, ""
 
+    def _generate_response(
+        self,
+        context, # messages
+        log_agent_path,
+        system_prompt,
+        temperature,
+        model_id = "anthropic.claude-3-haiku-20240307-v1:0",
+        max_tokens = 200,
+    ):
+        output = super()._generate_response(
+            context,
+            log_agent_path,
+            system_prompt,
+            temperature,
+            model_id,
+            max_tokens
+        )
+
+        #if "[end]" in output.lower():
+        #    aux_idx = output.lower().find("[end]")
+        #    output = output[:aux_idx].strip()
+#
+        #if "[propose]" in output.lower():
+        #    output = output.split("\n")[0].strip()
+#
+        #output = output.strip()
+        return output
+
     def _validate_response(self, msg : str, idx : int):
         if msg.lower().strip().startswith("[message]"):
             return self._validate_message(msg)
@@ -197,7 +229,12 @@ class NegotiationGame(Game):
         response_text = None
         error_cnt = 0
         while True:
-            response_text = "placeholder"
+            response_text = self._generate_response(
+                self.contexts[idx],
+                self.log_agents[idx],
+                self.system_prompt,
+                1,
+            )
             is_valid, error_msg = self._validate_response(response_text, idx)
             if is_valid:
                 break
@@ -221,8 +258,13 @@ class NegotiationGame(Game):
                 }
             )
 
+            self._log(
+                self.log_agents[idx],
+                f"Error: {error_msg}\n"
+            )
+
             error_cnt += 1
-            if error_cnt >= MAX_ERRORS:
+            if error_cnt >= self.MAX_ERRORS:
                 return "[abort]"
             
         return response_text
@@ -246,6 +288,8 @@ class NegotiationGame(Game):
         while not self.game_over:
             response_text = self._player_response(a_idx)
             self.messages.append(response_text.strip())
+
+            print(f"Round {len(self.messages)}: Player {a_idx} says: {response_text.strip()}")
 
             self._log(
                 self.log_game,
@@ -297,17 +341,17 @@ class NegotiationGame(Game):
                 }
             )
 
-            if len(self.messages) >= MAX_MESSAGES:
+            if len(self.messages) >= self.MAX_MESSAGES:
                 self.game_over = True
 
             a_idx, u_idx = u_idx, a_idx
-        
-        # log contexts to the agent logs
-        for i in range(2):
-            self._log(
-                self.log_agents[i],
-                str(self.contexts[i])
-            )
+    
+        ## log contexts to the agent logs
+        #for i in range(2):
+        #    self._log(
+        #        self.log_agents[i],
+        #        str(self.contexts[i])
+        #    )
 
     def _is_valid_deal(self):
         if self.proposals[0] is None or self.proposals[1] is None:
@@ -391,4 +435,19 @@ class NegotiationGame(Game):
 
         # if we don't find a single better allocation
         return True
+    
+    def play(self):
+        self.play_game()
+        self.calculate_final_points()
+
+        game_outcome = {
+            "p0_points" : self.final_points[0],
+            "p1_points" : self.final_points[1],
+            "p0_logs" : self.contexts[0],
+            "p1_logs" : self.contexts[1],
+            "is_valid_deal" : self._is_valid_deal(),
+            "msg_count" : len(self.messages),
+        }
+
+        return game_outcome
         

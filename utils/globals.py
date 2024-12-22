@@ -25,6 +25,6 @@ GAME_ID = None
 
 # agent roles
 class AgentRole(Enum):
-    SYSTEM = "system"
+    SYSTEM = "user"
     ASSISTANT = "assistant"
     USER = "user"

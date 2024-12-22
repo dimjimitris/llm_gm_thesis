@@ -1,12 +1,8 @@
-from utils.funcs import content_wrapper
 from utils.globals import AgentRole
 from games.game import Game
 
 import time
 import os
-
-MAX_ERRORS = 5
-MAX_MESSAGES = 10
 
 error_msgs = {
     0 : "Messages should begin with [choice].",
@@ -22,9 +18,6 @@ error_msgs = {
 }
 
 class DictatorGame(Game):
-    def _content_wrapper(self, content : str):
-        return content_wrapper(content)
-    
     def __init__(
         self,
         amount00 : int,
@@ -34,9 +27,15 @@ class DictatorGame(Game):
         maximize : bool,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "dictator.txt"),
-        log_path : str = os.path.join("logs", "dictator"), 
+        system_prompt_path : str = os.path.join("prompts", "dictator_system.txt"),
+        log_path : str = os.path.join("logs", "dictator"),
+        MAX_ERRORS=5,
+        MAX_MESSAGES=10,
     ):
         super().__init__(id, "dictator", prompt_path, log_path)
+
+        self.MAX_ERRORS = MAX_ERRORS
+        self.MAX_MESSAGES = MAX_MESSAGES
 
         self.amounts = [
             [amount00, amount01],
@@ -70,6 +69,12 @@ class DictatorGame(Game):
             }
         )
 
+        system_text = None
+        with open(system_prompt_path, "r") as f:
+            system_text = f.read()
+        
+        self.system_prompt = system_text
+
         self.log_game = os.path.join(self.log_path, "game.log")
         self.log_agent = os.path.join(self.log_path, "agent_0.log")
 
@@ -98,6 +103,24 @@ class DictatorGame(Game):
         )
 
         self._log(self.log_game, "\n\n")
+
+        for _ in range(1):
+            self._log(
+                self.log_agent,
+                "You have two choices:\n\
+                1. you receive {amount00} dollars and your partner receives {amount01} dollars.\n\
+                2. you receive {amount10} dollars and your partner receives {amount11} dollars.\n\
+                \n\
+                Your objective is to {act_perf} your money.\n"
+                .format(
+                    amount00=self.amounts[0][0],
+                    amount01=self.amounts[0][1],
+                    amount10=self.amounts[1][0],
+                    amount11=self.amounts[1][1],
+                    act_perf=self.act_perf
+                )
+            )
+
 
     def _validate_response(self, msg : str):
         msg_aux = msg.lower()
@@ -130,7 +153,12 @@ class DictatorGame(Game):
         response_text = None
         error_cnt = 0
         while True:
-            response_text = "placeholder"
+            response_text = self._generate_response(
+                self.context,
+                self.log_agent,
+                self.system_prompt,
+                1
+            )
             is_valid, error_msg = self._validate_response(response_text)
             if is_valid:
                 break
@@ -152,8 +180,13 @@ class DictatorGame(Game):
                 }
             )
 
+            self._log(
+                self.log_agent,
+                f"Error: {error_msg}\n"
+            )
+
             error_cnt += 1
-            if error_cnt >= MAX_ERRORS:
+            if error_cnt >= self.MAX_ERRORS:
                 return "[abort]"
             
         return response_text
@@ -203,14 +236,14 @@ class DictatorGame(Game):
                 }
             )
 
-            if len(self.messages) >= MAX_MESSAGES:
+            if len(self.messages) >= self.MAX_MESSAGES:
                 self.game_over = True
 
-        for _ in range(1):
-            self._log(
-                self.log_agent,
-                str(self.context),
-            )
+        #for _ in range(1):
+        #    self._log(
+        #        self.log_agent,
+        #        str(self.context),
+        #    )
 
     def _is_valid_game(self):
         return self.proposal is not None

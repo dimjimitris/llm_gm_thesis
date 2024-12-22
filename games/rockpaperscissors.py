@@ -1,4 +1,3 @@
-from utils.funcs import content_wrapper
 from utils.globals import AgentRole
 from games.game import Game
 
@@ -7,15 +6,10 @@ import os
 from tabulate import tabulate
 import random
 
-MAX_ERRORS = 5
-MAX_MESSAGES = 10
-
 error_msgs = {
     0 : "Messages should begin with [move].",
 
-    1 : "Do not include any mentions of [move] \
-    after the initial prefix. Please just \
-    send a single message, beginning with [move].",
+    1 : "Do not include any mentions of [move] after the initial prefix. Please just send a single message, beginning with [move].",
 
     2 : "Your message should contain only one move: rock, paper, or scissors.",
 
@@ -23,9 +17,6 @@ error_msgs = {
 }
 
 class RockPaperScissorsGame(Game):
-    def _content_wrapper(self, content : str):
-        return content_wrapper(content)
-
     def __init__(
         self,
         paper_beats_rock,
@@ -34,9 +25,15 @@ class RockPaperScissorsGame(Game):
         tie,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "rockpaperscissors.txt"),
+        system_prompt_path : str = os.path.join("prompts", "rockpaperscissors_system.txt"),
         log_path : str = os.path.join("logs", "rockpaperscissors"),
+        MAX_ERRORS=5,
+        MAX_MESSAGES=10,
     ):
         super().__init__(id, "rockpaperscissors", prompt_path, log_path)
+
+        self.MAX_ERRORS = MAX_ERRORS
+        self.MAX_MESSAGES = MAX_MESSAGES
 
         self.p = paper_beats_rock
         self.r = rock_beats_scissors
@@ -64,6 +61,12 @@ class RockPaperScissorsGame(Game):
                 }
             )
 
+        system_text = None
+        with open(system_prompt_path, "r") as f:
+            system_text = f.read()
+        
+        self.system_prompt = system_text
+
         self.log_game = os.path.join(self.log_path, "game.log")
         self.log_agents =[
             os.path.join(self.log_path, "agent_0.log"),
@@ -78,8 +81,7 @@ class RockPaperScissorsGame(Game):
 
         self.final_points_logged = False
 
-        self._log(
-            self.log_game,
+        payoff_matrix_str = \
             tabulate(
                 tabular_data=[
                     ["rock", (self.tie, self.tie), (-self.p, self.p), (self.r, -self.r)],
@@ -89,9 +91,19 @@ class RockPaperScissorsGame(Game):
                 headers=["", "rock", "paper", "scissors"],
                 tablefmt="github"
             )
+
+        self._log(
+            self.log_game,
+            payoff_matrix_str
         )
 
         self._log(self.log_game, "\n\n")
+
+        for i in range(2):
+            self._log(
+                self.log_agents[i],
+                payoff_matrix_str
+            )
 
     def _validate_response(self, msg : str, idx : int):
         msg_aux = msg.lower()
@@ -128,7 +140,12 @@ class RockPaperScissorsGame(Game):
         response_text = None
         error_cnt = 0
         while True:
-            response_text = "placeholder"
+            response_text = self._generate_response(
+                self.contexts[idx],
+                self.log_agents[idx],
+                self.system_prompt,
+                1
+            )
             is_valid, error_msg = self._validate_response(response_text, idx)
             if is_valid:
                 break
@@ -150,8 +167,13 @@ class RockPaperScissorsGame(Game):
                 }
             )
 
+            self._log(
+                self.log_agents[idx],
+                f"Error: {error_msg}\n"
+            )
+
             error_cnt += 1
-            if error_cnt >= MAX_ERRORS:
+            if error_cnt >= self.MAX_ERRORS:
                 return "[abort]"
             
         return response_text
@@ -216,16 +238,16 @@ class RockPaperScissorsGame(Game):
                 }
             )
 
-            if len(self.messages) >= MAX_MESSAGES:
+            if len(self.messages) >= self.MAX_MESSAGES:
                 self.game_over = True
 
             a_idx, u_idx = u_idx, a_idx
 
-        for i in range(2):
-            self._log(
-                self.log_agents[i],
-                str(self.contexts[i])
-            )
+        #for i in range(2):
+        #    self._log(
+        #        self.log_agents[i],
+        #        str(self.contexts[i])
+        #    )
             
     def _is_valid_game(self):
         return self.moves[0] is not None and self.moves[1] is not None
