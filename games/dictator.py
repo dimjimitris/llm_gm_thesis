@@ -5,6 +5,9 @@ from games.game import Game
 import time
 import os
 
+MAX_ERRORS = 5
+MAX_MESSAGES = 10
+
 error_msgs = {
     0 : "Messages should begin with [choice].",
 
@@ -150,7 +153,7 @@ class DictatorGame(Game):
             )
 
             error_cnt += 1
-            if error_cnt > 4:
+            if error_cnt >= MAX_ERRORS:
                 return "[abort]"
             
         return response_text
@@ -200,7 +203,7 @@ class DictatorGame(Game):
                 }
             )
 
-            if len(self.messages) >= 10:
+            if len(self.messages) >= MAX_MESSAGES:
                 self.game_over = True
 
         for _ in range(1):

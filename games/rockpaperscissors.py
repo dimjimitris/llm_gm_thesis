@@ -7,6 +7,9 @@ import os
 from tabulate import tabulate
 import random
 
+MAX_ERRORS = 5
+MAX_MESSAGES = 10
+
 error_msgs = {
     0 : "Messages should begin with [move].",
 
@@ -148,7 +151,7 @@ class RockPaperScissorsGame(Game):
             )
 
             error_cnt += 1
-            if error_cnt > 4:
+            if error_cnt >= MAX_ERRORS:
                 return "[abort]"
             
         return response_text
@@ -213,7 +216,7 @@ class RockPaperScissorsGame(Game):
                 }
             )
 
-            if len(self.messages) >= 10:
+            if len(self.messages) >= MAX_MESSAGES:
                 self.game_over = True
 
             a_idx, u_idx = u_idx, a_idx

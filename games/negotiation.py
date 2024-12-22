@@ -7,6 +7,9 @@ import os
 import random
 import re
 
+MAX_ERRORS = 5
+MAX_MESSAGES = 50
+
 error_msgs = {
     0: "Messages should begin with [message].",
 
@@ -219,7 +222,7 @@ class NegotiationGame(Game):
             )
 
             error_cnt += 1
-            if error_cnt > 4:
+            if error_cnt >= MAX_ERRORS:
                 return "[abort]"
             
         return response_text
@@ -294,7 +297,7 @@ class NegotiationGame(Game):
                 }
             )
 
-            if len(self.messages) >= 50:
+            if len(self.messages) >= MAX_MESSAGES:
                 self.game_over = True
 
             a_idx, u_idx = u_idx, a_idx
