@@ -423,6 +423,16 @@ class NegotiationGame(Game):
                 self._calculate_player_points(self.item_values[1], p2_cnts),
             ]
 
+            # adjust new points according to the objective
+            if self.objective == "semi":
+                new_points = new_points
+            elif self.objective == "coop":
+                new_points = [new_points[0] + new_points[1], new_points[1] + new_points[0]]
+            elif self.objective == "comp":
+                new_points = [new_points[0] - new_points[1], new_points[1] - new_points[0]]
+            else:
+                raise ValueError("Invalid objective")
+
 
             # check if there is a configuration where both players do as good and at least one player does better
             if new_points[0] >= current_points[0] and new_points[1] >= current_points[1] :
