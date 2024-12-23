@@ -280,7 +280,7 @@ class NegotiationGame(Game):
     def play_game(self):
 
         # a_idx : index of 'assitant' agent
-        a_idx = 0 if random.random() < 0.5 else 1
+        a_idx = 0 #if random.random() < 0.5 else 1
         # u_idx : index of 'user' agent
         u_idx = 1 - a_idx
 
