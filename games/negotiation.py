@@ -7,13 +7,13 @@ import random
 import re
 
 error_msgs = {
-    0: "Messages should begin with [message].",
+    0: "Dialogue messages should begin with [message].",
 
     1: "Your output should either begin with [message] or a [propose].",
 
     2 : "Please begin the dialogue by discussing how you'll divide the items before submitting a private proposal.",
 
-    3 : "Do not include any mentions of [message] or [propose] after the initial prefix. Please just send a single message, beginning with [message].",
+    3 : "Your output should either begin with [message] or a [propose] and not contain multiple instances of either.",
 
     4 : "Opponent's proposal must be followed by a proposal of your own. Please send a proposal, beginning with [propose].",
 
@@ -58,34 +58,35 @@ class NegotiationGame(Game):
             raise ValueError("Invalid objective")
         
         self.contexts = [list(), list()]
+        self.system_prompts = list()
 
         system_text = None
         with open(self.prompt_path, "r") as f:
             system_text = f.read()
         
         for i in range(2):
-            self.contexts[i].append(
-                {
-                    "role": AgentRole.SYSTEM.value,
-                    "content": self._content_wrapper(
-                        system_text.format(
-                            book_cnt=self.item_counts["book"],
-                            hat_cnt=self.item_counts["hat"],
-                            ball_cnt=self.item_counts["ball"],
-                            book_val=self.item_values[i]["book"],
-                            hat_val=self.item_values[i]["hat"],
-                            ball_val=self.item_values[i]["ball"],
-                            obj=self.obj
-                        )
-                    )
-                }
+            self.system_prompts.append(
+                system_text.format(
+                    book_cnt=self.item_counts["book"],
+                    hat_cnt=self.item_counts["hat"],
+                    ball_cnt=self.item_counts["ball"],
+                    book_val=self.item_values[i]["book"],
+                    hat_val=self.item_values[i]["hat"],
+                    ball_val=self.item_values[i]["ball"],
+                    obj=self.obj
+                )
             )
 
-        system_text = None
-        with open(system_prompt_path, "r") as f:
-            system_text = f.read()
-        
-        self.system_prompt = system_text
+        # first player is randomly chosen
+        self.first_player = 0 #if random.random() < 0.5 else 1
+        self.contexts[self.first_player].append(
+            {
+                "role" : AgentRole.USER.value,
+                "content" : self._content_wrapper(
+                    "[message] Let's play the negotiation game! I will be your partner in the game.\n"
+                )
+            }
+        )
 
         # create the log paths: one for the game and one for each agent
         self.log_game = os.path.join(self.log_path, "game.log")
@@ -191,7 +192,7 @@ class NegotiationGame(Game):
 
     def _generate_response(
         self,
-        context, # messages
+        messages, # messages
         log_agent_path,
         system_prompt,
         temperature,
@@ -199,7 +200,7 @@ class NegotiationGame(Game):
         max_tokens = 200,
     ):
         output = super()._generate_response(
-            context,
+            messages,
             log_agent_path,
             system_prompt,
             temperature,
@@ -232,7 +233,7 @@ class NegotiationGame(Game):
             response_text = self._generate_response(
                 self.contexts[idx],
                 self.log_agents[idx],
-                self.system_prompt,
+                self.system_prompts[idx],
                 1,
             )
             is_valid, error_msg = self._validate_response(response_text, idx)
@@ -280,7 +281,7 @@ class NegotiationGame(Game):
     def play_game(self):
 
         # a_idx : index of 'assitant' agent
-        a_idx = 0 #if random.random() < 0.5 else 1
+        a_idx = self.first_player
         # u_idx : index of 'user' agent
         u_idx = 1 - a_idx
 
@@ -289,7 +290,7 @@ class NegotiationGame(Game):
             response_text = self._player_response(a_idx)
             self.messages.append(response_text.strip())
 
-            print(f"Round {len(self.messages)}: Player {a_idx} says: {response_text.strip()}")
+            #print(f"Round {len(self.messages)}: Player {a_idx} says: {response_text.strip()}")
 
             self._log(
                 self.log_game,

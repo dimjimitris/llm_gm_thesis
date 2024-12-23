@@ -28,7 +28,6 @@ class Game:
     def _content_wrapper(self, content : str):
         return [
             {
-                "type": "text",
                 "text": content,
             }
         ]
@@ -39,48 +38,40 @@ class Game:
 
     def _generate_response(
         self,
-        context, # messages
+        messages, # messages
         log_agent_path,
         system_prompt,
         temperature,
         model_id = "anthropic.claude-3-5-sonnet-20241022-v2:0",
-        max_tokens = 200,
+        max_tokens = 1_000,
     ) -> str:
+        system_prompt = [
+            {
+                "text": system_prompt,
+            }
+        ]
 
-        #system_prompt = context[0]['content'][0]['text']
-        #context[0] = {
-        #    "role" : "user",
-        #    "content" : [
-        #        {
-        #            "type" : "text",
-        #            "text" : "Let's play the game described in the system prompt.\n"
-        #        }
-        #    ]
-        #}
-        messages = context
-
-        bedrock_runtime_client = boto3.client(
+        client = boto3.client(
             "bedrock-runtime",
             aws_access_key_id=AWS_ACCESS_KEY_ID,
             aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
             region_name="us-west-2",
         )
 
-        payload = {
-            "system" : system_prompt,
-            "messages" : messages,
-            "max_tokens" : max_tokens,
-            "anthropic_version" : "bedrock-2023-05-31",
+        inference_config = {
+            "maxTokens" : max_tokens,
         }
 
-        response = bedrock_runtime_client.invoke_model(
-            body=json.dumps(payload),
+        response = client.converse(
             modelId=model_id,
+            messages=messages,
+            system=system_prompt,
+            inferenceConfig=inference_config,
         )
 
-        output_binary = response["body"].read()
-        output_json = json.loads(output_binary)
-        output = output_json["content"][0]["text"]
+        output = response["output"]["message"]["content"][0]["text"]
+
+        print(output)
 
         self._log(log_agent_path, output, newline=True)
 
