@@ -7,13 +7,17 @@ from tabulate import tabulate
 import random
 
 error_msgs = {
-    0 : "Messages should begin with [move].",
+    0 : "Your output should begin with [move] or [message].",
 
-    1 : "Do not include any mentions of [move] after the initial prefix. Please just send a single message, beginning with [move].",
+    1 : "Dialogue messages should begin with [message].",
 
-    2 : "Your message should contain only one move: rock, paper, or scissors.",
+    2 : "Your output should either begin with [move] or a [message] and not contain multiple instances of either.",
 
-    3 : "Your output should begin with [move].",
+    3 : "Opponent's move must be followed by a move of your own. Please send a move, beginning with [move].",
+
+    4 : "Your move must begin with [move] and must be followed by one of 'rock', 'paper', or 'scissors'.",
+
+    5 : "Your move message must begin with [move].",
 }
 
 class RockPaperScissorsGame(Game):
@@ -25,7 +29,6 @@ class RockPaperScissorsGame(Game):
         tie,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "rockpaperscissors.txt"),
-        system_prompt_path : str = os.path.join("prompts", "rockpaperscissors_system.txt"),
         log_path : str = os.path.join("logs", "rockpaperscissors"),
         MAX_ERRORS=5,
         MAX_MESSAGES=10,
@@ -41,31 +44,31 @@ class RockPaperScissorsGame(Game):
         self.tie = tie
 
         self.contexts = [list(), list()]
+        self.system_prompts = list()
 
         system_text = None
         with open("prompts/rockpaperscissors.txt", "r") as f:
             system_text = f.read()
 
         for i in range(2):
-            self.contexts[i].append(
-                {
-                    "role": AgentRole.SYSTEM.value,
-                    "content": self._content_wrapper(
-                        system_text.format(
-                            p=self.p,
-                            r=self.r,
-                            s=self.s,
-                            tie=self.tie
-                        )
-                    )
-                }
+            self.system_prompts.append(
+                system_text.format(
+                    p=self.p,
+                    r=self.r,
+                    s=self.s,
+                    tie=self.tie
+                )
             )
 
-        system_text = None
-        with open(system_prompt_path, "r") as f:
-            system_text = f.read()
-        
-        self.system_prompt = system_text
+        self.first_player = 0 #if random.random() < 0.5 else 1
+        self.contexts[self.first_player].append(
+            {
+                "role" : AgentRole.USER.value,
+                "content" : self._content_wrapper(
+                    "[message] Let's play rock-paper-scissors! I will be your partner in the game. Please make your move.\n"
+                )
+            }
+        )
 
         self.log_game = os.path.join(self.log_path, "game.log")
         self.log_agents =[
@@ -94,7 +97,8 @@ class RockPaperScissorsGame(Game):
 
         self._log(
             self.log_game,
-            payoff_matrix_str
+            payoff_matrix_str,
+            newline=True
         )
 
         self._log(self.log_game, "\n\n")
@@ -102,38 +106,54 @@ class RockPaperScissorsGame(Game):
         for i in range(2):
             self._log(
                 self.log_agents[i],
-                payoff_matrix_str
+                payoff_matrix_str,
+                newline=True
             )
 
-    def _validate_response(self, msg : str, idx : int):
+    def _validate_message(self, msg : str):
+        msg = msg.lower()
+        aux_idx = msg.find("[message]")
+
+        if aux_idx == -1:
+            return False, error_msgs[1]
+        
+        aux_idx += len("[message]")
+        if "[message]" in msg[aux_idx:] or "[move]" in msg[aux_idx:]:
+            return False, error_msgs[2]
+        
+        if self.move_made:
+            return False, error_msgs[3]
+
+        return True, ""
+
+    def _validate_move(self, msg : str):
         msg_aux = msg.lower()
         if msg_aux.strip().startswith("[move]"):
-
-            aux_idx = msg_aux.find("[move]")
             
-            if aux_idx == -1:
-                return False, error_msgs[0]
-            
-            aux_idx += len("[move]")
-            if "[move]" in msg_aux[aux_idx:]:
-                return False, error_msgs[1]
-            
-            rock_idx = msg_aux.find("rock")
-            paper_idx = msg_aux.find("paper")
-            scissors_idx = msg_aux.find("scissors")
+            #rock_idx = msg_aux.find("rock")
+            #paper_idx = msg_aux.find("paper")
+            #scissors_idx = msg_aux.find("scissors")
 
-            check_only_one_move = sum(
-                1 for var in [rock_idx, paper_idx, scissors_idx] if var != -1
-            )
+            #check_only_one_move = sum(
+            #    1 for var in [rock_idx, paper_idx, scissors_idx] if var != -1
+            #)
 
-            if check_only_one_move != 1:
-                return False, error_msgs[2]
+            move = msg_aux.split()[1].strip()
+
+            if move not in ["rock", "paper", "scissors"]:
+                return False, error_msgs[4]
             
             return True, ""
         else:
-            return False, error_msgs[3]
+            return False, error_msgs[5]
 
-        
+    def _validate_response(self, msg : str, idx : int):
+        if msg.lower().strip().startswith("[message]"):
+            return self._validate_message(msg)
+        elif msg.lower().strip().startswith("[move]"):
+            return self._validate_move(msg)
+        else:
+            return False, error_msgs[0]
             
 
     def _player_response(self, idx : int):
@@ -143,7 +163,7 @@ class RockPaperScissorsGame(Game):
             response_text = self._generate_response(
                 self.contexts[idx],
                 self.log_agents[idx],
-                self.system_prompt,
+                self.system_prompts[idx],
                 1
             )
             is_valid, error_msg = self._validate_response(response_text, idx)
@@ -152,7 +172,7 @@ class RockPaperScissorsGame(Game):
 
             self.contexts[idx].append(
                 {
-                    "role": AgentRole.SYSTEM.value,
+                    "role": AgentRole.ASSISTANT.value,
                     "content": self._content_wrapper(response_text)
                 }
             )
@@ -180,18 +200,17 @@ class RockPaperScissorsGame(Game):
 
     def _parse_move(self, msg : str):
         msg_aux = msg.lower()
-        if "rock" in msg_aux:
-            return "rock"
-        elif "paper" in msg_aux:
-            return "paper"
-        elif "scissors" in msg_aux:
-            return "scissors"
+
+        move = msg_aux.split()[1].strip()
+
+        if move in ["rock", "paper", "scissors"]:
+            return move
         else:
             return None
 
     def play_game(self):
         # a_idx : index of 'assitant' agent
-        a_idx = 0 if random.random() < 0.5 else 1
+        a_idx = self.first_player
         # u_idx : index of 'user' agent
         u_idx = 1 - a_idx
 
@@ -208,19 +227,24 @@ class RockPaperScissorsGame(Game):
             if "[abort]" in response_text.strip().lower():
                 self.game_over = True
 
-            # check if move has already been made
-            if self.move_made:
-                self.moves[a_idx] = self._parse_move(response_text)
-                self.game_over = True
-            else:
-                # first move
-                self.moves[a_idx] = self._parse_move(response_text)
-                self.move_made = True
+            if response_text.strip().lower().startswith("[move]"):
+                # check if move has already been made
+                if self.move_made:
+                    self.moves[a_idx] = self._parse_move(response_text)
+                    self.game_over = True
+                else:
+                    # first move
+                    self.moves[a_idx] = self._parse_move(response_text)
+                    self.move_made = True
 
-            assistant_message = response_text.strip()
-            user_message = "[move] Move made. You must now respond with \
-                a move of your own. \n"
-            
+                assistant_message = response_text.strip()
+                user_message = "[move] Move made. You must now respond with a move of your own. \n"
+                
+            else:
+                # update prompts of each player normally, since this is a regular message
+                assistant_message = response_text.strip()
+                user_message = response_text.strip()
+
             self.contexts[a_idx].append(
                 {
                     "role" : AgentRole.ASSISTANT.value,
@@ -290,3 +314,16 @@ class RockPaperScissorsGame(Game):
                 f"Player 1 final points: {self.final_points[1]}\n"
             )
             self.final_points_logged = True
+
+    def play(self):
+        self.play_game()
+        self.calculate_final_points()
+
+        return {
+            "p0_points" : self.final_points[0],
+            "p1_points" : self.final_points[1],
+            "p0_logs" : self.contexts[0],
+            "p1_logs" : self.contexts[1],
+            "is_valid_deal" : self._is_valid_game(),
+            "msg_count" : len(self.messages)
+        }

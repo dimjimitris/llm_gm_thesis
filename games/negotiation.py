@@ -34,7 +34,6 @@ class NegotiationGame(Game):
         objective : str,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "negotiation.txt"),
-        system_prompt_path : str = os.path.join("prompts", "negotiation_system.txt"),
         log_path : str = os.path.join("logs", "negotiation"),
         MAX_ERRORS=5,
         MAX_MESSAGES=30,
@@ -189,34 +188,6 @@ class NegotiationGame(Game):
             return False, error_msgs[7]
         
         return True, ""
-
-    def _generate_response(
-        self,
-        messages, # messages
-        log_agent_path,
-        system_prompt,
-        temperature,
-        model_id = "anthropic.claude-3-haiku-20240307-v1:0",
-        max_tokens = 200,
-    ):
-        output = super()._generate_response(
-            messages,
-            log_agent_path,
-            system_prompt,
-            temperature,
-            model_id,
-            max_tokens
-        )
-
-        #if "[end]" in output.lower():
-        #    aux_idx = output.lower().find("[end]")
-        #    output = output[:aux_idx].strip()
-#
-        #if "[propose]" in output.lower():
-        #    output = output.split("\n")[0].strip()
-#
-        #output = output.strip()
-        return output
 
     def _validate_response(self, msg : str, idx : int):
         if msg.lower().strip().startswith("[message]"):
