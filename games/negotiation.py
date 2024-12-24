@@ -1,50 +1,59 @@
-from utils.globals import AgentRole
 from games.game import Game
+from utils.globals import AgentRole
 
 import time
 import os
-import random
 import re
-
-error_msgs = {
-    0: "Dialogue messages should begin with [message].",
-
-    1: "Your output should either begin with [message] or a [propose].",
-
-    2 : "Please begin the dialogue by discussing how you'll divide the items before submitting a private proposal.",
-
-    3 : "Your output should either begin with [message] or a [propose] and not contain multiple instances of either.",
-
-    4 : "Opponent's proposal must be followed by a proposal of your own. Please send a proposal, beginning with [propose].",
-
-    5 : "Item counts must be sequenced in the following order: books, hats, and then balls.",
-
-    6 : "There should only be counts for three items in your proposal: books, hats, and balls.",
-
-    7 : "Item counts suggested are invalid based on game context; some of your proposal's item counts are greater than total items available.",
-
-    8 : "Proposals must begin with [propose]. You may resubmit the exact same proposal but with [propose] as a prefix.",
-}
 
 class NegotiationGame(Game):
     def __init__(
         self,
-        item_counts : dict[str, int],
-        item_values : list[dict[str, int]],
+        items : dict[str, int],
+        values : list[dict[str, int]],
         objective : str,
+        model_id : str,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "negotiation.txt"),
         log_path : str = os.path.join("logs", "negotiation"),
         MAX_ERRORS=5,
         MAX_MESSAGES=30,
+        MAX_TOKENS=1_000,
     ):
-        super().__init__(id, "negotiation", prompt_path, log_path)
+        super().__init__(
+            id,
+            "negotiation",
+            prompt_path,
+            log_path,
+            model_id,
+            2,
+            errors={
+                0: "Dialogue messages should begin with [message].",
 
-        self.MAX_ERRORS = MAX_ERRORS
-        self.MAX_MESSAGES = MAX_MESSAGES
+                1: "Your output should either begin with [message] or a [propose].",
 
-        self.item_counts = item_counts
-        self.item_values = item_values
+                2 : "Please begin the dialogue by discussing how you'll divide the items before submitting a private proposal.",
+
+                3 : "Your output should either begin with [message] or a [propose] and not contain multiple instances of either.",
+
+                4 : "Opponent's proposal must be followed by a proposal of your own. Please send a proposal, beginning with [propose].",
+
+                5 : "Item counts must be sequenced in the following order: books, hats, and then balls.",
+
+                6 : "There should only be counts for three items in your proposal: books, hats, and balls.",
+
+                7 : "Item counts suggested are invalid based on game context; some of your proposal's item counts are greater than total items available.",
+
+                8 : "Proposals must begin with [propose]. You may resubmit the exact same proposal but with [propose] as a prefix.",
+            },
+            MAX_ERRORS=MAX_ERRORS,
+            MAX_MESSAGES=MAX_MESSAGES,
+            MAX_TOKENS=MAX_TOKENS,
+        )
+
+        self.proposals : list[dict] = [None for _ in range(self.player_count)]
+
+        self.items = items
+        self.values = values
         self.objective = objective
 
         if self.objective == "semi":
@@ -56,28 +65,23 @@ class NegotiationGame(Game):
         else:
             raise ValueError("Invalid objective")
         
-        self.contexts = [list(), list()]
-        self.system_prompts = list()
-
         system_text = None
         with open(self.prompt_path, "r") as f:
             system_text = f.read()
-        
-        for i in range(2):
+
+        for i in range(self.player_count):
             self.system_prompts.append(
                 system_text.format(
-                    book_cnt=self.item_counts["book"],
-                    hat_cnt=self.item_counts["hat"],
-                    ball_cnt=self.item_counts["ball"],
-                    book_val=self.item_values[i]["book"],
-                    hat_val=self.item_values[i]["hat"],
-                    ball_val=self.item_values[i]["ball"],
+                    book_cnt=self.items["book"],
+                    hat_cnt=self.items["hat"],
+                    ball_cnt=self.items["ball"],
+                    book_val=self.values[i]["book"],
+                    hat_val=self.values[i]["hat"],
+                    ball_val=self.values[i]["ball"],
                     obj=self.obj
                 )
             )
 
-        # first player is randomly chosen
-        self.first_player = 0 #if random.random() < 0.5 else 1
         self.contexts[self.first_player].append(
             {
                 "role" : AgentRole.USER.value,
@@ -87,52 +91,38 @@ class NegotiationGame(Game):
             }
         )
 
-        # create the log paths: one for the game and one for each agent
-        self.log_game = os.path.join(self.log_path, "game.log")
-        self.log_agents = [
-            os.path.join(self.log_path, "agent_0.log"),
-            os.path.join(self.log_path, "agent_1.log"),
-        ]
+        # log initial setup
 
-        self.messages = list()
-        self.game_over = False
-        self.deal_proposed = False
-        self.proposals : list[dict[str, int]] = [None, None]
-        self.final_points = [None, None]
-
-        # a flag to be used in logging final results
-        self.final_points_logged = False
-
-        # after the init function is done, we write the initial context to the game log
         self._log(
             self.log_game,
             "Item counts: there are {book_cnt} books, {hat_cnt} hats, and {ball_cnt} balls.\n"
             .format(
-                book_cnt=self.item_counts["book"],
-                hat_cnt=self.item_counts["hat"],
-                ball_cnt=self.item_counts["ball"])
+                book_cnt=self.items["book"],
+                hat_cnt=self.items["hat"],
+                ball_cnt=self.items["ball"]
+            )
         )
-        for i in range(2):
+        for i in range(self.player_count):
             self._log(
                 self.log_game,
                 "Player {player_index} values: books are worth {book_val} points, hats are worth {hat_val} points, and balls are worth {ball_val} points.\n"
                 .format(
                     player_index=i,
-                    book_val=self.item_values[i]["book"],
-                    hat_val=self.item_values[i]["hat"],
-                    ball_val=self.item_values[i]["ball"]
+                    book_val=self.values[i]["book"],
+                    hat_val=self.values[i]["hat"],
+                    ball_val=self.values[i]["ball"]
                 )
             )
         self._log(self.log_game, "\n\n")
 
-        for i in range(2):
+        for i in range(self.player_count):
             self._log(
                 self.log_agents[i],
                 "Books are worth {book_val} points, hats are worth {hat_val} points, and balls are worth {ball_val} points.\n\n\n"
                 .format(
-                    book_val=self.item_values[i]["book"],
-                    hat_val=self.item_values[i]["hat"],
-                    ball_val=self.item_values[i]["ball"]
+                    book_val=self.values[i]["book"],
+                    hat_val=self.values[i]["hat"],
+                    ball_val=self.values[i]["ball"]
                 )
             )
 
@@ -141,23 +131,23 @@ class NegotiationGame(Game):
         aux_idx = msg.find("[message]")
         
         if aux_idx == -1:
-            return False, error_msgs[0]
+            return False, self.errors[0]
 
         aux_idx += len("[message]")
         if "[message]" in msg[aux_idx:] or "[propose]" in msg[aux_idx:]:
-            return False, error_msgs[3]
+            return False, self.errors[3]
         
-        if self.deal_proposed:
-            return False, error_msgs[4]
+        if self.move_made:
+            return False, self.errors[4]
         
         return True, ""
 
     def _validate_proposal(self, msg : str, a_idx : int):
         if len(self.contexts[a_idx]) <= 1:
-            return False, error_msgs[2]
+            return False, self.errors[2]
         
         if not msg.lower().strip().startswith("[propose]"):
-            return False, error_msgs[8]
+            return False, self.errors[8]
         
         idx = msg.lower().find("[propose]")
         idx += len("[propose]")
@@ -170,22 +160,22 @@ class NegotiationGame(Game):
 
         # check that we found all indices and they are in the correct order
         if not (-1 < book_idx < hat_idx < ball_idx):
-            return False, error_msgs[5]
+            return False, self.errors[5]
 
         # get the quantities as integers (not strings)
         quantities = [int(x) for x in re.findall(r"\d+", proposal)]
 
         # make sure we have only three integers in our proposal message
         if len(quantities) != 3:
-            return False, error_msgs[6]
+            return False, self.errors[6]
         
         # make sure the three quantities are within valid range, given the game item counts
         if not (
-            0 <= quantities[0] <= self.item_counts["book"]
-            and 0 <= quantities[1] <= self.item_counts["hat"]
-            and 0 <= quantities[2] <= self.item_counts["ball"]
+            0 <= quantities[0] <= self.items["book"]
+            and 0 <= quantities[1] <= self.items["hat"]
+            and 0 <= quantities[2] <= self.items["ball"]
         ):
-            return False, error_msgs[7]
+            return False, self.errors[7]
         
         return True, ""
 
@@ -195,18 +185,21 @@ class NegotiationGame(Game):
         elif msg.lower().strip().startswith("[propose]"):
             return self._validate_proposal(msg, idx)
         else:
-            return False, error_msgs[1]
+            return False, self.errors[1]
 
     def _player_response(self, idx : int):
         response_text = None
         error_cnt = 0
         while True:
-            response_text = self._generate_response(
+            response_obj = self._generate_response(
                 self.contexts[idx],
                 self.log_agents[idx],
                 self.system_prompts[idx],
-                1,
             )
+
+            response_text = response_obj["output_text"]
+            self.total_tokens[idx] = response_obj["total_tokens"]
+
             is_valid, error_msg = self._validate_response(response_text, idx)
             if is_valid:
                 break
@@ -223,9 +216,7 @@ class NegotiationGame(Game):
                 {
                     "role" : AgentRole.USER.value,
                     "content" : self._content_wrapper(
-                        f"An error occurred. Please resend the previous message \
-                        with the following correction, without indicating in any \
-                        way that you have made a correction to a prior message: \n \"{error_msg}\" "
+                        f"An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\" "
                     )
                 }
             )
@@ -249,8 +240,7 @@ class NegotiationGame(Game):
         return {"book": int(counts[0]), "hat": int(counts[1]), "ball": int(counts[2])}
 
 
-    def play_game(self):
-
+    def play_game(self) -> None:
         # a_idx : index of 'assitant' agent
         a_idx = self.first_player
         # u_idx : index of 'user' agent
@@ -261,12 +251,9 @@ class NegotiationGame(Game):
             response_text = self._player_response(a_idx)
             self.messages.append(response_text.strip())
 
-            #print(f"Round {len(self.messages)}: Player {a_idx} says: {response_text.strip()}")
-
             self._log(
                 self.log_game,
-                f"Player {a_idx}: {response_text.strip()}",
-                newline=True
+                f"Player {a_idx}: {response_text.strip()}\n",
             )
 
             # check for abort message
@@ -276,21 +263,16 @@ class NegotiationGame(Game):
 
             if response_text.strip().lower().startswith("[propose]"):
                 # check if a proposal was already made
-                if self.deal_proposed:
+                if self.move_made:
                     self.proposals[a_idx] = self._parse_proposal(response_text)
                     self.game_over = True
                 else:
                     # first proposal
                     self.proposals[a_idx] = self._parse_proposal(response_text)
-                    self.deal_proposed = True
+                    self.move_made = True
                 
                 assistant_message = response_text.strip()
-                user_message = "[propose] Proposal made. You must now respond with \
-                    a proposal of your own. If you've discussed that you should receive \
-                    a certain combination of items, this proposal should reflect that. \
-                    Keep in mind that you and your partner's proposals should be complementary \
-                    - when added, the elementwise sum should exactly equal the total item \
-                    counts.\n"
+                user_message = "[propose] Proposal made. You must now respond with a proposal of your own. If you've discussed that you should receive a certain combination of items, this proposal should reflect that. Keep in mind that you and your partner's proposals should be complementary - when added, the elementwise sum should exactly equal the total item counts.\n"
             else:
                 # update prompts of each player normally, since this is a regular message
                 assistant_message = response_text.strip()
@@ -317,51 +299,44 @@ class NegotiationGame(Game):
                 self.game_over = True
 
             a_idx, u_idx = u_idx, a_idx
-    
-        ## log contexts to the agent logs
-        #for i in range(2):
-        #    self._log(
-        #        self.log_agents[i],
-        #        str(self.contexts[i])
-        #    )
 
-    def _is_valid_deal(self):
-        if self.proposals[0] is None or self.proposals[1] is None:
+    def _is_valid_game(self):
+        if self.proposals[0] is not None and self.proposals[1] is not None:
+            for k, v in self.proposals[0].items():
+                if v + self.proposals[1][k] != self.items[k]:
+                    return False
+            return True
+        else:
             return False
-
-        for k, v in self.proposals[0].items():
-            if v + self.proposals[1][k] != self.item_counts[k]:
-                return False
-
-        return True
-
-    def _calculate_player_points(
+    
+    def _calculate_points(
         self,
-        player_values : dict[str, int],
-        proposal_counts : dict[str, int],
-    ):
-        sum = 0
-        for key, cnt in proposal_counts.items():
-            sum += cnt * player_values[key]
-        
-        return sum
+        player_proposals : list[dict[str, int]],
+        ):
 
+        points = [None, None]
+
+        for id in range(self.player_count):
+            points[id] = 0
+            for key, cnt in player_proposals[id].items():
+                points[id] += self.values[id][key] * cnt
+
+        if self.objective == "semi":
+            points = points
+        elif self.objective == "coop":
+            points = [points[0] + points[1], points[1] + points[0]]
+        elif self.objective == "comp":
+            points = [points[0] - points[1], points[1] - points[0]]
+        else:
+            raise ValueError("Invalid objective")
+            
+        return points
+    
     def calculate_final_points(self):
-        if not self._is_valid_deal():
+        if not self._is_valid_game():
             self.final_points = [0, 0]
         else:
-            points = [
-                self._calculate_player_points(self.item_values[0], self.proposals[0]),
-                self._calculate_player_points(self.item_values[1], self.proposals[1]),
-            ]
-            if self.objective == "semi":
-                self.final_points = points
-            elif self.objective == "coop":
-                self.final_points = [points[0] + points[1], points[1] + points[0]]
-            elif self.objective == "comp":
-                self.final_points = [points[0] - points[1], points[1] - points[0]]
-            else:
-                raise ValueError("Invalid objective")
+            self.final_points = self._calculate_points(self.proposals)
         
         if not self.final_points_logged:
             self._log(
@@ -375,38 +350,29 @@ class NegotiationGame(Game):
         current_points = self.final_points
 
         allocations = [
-            {"book": bo, "hat": ha, "ball": ba}
-            for bo in range(self.item_counts["book"] + 1)
-            for ha in range(self.item_counts["hat"] + 1)
-            for ba in range(self.item_counts["ball"] + 1)
+            [
+                {
+                    "book": bo,
+                    "hat": ha,
+                    "ball": ba
+                },
+                {
+                    "book": self.items["book"] - bo,
+                    "hat": self.items["hat"] - ha,
+                    "ball": self.items["ball"] - ba
+                }
+            ]
+            for bo in range(self.items["book"] + 1)
+            for ha in range(self.items["hat"] + 1)
+            for ba in range(self.items["ball"] + 1)
         ]
 
-        for alloc in allocations:
+        for player_proposals in allocations:
             is_as_good = False
             is_better = False
 
-            # decide player counts based on allocation
-            p1_cnts = alloc
-            p2_cnts = {k: self.item_counts[k] - p1_cnts[k] for k in p1_cnts.keys()}
+            new_points = self._calculate_points(player_proposals)
 
-            # calculate utilities based on allocation
-            new_points = [
-                self._calculate_player_points(self.item_values[0], p1_cnts),
-                self._calculate_player_points(self.item_values[1], p2_cnts),
-            ]
-
-            # adjust new points according to the objective
-            if self.objective == "semi":
-                new_points = new_points
-            elif self.objective == "coop":
-                new_points = [new_points[0] + new_points[1], new_points[1] + new_points[0]]
-            elif self.objective == "comp":
-                new_points = [new_points[0] - new_points[1], new_points[1] - new_points[0]]
-            else:
-                raise ValueError("Invalid objective")
-
-
-            # check if there is a configuration where both players do as good and at least one player does better
             if new_points[0] >= current_points[0] and new_points[1] >= current_points[1] :
                 is_as_good = True
             if new_points[0] > current_points[0] or new_points[1] > current_points[1]:
@@ -414,22 +380,19 @@ class NegotiationGame(Game):
 
             if is_as_good and is_better:
                 return False
-
-        # if we don't find a single better allocation
+        
+        # if we don't find a single better allocation of money
         return True
     
-    def play(self):
+    def play(self) -> dict[str, any]:
         self.play_game()
         self.calculate_final_points()
 
-        game_outcome = {
-            "p0_points" : self.final_points[0],
-            "p1_points" : self.final_points[1],
-            "p0_logs" : self.contexts[0],
-            "p1_logs" : self.contexts[1],
-            "is_valid_deal" : self._is_valid_deal(),
-            "msg_count" : len(self.messages),
-        }
-
-        return game_outcome
-        
+        return self._format_game_outcome(
+            self.player_count,
+            self.final_points,
+            self.contexts,
+            self._is_valid_game(),
+            len(self.messages),
+            self.total_tokens,
+        )

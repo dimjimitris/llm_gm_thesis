@@ -2,8 +2,11 @@ import games.dictator as d
 import games.negotiation as n
 import games.rockpaperscissors as rps
 
-import boto3
 import json
+
+model_ids = [
+    "anthropic.claude-3-5-sonnet-20241022-v2:0",
+]
 
 def test_negotiation():
     game = n.NegotiationGame(
@@ -12,7 +15,8 @@ def test_negotiation():
             {"book" : 1, "hat" : 3, "ball" : 1},
             {"book" : 2, "hat" : 1, "ball" : 2}
         ],
-        "comp"
+        "comp",
+        model_ids[0],
     )
     
     result = game.play()
@@ -23,16 +27,20 @@ def test_rockpaperscissors():
         2,
         1,
         1,
-        0
+        0,
+        model_ids[0],
     )
     result = game.play()
     return result
 
 def test_dictator_game():
     game = d.DictatorGame(
-        -400, -900,
-        -401, -200,
-        False,
+        [
+            [-400, -900],
+            [-401, -200],
+        ],
+        "minimize",
+        model_ids[0],
     )
     result = game.play()
     return result

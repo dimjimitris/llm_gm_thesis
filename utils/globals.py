@@ -2,13 +2,10 @@ from dotenv import load_dotenv
 import os
 from enum import Enum
 
-# model id, set during game initialization
-MODEL_ID = None
-
 # load environment variables
 load_dotenv()
-AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")
-AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")
+AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")          # These keys are needed
+AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")  # to access the LLM API
 
 # check if environment variables are set
 if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
@@ -20,11 +17,8 @@ class GameId(Enum):
     DICTATOR = 1
     ROCK_PAPER_SCISSORS = 2
 
-# game id, set during game initialization
-GAME_ID = None
-
 # agent roles
 class AgentRole(Enum):
-    SYSTEM = "system"
-    ASSISTANT = "assistant"
-    USER = "user"
+    SYSTEM = "system"           # bedrock models do not use this role in requests, they instead accept a seperate system prompt
+    ASSISTANT = "assistant"     # the assistant role is used to provide the user with information or guidance (basically, this is the LLM player that is actively playing)
+    USER = "user"               # the user role is used to represent the user in the game (basically, this is the LLM player that is the opponent of the assistant)

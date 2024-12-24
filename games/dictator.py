@@ -4,61 +4,57 @@ from games.game import Game
 import time
 import os
 
-error_msgs = {
-    0 : "Your choice must begin with [choice] and must be followed by 1 or 2.",
-    1 : "Your choice message must begin with [choice]."
-
-}
 
 class DictatorGame(Game):
     def __init__(
         self,
-        amount00 : int,
-        amount01 : int,
-        amount10 : int,
-        amount11 : int,
-        maximize : bool,
+        amounts : list[list[int]],
+        objective : str,
+        model_id : str,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "dictator.txt"),
         log_path : str = os.path.join("logs", "dictator"),
         MAX_ERRORS=5,
         MAX_MESSAGES=10,
+        MAX_TOKENS=1_000,
     ):
-        super().__init__(id, "dictator", prompt_path, log_path)
+        super().__init__(
+            id,
+            "dictator",
+            prompt_path,
+            log_path,
+            model_id,
+            1,
+            errors={
+                0 : "Your choice must begin with [choice] and must be followed by 1 or 2.",
 
-        self.MAX_ERRORS = MAX_ERRORS
-        self.MAX_MESSAGES = MAX_MESSAGES
+                1 : "Your choice message must begin with [choice].",
+            },
+            MAX_ERRORS=MAX_ERRORS,
+            MAX_MESSAGES=MAX_MESSAGES,
+            MAX_TOKENS=MAX_TOKENS,
+        )
 
-        self.amounts = [
-            [amount00, amount01],
-            [amount10, amount11]
-        ]
-        self.maximize = maximize
+        self.proposals : list[dict] = [None for _ in range(self.player_count)]
 
-        if self.maximize == True:
-            self.act_perf = "maximize"
-        else:
-            self.act_perf = "minimize"
-
-        self.contexts = [list()]
-        self.system_prompts = list()
+        self.amounts = amounts
+        self.objective = objective
 
         system_text = None
         with open(self.prompt_path, "r") as f:
             system_text = f.read()
 
-        self.system_prompts.append(
-            system_text.format(
-                amount00=self.amounts[0][0],
-                amount01=self.amounts[0][1],
-                amount10=self.amounts[1][0],
-                amount11=self.amounts[1][1],
-                act_perf=self.act_perf
+        for _ in range(self.player_count):
+            self.system_prompts.append(
+                system_text.format(
+                    amount00=self.amounts[0][0],
+                    amount01=self.amounts[0][1],
+                    amount10=self.amounts[1][0],
+                    amount11=self.amounts[1][1],
+                    act_perf=self.objective
+                )
             )
-        )
-
-        # first player context (this game only has one player anyway)
-        self.first_player = 0
+        
         self.contexts[self.first_player].append(
             {
                 "role" : AgentRole.USER.value,
@@ -68,50 +64,33 @@ class DictatorGame(Game):
             }
         )
 
-        self.log_game = os.path.join(self.log_path, "game.log")
-        self.log_agents = [os.path.join(self.log_path, "agent_0.log")]
-
-        self.messages = list()
-        self.game_over = False
-        self.proposal : dict[str, int] = None
-        self.final_points = None
-
-        self.final_points_logged = False
-
-        # log the initial conditions
         self._log(
             self.log_game,
-            "You have two choices:\n\
-            1. you receive {amount00} dollars and your partner receives {amount01} dollars.\n\
-            2. you receive {amount10} dollars and your partner receives {amount11} dollars.\n\
-            \n\
-            Your objective is to {act_perf} your money.\n"
+            "You have two choices:\n1. you receive {amount00} dollars and your partner receives {amount01} dollars.\n2. you receive {amount10} dollars and your partner receives {amount11} dollars.\n\nYour objective is to {act_perf} your money.\n"
             .format(
                 amount00=self.amounts[0][0],
                 amount01=self.amounts[0][1],
                 amount10=self.amounts[1][0],
                 amount11=self.amounts[1][1],
-                act_perf=self.act_perf
-            )
+                act_perf=self.objective
+            ),
+            mode="a",
+            trail="\n\n"
         )
-
-        self._log(self.log_game, "\n\n")
 
         for i in range(1):
             self._log(
                 self.log_agents[i],
-                "You have two choices:\n\
-                1. you receive {amount00} dollars and your partner receives {amount01} dollars.\n\
-                2. you receive {amount10} dollars and your partner receives {amount11} dollars.\n\
-                \n\
-                Your objective is to {act_perf} your money.\n"
+                "You have two choices:\n1. you receive {amount00} dollars and your partner receives {amount01} dollars.\n2. you receive {amount10} dollars and your partner receives {amount11} dollars.\n\nYour objective is to {act_perf} your money.\n"
                 .format(
                     amount00=self.amounts[0][0],
                     amount01=self.amounts[0][1],
                     amount10=self.amounts[1][0],
                     amount11=self.amounts[1][1],
-                    act_perf=self.act_perf
-                )
+                    act_perf=self.objective
+                ),
+                mode="a",
+                trail="\n\n"
             )
 
 
@@ -121,22 +100,25 @@ class DictatorGame(Game):
             
             move = msg_aux.split()[1].strip()
             if move not in ["1", "2"]:
-                return False, error_msgs[0]
+                return False, self.errors[0]
             
             return True, ""
         
-        return False, error_msgs[1]
+        return False, self.errors[1]
 
     def _player_response(self, idx : int):
         response_text = None
         error_cnt = 0
         while True:
-            response_text = self._generate_response(
+            response_obj = self._generate_response(
                 self.contexts[idx],
                 self.log_agents[idx],
                 self.system_prompts[idx],
-                1
             )
+
+            response_text = response_obj["output_text"]
+            self.total_tokens[idx] = response_obj["total_tokens"]
+
             is_valid, error_msg = self._validate_response(response_text)
             if is_valid:
                 break
@@ -151,9 +133,7 @@ class DictatorGame(Game):
                 {
                     "role" : AgentRole.USER.value,
                     "content" : self._content_wrapper(
-                        f"An error occurred. Please resend the previous message \
-                        with the following correction, without indicating in any \
-                        way that you have made a correction to a prior message: \n \"{error_msg}\" "
+                        f"An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\" "
                     )
                 }
             )
@@ -170,15 +150,13 @@ class DictatorGame(Game):
         return response_text
         
 
-    def _parse_move(self, msg : str):
+    def _parse_proposal(self, msg : str):
         msg_aux = msg.lower()
         
         move = msg_aux.split()[1].strip()
 
-        if move == "1":
-            return 0
-        elif move == "2":
-            return 1
+        if move in ["1", "2"]:
+            return int(move) - 1
         else:
             return None
 
@@ -191,16 +169,15 @@ class DictatorGame(Game):
 
             self._log(
                 self.log_game,
-                f"Player {0}: {response_text.strip()}",
-                newline=True
+                f"Player {0}: {response_text.strip()}\n",
             )
 
             if "[abort]" in response_text.strip().lower():
                 self.game_over = True
 
-            choice = self._parse_move(response_text)
+            choice = self._parse_proposal(response_text)
 
-            self.proposal = {
+            self.proposals[a_idx] = {
                 "me" : self.amounts[choice][0],
                 "partner" : self.amounts[choice][1],
             }
@@ -226,21 +203,26 @@ class DictatorGame(Game):
         #    )
 
     def _is_valid_game(self):
-        return self.proposal is not None
+        return self.proposals[0] is not None
 
-    def _calculate_final_points(self, proposal : dict[str, int]):
-        if self.maximize:
-            return list(proposal.values())
+    def _calculate_points(self, player_proposals : list[dict[str, int]]):
+        proposal = player_proposals[self.first_player]
+        
+        me = proposal["me"]
+        partner = proposal["partner"]
+
+        if self.objective == "maximize":
+            return [me, partner]
+        elif self.objective == "minimize":
+            return [-me, -partner]
         else:
-            a = -proposal["me"]
-            b = -proposal["partner"]
-            return [a, b]
+            raise ValueError("Invalid objective")
 
     def calculate_final_points(self):
         if not self._is_valid_game():
             self.final_points = [0, 0]
         else:
-            self.final_points = self._calculate_final_points(self.proposal)
+            self.final_points = self._calculate_points(self.proposals)
 
         if not self.final_points_logged:
             self._log(
@@ -253,9 +235,18 @@ class DictatorGame(Game):
     def is_pareto_optimal(self):
         current_points = self.final_points
 
-        for new_points in self.amounts:
+        allocations = [
+            [
+                {"me" : self.amounts[choice][0], "partner" : self.amounts[choice][1]}
+            ]
+            for choice in range(2)
+        ]
+
+        for player_proposals in allocations:
             is_as_good = False
             is_better = False
+
+            new_points = self._calculate_points(player_proposals)
 
             if new_points[0] >= current_points[0] and new_points[1] >= current_points[1] :
                 is_as_good = True
@@ -272,10 +263,15 @@ class DictatorGame(Game):
         self.play_game()
         self.calculate_final_points()
 
-        return {
-            "p0_points" : self.final_points[0],
-            "p1_points" : self.final_points[1],
-            "p0_logs" : self.contexts[0],
-            "is_valid_deal" : self._is_valid_game(),
-            "msg_count" : len(self.messages),
-        }
+        output = self._format_game_outcome(
+            self.player_count,
+            self.final_points,
+            self.contexts,
+            self._is_valid_game(),
+            len(self.messages),
+            self.total_tokens,
+        )
+
+        output["player_1_points"] = self.final_points[1]
+
+        return output
