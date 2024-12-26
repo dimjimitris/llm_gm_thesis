@@ -3,9 +3,13 @@ import games.negotiation as n
 import games.rockpaperscissors as rps
 
 import json
+import os
 
 model_ids = [
-    "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    {
+        "model_id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "model_name" : "Claude 3.5 Sonnet v2",
+    },
 ]
 
 def test_negotiation():
@@ -16,7 +20,8 @@ def test_negotiation():
             {"book" : 2, "hat" : 1, "ball" : 2}
         ],
         "comp",
-        model_ids[0],
+        model_ids[0]["model_id"],
+        log_path=os.path.join("logs", model_ids[0]["model_name"], "negotiation"),
     )
     
     result = game.play()
@@ -28,7 +33,8 @@ def test_rockpaperscissors():
         1,
         1,
         0,
-        model_ids[0],
+        model_ids[0]["model_id"],
+        log_path=os.path.join("logs", model_ids[0]["model_name"], "rockpaperscissors"),
     )
     result = game.play()
     return result
@@ -40,11 +46,12 @@ def test_dictator_game():
             [-401, -200],
         ],
         "minimize",
-        model_ids[0],
+        model_ids[0]["model_id"],
+        log_path=os.path.join("logs", model_ids[0]["model_name"], "dictator"),
     )
     result = game.play()
     return result
 
 if __name__ == "__main__":
-    game_output = test_dictator_game()
+    game_output = test_rockpaperscissors()
     print(json.dumps(game_output, indent=2))
