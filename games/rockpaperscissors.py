@@ -1,56 +1,62 @@
-from utils.globals import AgentRole
 from games.game import Game
+from utils.globals import AgentRole
 
 import time
 import os
 from tabulate import tabulate
-import random
-
-error_msgs = {
-    0 : "Your output should begin with [move] or [message].",
-
-    1 : "Dialogue messages should begin with [message].",
-
-    2 : "Your output should either begin with [move] or a [message] and not contain multiple instances of either.",
-
-    3 : "Opponent's move must be followed by a move of your own. Please send a move, beginning with [move].",
-
-    4 : "Your move must begin with [move] and must be followed by one of 'rock', 'paper', or 'scissors'.",
-
-    5 : "Your move message must begin with [move].",
-}
 
 class RockPaperScissorsGame(Game):
     def __init__(
         self,
-        paper_beats_rock,
-        rock_beats_scissors,
-        scissors_beat_paper,
-        tie,
+        paper_beats_rock : int,
+        rock_beats_scissors : int,
+        scissors_beats_paper : int,
+        tie : int,
+        model_id : str,
         id : int = int(time.time() * 1_000),
         prompt_path : str = os.path.join("prompts", "rockpaperscissors.txt"),
         log_path : str = os.path.join("logs", "rockpaperscissors"),
         MAX_ERRORS=5,
         MAX_MESSAGES=10,
+        MAX_TOKENS=1_000,
     ):
-        super().__init__(id, "rockpaperscissors", prompt_path, log_path)
+        super().__init__(
+            id,
+            "rockpaperscissors",
+            prompt_path,
+            log_path,
+            model_id,
+            2,
+            errors={
+                0 : "Your output should begin with [move] or [message].",
 
-        self.MAX_ERRORS = MAX_ERRORS
-        self.MAX_MESSAGES = MAX_MESSAGES
+                1 : "Dialogue messages should begin with [message].",
 
+                2 : "Your output should either begin with [move] or a [message] and not contain multiple instances of either.",
+
+                3 : "Opponent's move must be followed by a move of your own. Please send a move, beginning with [move].",
+
+                4 : "Your move must begin with [move] and must be followed by one of 'rock', 'paper', or 'scissors'.",
+
+                5 : "Your move message must begin with [move].",
+            },
+            MAX_ERRORS=MAX_ERRORS,
+            MAX_MESSAGES=MAX_MESSAGES,
+            MAX_TOKENS=MAX_TOKENS,
+        )
+
+        self.proposals : list[str] = ["" for _ in range(self.player_count)]
+        
         self.p = paper_beats_rock
         self.r = rock_beats_scissors
-        self.s = scissors_beat_paper
+        self.s = scissors_beats_paper
         self.tie = tie
 
-        self.contexts = [list(), list()]
-        self.system_prompts = list()
-
         system_text = None
-        with open("prompts/rockpaperscissors.txt", "r") as f:
+        with open(self.prompt_path, "r") as f:
             system_text = f.read()
 
-        for i in range(2):
+        for _ in range(self.player_count):
             self.system_prompts.append(
                 system_text.format(
                     p=self.p,
@@ -60,7 +66,6 @@ class RockPaperScissorsGame(Game):
                 )
             )
 
-        self.first_player = 0 #if random.random() < 0.5 else 1
         self.contexts[self.first_player].append(
             {
                 "role" : AgentRole.USER.value,
@@ -69,20 +74,6 @@ class RockPaperScissorsGame(Game):
                 )
             }
         )
-
-        self.log_game = os.path.join(self.log_path, "game.log")
-        self.log_agents =[
-            os.path.join(self.log_path, "agent_0.log"),
-            os.path.join(self.log_path, "agent_1.log")
-        ]
-
-        self.messages = list()
-        self.game_over = False
-        self.move_made = False
-        self.moves : list[str] = [None, None]
-        self.final_points = [None, None]
-
-        self.final_points_logged = False
 
         payoff_matrix_str = \
             tabulate(
@@ -98,16 +89,16 @@ class RockPaperScissorsGame(Game):
         self._log(
             self.log_game,
             payoff_matrix_str,
-            newline=True
+            mode="a",
+            trail="\n\n\n"
         )
-
-        self._log(self.log_game, "\n\n")
 
         for i in range(2):
             self._log(
                 self.log_agents[i],
                 payoff_matrix_str,
-                newline=True
+                mode="a",
+                trail="\n\n\n"
             )
 
     def _validate_message(self, msg : str):
@@ -115,37 +106,29 @@ class RockPaperScissorsGame(Game):
         aux_idx = msg.find("[message]")
 
         if aux_idx == -1:
-            return False, error_msgs[1]
+            return False, self.errors[1]
         
         aux_idx += len("[message]")
         if "[message]" in msg[aux_idx:] or "[move]" in msg[aux_idx:]:
-            return False, error_msgs[2]
+            return False, self.errors[2]
         
         if self.move_made:
-            return False, error_msgs[3]
+            return False, self.errors[3]
 
         return True, ""
 
     def _validate_move(self, msg : str):
         msg_aux = msg.lower()
         if msg_aux.strip().startswith("[move]"):
-            
-            #rock_idx = msg_aux.find("rock")
-            #paper_idx = msg_aux.find("paper")
-            #scissors_idx = msg_aux.find("scissors")
-
-            #check_only_one_move = sum(
-            #    1 for var in [rock_idx, paper_idx, scissors_idx] if var != -1
-            #)
 
             move = msg_aux.split()[1].strip()
 
             if move not in ["rock", "paper", "scissors"]:
-                return False, error_msgs[4]
+                return False, self.errors[4]
             
             return True, ""
         else:
-            return False, error_msgs[5]
+            return False, self.errors[5]
 
     def _validate_response(self, msg : str, idx : int):
         if msg.lower().strip().startswith("[message]"):
@@ -153,19 +136,22 @@ class RockPaperScissorsGame(Game):
         elif msg.lower().strip().startswith("[move]"):
             return self._validate_move(msg)
         else:
-            return False, error_msgs[0]
+            return False, self.errors[0]
             
 
     def _player_response(self, idx : int):
         response_text = None
         error_cnt = 0
         while True:
-            response_text = self._generate_response(
+            response_obj = self._generate_response(
                 self.contexts[idx],
                 self.log_agents[idx],
                 self.system_prompts[idx],
-                1
             )
+
+            response_text = response_obj["output_text"]
+            self.total_tokens[idx] = response_obj["total_tokens"]
+
             is_valid, error_msg = self._validate_response(response_text, idx)
             if is_valid:
                 break
@@ -180,9 +166,7 @@ class RockPaperScissorsGame(Game):
                 {
                     "role" : AgentRole.USER.value,
                     "content" : self._content_wrapper(
-                        f"An error occurred. Please resend the previous message \
-                        with the following correction, without indicating in any \
-                        way that you have made a correction to a prior message: \n \"{error_msg}\" "
+                        f"An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\" "
                     )
                 }
             )
@@ -198,7 +182,7 @@ class RockPaperScissorsGame(Game):
             
         return response_text
 
-    def _parse_move(self, msg : str):
+    def _parse_proposal(self, msg : str):
         msg_aux = msg.lower()
 
         move = msg_aux.split()[1].strip()
@@ -220,8 +204,7 @@ class RockPaperScissorsGame(Game):
 
             self._log(
                 self.log_game,
-                f"Player {a_idx}: {response_text.strip()}",
-                newline=True
+                f"Player {a_idx}: {response_text.strip()}\n"
             )
 
             if "[abort]" in response_text.strip().lower():
@@ -230,11 +213,11 @@ class RockPaperScissorsGame(Game):
             if response_text.strip().lower().startswith("[move]"):
                 # check if move has already been made
                 if self.move_made:
-                    self.moves[a_idx] = self._parse_move(response_text)
+                    self.proposals[a_idx] = self._parse_proposal(response_text)
                     self.game_over = True
                 else:
                     # first move
-                    self.moves[a_idx] = self._parse_move(response_text)
+                    self.proposals[a_idx] = self._parse_proposal(response_text)
                     self.move_made = True
 
                 assistant_message = response_text.strip()
@@ -274,27 +257,30 @@ class RockPaperScissorsGame(Game):
         #    )
             
     def _is_valid_game(self):
-        return self.moves[0] is not None and self.moves[1] is not None
+        return self.proposals[0] is not None and self.proposals[1] is not None
 
-    def _calculate_player_points(self, move1, move2):
+    def _calculate_points(self, player_proposals):
+        move1 = player_proposals[0]
+        move2 = player_proposals[1]
+
         if move1 == "rock" and move2 == "rock":
-            return self.tie
+            return [self.tie, self.tie]
         elif move1 == "rock" and move2 == "paper":
-            return -self.p
+            return [-self.p, self.p]
         elif move1 == "rock" and move2 == "scissors":
-            return self.r
+            return [self.r, -self.r]
         elif move1 == "paper" and move2 == "rock":
-            return self.p
+            return [self.p, -self.p]
         elif move1 == "paper" and move2 == "paper":
-            return self.tie
+            return [self.tie, self.tie]
         elif move1 == "paper" and move2 == "scissors":
-            return -self.s
+            return [-self.s, self.s]
         elif move1 == "scissors" and move2 == "rock":
-            return -self.r
+            return [-self.r, self.r]
         elif move1 == "scissors" and move2 == "paper":
-            return self.s
+            return [self.s, -self.s]
         elif move1 == "scissors" and move2 == "scissors":
-            return self.tie
+            return [self.tie, self.tie]
         else:
             raise ValueError("Invalid move. Moves must be 'rock', 'paper', or 'scissors'.")
 
@@ -302,28 +288,50 @@ class RockPaperScissorsGame(Game):
         if not self._is_valid_game():
             self.final_points = [self.tie, self.tie]
         else:
-            self.final_points = [
-                self._calculate_player_points(self.moves[0], self.moves[1]),
-                self._calculate_player_points(self.moves[1], self.moves[0])
-            ]
+            self.final_points = self._calculate_points(self.proposals)
 
         if not self.final_points_logged:
             self._log(
                 self.log_game,
                 f"Player 0 final points: {self.final_points[0]}\n" +
-                f"Player 1 final points: {self.final_points[1]}\n"
+                f"Player 1 final points: {self.final_points[1]}\n",
             )
             self.final_points_logged = True
 
-    def play(self):
+    def is_pareto_optimal(self):
+        current_points = self.final_points
+
+        allocations = [
+            [move1, move2]
+            for move1 in ["rock", "paper", "scissors"]
+            for move2 in ["rock", "paper", "scissors"]
+        ]
+
+        for player_proposals in allocations:
+            is_as_good = False
+            is_better = False
+
+            new_points = self._calculate_points(player_proposals)
+
+            if new_points[0] >= current_points[0] and new_points[1] >= current_points[1] :
+                is_as_good = True
+            if new_points[0] > current_points[0] or new_points[1] > current_points[1]:
+                is_better = True
+
+            if is_as_good and is_better:
+                return False
+            
+        return True
+
+    def play(self) -> dict[str, any]:
         self.play_game()
         self.calculate_final_points()
 
-        return {
-            "p0_points" : self.final_points[0],
-            "p1_points" : self.final_points[1],
-            "p0_logs" : self.contexts[0],
-            "p1_logs" : self.contexts[1],
-            "is_valid_deal" : self._is_valid_game(),
-            "msg_count" : len(self.messages)
-        }
+        return self._format_game_outcome(
+            self.player_count,
+            self.final_points,
+            self.contexts,
+            self._is_valid_game(),
+            len(self.messages),
+            self.total_tokens,
+        )
