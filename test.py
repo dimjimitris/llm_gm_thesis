@@ -13,7 +13,19 @@ models = [
     {
         "model_id" : "mistral.mistral-large-2407-v1:0",
         "model_name" : "Mistral Large (24.07)",
-    }
+    },
+    {
+        "model_id" : "mistral.mistral-large-2402-v1:0",
+        "model_name" : "Mistral Large (24.02)",
+    },
+    {
+        "model_id" : "us.meta.llama3-2-3b-instruct-v1:0",
+        "model_name" : "Llama 3.2 3B Instruct",
+    },
+    {
+        "model_id" : "us.meta.llama3-3-70b-instruct-v1:0",
+        "model_name" : "Llama 3.3 70B Instruct",
+    },
 ]
 
 def test_negotiation(idx):
@@ -60,5 +72,5 @@ def test_dictator_game(idx):
     return result
 
 if __name__ == "__main__":
-    game_output = test_negotiation(1)
+    game_output = test_negotiation(4)
     print(json.dumps(game_output, indent=2))
