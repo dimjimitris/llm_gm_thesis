@@ -63,7 +63,7 @@ class Game:
 
         self.messages = list()
         self.game_over = False
-        self.move_made = False
+        self.moves_made = [False for _ in range(player_count)]
         self.final_points = [None for _ in range(player_count)]
         self.final_points_logged = False
         self.total_tokens = [-1 for _ in range(player_count)]

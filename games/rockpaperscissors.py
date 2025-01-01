@@ -112,7 +112,7 @@ class RockPaperScissorsGame(Game):
         if "[message]" in msg[aux_idx:] or "[move]" in msg[aux_idx:]:
             return False, self.errors[2]
         
-        if self.move_made:
+        if True in self.moves_made:
             return False, self.errors[3]
 
         return True, ""
@@ -211,14 +211,15 @@ class RockPaperScissorsGame(Game):
                 self.game_over = True
 
             if response_text.strip().lower().startswith("[move]"):
-                # check if move has already been made
-                if self.move_made:
+                # check if move has already been made by the other player
+                if self.moves_made[u_idx]:
                     self.proposals[a_idx] = self._parse_proposal(response_text)
+                    self.moves_made[a_idx] = True
                     self.game_over = True
                 else:
                     # first move
                     self.proposals[a_idx] = self._parse_proposal(response_text)
-                    self.move_made = True
+                    self.moves_made[a_idx] = True
 
                 assistant_message = response_text.strip()
                 user_message = "[move] Move made. You must now respond with a move of your own. \n"

@@ -33,7 +33,7 @@ class NegotiationGame(Game):
 
                 2 : "Please begin the dialogue by discussing how you'll divide the items before submitting a private proposal.",
 
-                3 : "Your output should either begin with [message] or a [propose] and not contain multiple instances of either.",
+                3 : "Your output should either begin with a '[message]' or a '[propose]' and not contain multiple instances of either.",
 
                 4 : "Opponent's proposal must be followed by a proposal of your own. Please send a proposal, beginning with [propose].",
 
@@ -137,7 +137,7 @@ class NegotiationGame(Game):
         if "[message]" in msg[aux_idx:] or "[propose]" in msg[aux_idx:]:
             return False, self.errors[3]
         
-        if self.move_made:
+        if True in self.moves_made:
             return False, self.errors[4]
         
         return True, ""
@@ -262,14 +262,15 @@ class NegotiationGame(Game):
                 # break
 
             if response_text.strip().lower().startswith("[propose]"):
-                # check if a proposal was already made
-                if self.move_made:
+                # check if a proposal was already made by the other player
+                if self.moves_made[u_idx]:
                     self.proposals[a_idx] = self._parse_proposal(response_text)
+                    self.moves_made[a_idx] = True
                     self.game_over = True
                 else:
                     # first proposal
                     self.proposals[a_idx] = self._parse_proposal(response_text)
-                    self.move_made = True
+                    self.moves_made[a_idx] = True
                 
                 assistant_message = response_text.strip()
                 user_message = "[propose] Proposal made. You must now respond with a proposal of your own. If you've discussed that you should receive a certain combination of items, this proposal should reflect that. Keep in mind that you and your partner's proposals should be complementary - when added, the elementwise sum should exactly equal the total item counts.\n"
