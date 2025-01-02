@@ -191,7 +191,9 @@ def main():
 
     agent_outcomes = [list(), list()]
 
-    for _ in range(num_runs):
+    for i in range(num_runs):
+        print(f"Game {i + 1} of {num_runs} started")
+        
         game_outcome = None
         if game_type == "negotiation":
             game_outcome = trial_negotiation(objective, model_id, model_name)
