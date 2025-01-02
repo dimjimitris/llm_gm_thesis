@@ -403,15 +403,15 @@ class NegotiationGame(Game):
             self.proposals,
         )
 
-        # log game json file
-        with open(self.json_game, "w") as f:
-            json.dump(game_json, f, indent=2)
-
         # add game setting to game json
         game_json["game_setting"] = {
             "items" : self.items,
             "values" : self.values,
             "objective" : self.objective,
         }
+
+        # log game json file
+        with open(self.json_game, "w") as f:
+            json.dump(game_json, f, indent=2)
 
         return game_json

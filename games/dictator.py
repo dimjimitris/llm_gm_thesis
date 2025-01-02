@@ -279,14 +279,14 @@ class DictatorGame(Game):
 
         game_json["player_1_points"] = self.final_points[1]
 
-        # log game json file
-        with open(self.json_game, "w") as f:
-            json.dump(game_json, f, indent=2)
-
         # add game setting to game json
         game_json["game_setting"] = {
             "amounts" : self.amounts,
             "objective" : self.objective
         }
+
+        # log game json file
+        with open(self.json_game, "w") as f:
+            json.dump(game_json, f, indent=2)
 
         return game_json

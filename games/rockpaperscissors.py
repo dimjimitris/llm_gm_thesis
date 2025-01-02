@@ -342,10 +342,6 @@ class RockPaperScissorsGame(Game):
             self.proposals,
         )
     
-        # log game json file
-        with open(self.json_game, "w") as f:
-            json.dump(game_json, f, indent=2)
-
         # add game setting to game json
         game_json["game_setting"] = {
             "p" : self.p,
@@ -353,5 +349,9 @@ class RockPaperScissorsGame(Game):
             "s" : self.s,
             "tie" : self.tie
         }
+
+        # log game json file
+        with open(self.json_game, "w") as f:
+            json.dump(game_json, f, indent=2)
 
         return game_json
