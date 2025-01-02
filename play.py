@@ -21,6 +21,7 @@ models = [
 
 def trial_negotiation(
     objective : str,
+    id : int,
     model_id : str,
     model_name : str,
 ):
@@ -42,7 +43,7 @@ def trial_negotiation(
     
     keys = ["book", "hat", "ball"]
 
-    log_path = os.path.join("logs", model_name, "negotiation")
+    log_path = os.path.join("logs", model_name, "negotiation", objective)
 
     game = NegotiationGame(
         {keys[i] : cnts[i] for i in range(3)},
@@ -52,6 +53,7 @@ def trial_negotiation(
         ],
         objective,
         model_id,
+        id=id,
         log_path=log_path,
     )
 
@@ -64,6 +66,7 @@ def trial_negotiation(
     return game_outcome
 
 def trial_rockpaperscissors(
+    id : int,
     model_id : str,
     model_name : str,
 ):
@@ -92,6 +95,7 @@ def trial_rockpaperscissors(
         scissors_beats_paper,
         tie,
         model_id,
+        id=id,
         log_path=log_path,
     )
 
@@ -104,6 +108,7 @@ def trial_rockpaperscissors(
     return game_outcome
 
 def trial_dictator(
+    id : int,
     model_id : str,
     model_name : str,
 ):
@@ -129,6 +134,7 @@ def trial_dictator(
         [vals1, vals2],
         objective,
         model_id,
+        id=id,
         log_path=log_path,
     )
 
@@ -165,6 +171,12 @@ def main():
         help=f"Game objective (allowed: {', '.join(VALID_OBJECTIVES_NEGOTIATION)} for negotiation, 'none' for other games)"
     )
     parser.add_argument(
+        "-i",
+        "--id",
+        type=int,
+        help="Game ID for the first game to be played, games will have ids [id, id + num_runs - 1]"
+    )
+    parser.add_argument(
         "-m",
         "--model",
         type=str,
@@ -176,6 +188,7 @@ def main():
 
     game_type = args.game
     objective = args.objective
+    id = args.id
 
     model_id = args.model
     model_name = None
@@ -196,16 +209,16 @@ def main():
 
         game_outcome = None
         if game_type == "negotiation":
-            game_outcome = trial_negotiation(objective, model_id, model_name)
+            game_outcome = trial_negotiation(objective, id + i, model_id, model_name)
         elif game_type == "rockpaperscissors":
-            game_outcome = trial_rockpaperscissors(model_id, model_name)
+            game_outcome = trial_rockpaperscissors(id + i, model_id, model_name)
         elif game_type == "dictator":
-            game_outcome = trial_dictator(model_id, model_name)
+            game_outcome = trial_dictator(id + i, model_id, model_name)
         else:
             raise ValueError("Invalid game type")
         
-        for i in range(2):
-            agent_outcomes[i].append(game_outcome[f"player_{i}_points"])
+        for j in range(2):
+            agent_outcomes[j].append(game_outcome[f"player_{j}_points"])
 
         print(f"Game {i + 1} of {num_runs} ended\n\n")
 

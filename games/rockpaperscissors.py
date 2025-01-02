@@ -250,12 +250,6 @@ class RockPaperScissorsGame(Game):
 
             a_idx, u_idx = u_idx, a_idx
 
-        #for i in range(2):
-        #    self._log(
-        #        self.log_agents[i],
-        #        str(self.contexts[i])
-        #    )
-            
     def _is_valid_game(self):
         return self.proposals[0] is not None and self.proposals[1] is not None
 
