@@ -11,18 +11,6 @@ models = [
         "model_name" : "Claude 3.5 Sonnet v2",
     },
     {
-        "model_id" : "mistral.mistral-large-2407-v1:0",
-        "model_name" : "Mistral Large (24.07)",
-    },
-    {
-        "model_id" : "mistral.mistral-large-2402-v1:0",
-        "model_name" : "Mistral Large (24.02)",
-    },
-    {
-        "model_id" : "us.meta.llama3-2-3b-instruct-v1:0",
-        "model_name" : "Llama 3.2 3B Instruct",
-    },
-    {
         "model_id" : "us.meta.llama3-3-70b-instruct-v1:0",
         "model_name" : "Llama 3.3 70B Instruct",
     },
@@ -36,7 +24,7 @@ def test_negotiation(idx):
             {"book" : 1, "hat" : 3, "ball" : 1},
             {"book" : 2, "hat" : 1, "ball" : 2}
         ],
-        "coop",
+        "semi",
         model["model_id"],
         log_path=os.path.join("logs", model["model_name"], "negotiation"),
     )
@@ -47,7 +35,7 @@ def test_negotiation(idx):
 def test_rockpaperscissors(idx):
     model = models[idx]
     game = rps.RockPaperScissorsGame(
-        2,
+        1,
         1,
         1,
         0,
@@ -72,5 +60,6 @@ def test_dictator_game(idx):
     return result
 
 if __name__ == "__main__":
-    game_output = test_negotiation(4)
+    idx = int(input("Enter model index: "))
+    game_output = test_dictator_game(idx)
     print(json.dumps(game_output, indent=2))

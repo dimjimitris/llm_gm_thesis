@@ -52,8 +52,12 @@ class Game:
         os.makedirs(self.log_path, exist_ok=True)
 
         self.log_game = os.path.join(self.log_path, "game.log")
+        self.json_game = os.path.join(self.log_path, "game.json")
         self.log_agents = [
             os.path.join(self.log_path, f"agent_{i}.log") for i in range(self.player_count)
+        ]
+        self.json_agents = [
+            os.path.join(self.log_path, f"agent_{i}.json") for i in range(self.player_count)
         ]
 
         self.errors = errors
@@ -67,6 +71,7 @@ class Game:
         self.final_points = [None for _ in range(player_count)]
         self.final_points_logged = False
         self.total_tokens = [-1 for _ in range(player_count)]
+        self.proposals : list[str] = [None for _ in range(self.player_count)]
 
     def _system_prompt_wrapper(self, system_prompt : str):
         return [{ "text" : system_prompt}]
@@ -131,6 +136,7 @@ class Game:
         is_valid_outcome : bool,
         message_count : int,
         total_tokens : list[int],
+        player_moves : list,
     ):
         ret_val = dict()
 
@@ -143,6 +149,9 @@ class Game:
         
         for i in range(player_cnt):
             ret_val[f"total_tokens_{i}"] = total_tokens[i]
+
+        for i in range(player_cnt):
+            ret_val[f"player_{i}_move"] = player_moves[i]
 
         return ret_val
 

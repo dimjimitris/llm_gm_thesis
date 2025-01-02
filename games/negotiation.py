@@ -4,6 +4,7 @@ from utils.globals import AgentRole
 import time
 import os
 import re
+import json
 
 class NegotiationGame(Game):
     def __init__(
@@ -49,8 +50,6 @@ class NegotiationGame(Game):
             MAX_MESSAGES=MAX_MESSAGES,
             MAX_TOKENS=MAX_TOKENS,
         )
-
-        self.proposals : list[dict] = [None for _ in range(self.player_count)]
 
         self.items = items
         self.values = values
@@ -389,11 +388,23 @@ class NegotiationGame(Game):
         self.play_game()
         self.calculate_final_points()
 
-        return self._format_game_outcome(
+        # log player json files
+        for i in range(self.player_count):
+            with open(self.json_agents[i], "w") as f:
+                json.dump(self.contexts[i], f, indent=2)
+
+        game_json = self._format_game_outcome(
             self.player_count,
             self.final_points,
             self.contexts,
             self._is_valid_game(),
             len(self.messages),
             self.total_tokens,
+            self.proposals,
         )
+
+        # log game json file
+        with open(self.json_game, "w") as f:
+            json.dump(game_json, f, indent=2)
+
+        return game_json

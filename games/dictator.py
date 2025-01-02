@@ -3,6 +3,7 @@ from games.game import Game
 
 import time
 import os
+import json
 
 
 class DictatorGame(Game):
@@ -34,8 +35,6 @@ class DictatorGame(Game):
             MAX_MESSAGES=MAX_MESSAGES,
             MAX_TOKENS=MAX_TOKENS,
         )
-
-        self.proposals : list[dict] = [None for _ in range(self.player_count)]
 
         self.amounts = amounts
         self.objective = objective
@@ -263,15 +262,25 @@ class DictatorGame(Game):
         self.play_game()
         self.calculate_final_points()
 
-        output = self._format_game_outcome(
+        # log player json files
+        for i in range(self.player_count):
+            with open(self.json_agents[i], "w") as f:
+                json.dump(self.contexts[i], f, indent=2)
+
+        game_json = self._format_game_outcome(
             self.player_count,
             self.final_points,
             self.contexts,
             self._is_valid_game(),
             len(self.messages),
             self.total_tokens,
+            self.proposals,
         )
 
-        output["player_1_points"] = self.final_points[1]
+        game_json["player_1_points"] = self.final_points[1]
 
-        return output
+        # log game json file
+        with open(self.json_game, "w") as f:
+            json.dump(game_json, f, indent=2)
+
+        return game_json

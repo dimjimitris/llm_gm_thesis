@@ -4,6 +4,7 @@ from utils.globals import AgentRole
 import time
 import os
 from tabulate import tabulate
+import json
 
 class RockPaperScissorsGame(Game):
     def __init__(
@@ -44,8 +45,6 @@ class RockPaperScissorsGame(Game):
             MAX_MESSAGES=MAX_MESSAGES,
             MAX_TOKENS=MAX_TOKENS,
         )
-
-        self.proposals : list[str] = ["" for _ in range(self.player_count)]
         
         self.p = paper_beats_rock
         self.r = rock_beats_scissors
@@ -328,11 +327,23 @@ class RockPaperScissorsGame(Game):
         self.play_game()
         self.calculate_final_points()
 
-        return self._format_game_outcome(
+        # log player json files
+        for i in range(self.player_count):
+            with open(self.json_agents[i], "w") as f:
+                json.dump(self.contexts[i], f, indent=2)
+
+        game_json = self._format_game_outcome(
             self.player_count,
             self.final_points,
             self.contexts,
             self._is_valid_game(),
             len(self.messages),
             self.total_tokens,
+            self.proposals,
         )
+    
+        # log game json file
+        with open(self.json_game, "w") as f:
+            json.dump(game_json, f, indent=2)
+
+        return game_json
