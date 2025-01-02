@@ -111,7 +111,7 @@ class Game:
 
         output_text = response["output"]["message"]["content"][0]["text"]
 
-        #print(f"{log_agent_path}: {output_text}")
+        print(f"{log_agent_path}: {output_text}")
 
         # format usage information to get input and output token counts
         usage_aux = response["usage"]

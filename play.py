@@ -193,7 +193,7 @@ def main():
 
     for i in range(num_runs):
         print(f"Game {i + 1} of {num_runs} started")
-        
+
         game_outcome = None
         if game_type == "negotiation":
             game_outcome = trial_negotiation(objective, model_id, model_name)
@@ -206,6 +206,8 @@ def main():
         
         for i in range(2):
             agent_outcomes[i].append(game_outcome[f"player_{i}_points"])
+
+        print(f"Game {i + 1} of {num_runs} ended\n\n")
 
     # print mean of points
     for i in range(2):
