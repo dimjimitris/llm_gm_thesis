@@ -283,4 +283,10 @@ class DictatorGame(Game):
         with open(self.json_game, "w") as f:
             json.dump(game_json, f, indent=2)
 
+        # add game setting to game json
+        game_json["game_setting"] = {
+            "amounts" : self.amounts,
+            "objective" : self.objective
+        }
+
         return game_json
