@@ -79,10 +79,10 @@ def trial_rockpaperscissors(
 
     random_indice = random.randint(0, 4)
     vals = parse_context(lines[random_indice])
-    tie = vals[0]
-    paper_beats_rock = vals[1]
-    rock_beats_scissors = vals[2]
-    scissors_beats_paper = vals[3]
+    paper_beats_rock = vals[0]
+    rock_beats_scissors = vals[1]
+    scissors_beats_paper = vals[2]
+    tie = vals[3]
 
     log_path = os.path.join("logs", model_name, "rockpaperscissors")
 
