@@ -1,4 +1,4 @@
-# Play and Mind: Probing LLM Reasoning in Games
+# Cognition and Games: Probing LLM Reasoning in Game Theory
 An analysis on reasoning abilities of LLMs in Game Theoretic scenarios through the lens of counterfactual Games.
 
 
