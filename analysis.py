@@ -11,6 +11,7 @@ import json
 
 def analyze_negotiation(
     path  : str,
+    verbose : bool = True,
 ):
     # collect all scores from both players
     points : list[list] = []
@@ -72,11 +73,12 @@ def analyze_negotiation(
         "mean" : unfiltered_mean,
         "median" : unfiltered_median,
         "length_in_messages" : np.mean(message_counts),
-        "length_in_tokens" : np.mean(token_counts),
+        "length_in_tokens" : np.mean(token_counts) / 2,
         "abort_rate" : num_aborts / len(points[0]),
     }
 
-    print(f"TOTAL: {total_stats}")
+    if verbose:
+        print(f"TOTAL: {total_stats}")
 
     # agreement stats
     agreement_mean = np.mean(agreement_full_points)
@@ -117,11 +119,12 @@ def analyze_negotiation(
         "mean" : agreement_mean,
         "median" : agreement_median,
         "length_in_messages" : np.mean(agreement_message_counts),
-        "length_in_tokens" : np.mean(agreement_token_counts),
+        "length_in_tokens" : np.mean(agreement_token_counts) / 2,
         "pareto_optimal_proportion" : num_optimal / len(points[0]),
     }
 
-    print(f"AGREEMENT: {agreement_stats}")
+    if verbose:
+        print(f"AGREEMENT: {agreement_stats}")
 
     # gather statistics for games above average
     cutoff = np.mean(full_points)
@@ -156,11 +159,12 @@ def analyze_negotiation(
         "mean" : above_avg_mean,
         "median" : above_avg_median,
         "length_in_messages" : np.mean(above_avg_message_counts),
-        "length_in_tokens" : np.mean(above_avg_token_counts),
+        "length_in_tokens" : np.mean(above_avg_token_counts) / 2,
         "proportion" : proportion_above_avg,
     }
 
-    print(f"ABOVE AVG: {above_avg_stats}")
+    if verbose:
+        print(f"ABOVE AVG: {above_avg_stats}")
 
     return {
         "total" : total_stats,
@@ -170,6 +174,7 @@ def analyze_negotiation(
 
 def analyze_rockpaperscissors(
     path : str,
+    verbose : bool = True,
 ):
     # total games played
     num_games = 0
@@ -223,11 +228,12 @@ def analyze_rockpaperscissors(
     # gather total statistics
     total_stats = {
         "length_in_messages" : np.mean(message_counts),
-        "length_in_tokens" : np.mean(token_counts),
+        "length_in_tokens" : np.mean(token_counts) / 2,
         "abort_rate" : num_aborts / num_games,
     }
 
-    print(f"TOTAL: {total_stats}")
+    if verbose:
+        print(f"TOTAL: {total_stats}")
 
     # calculate Nash Equilibrium Strategy
     optimal_frequencies = None
@@ -272,7 +278,8 @@ def analyze_rockpaperscissors(
         "error" : error,
     }
 
-    print(f"FREQUENCY: {frequency_stats}")
+    if verbose:
+        print(f"FREQUENCY: {frequency_stats}")
 
     return {
         "total" : total_stats,
@@ -281,8 +288,8 @@ def analyze_rockpaperscissors(
 
 def analyze_dictator(
     path : str,
+    verbose : bool = True,
 ):
-
     points : list[list] = []
     for i in range(2):
         with open(os.path.join(path,f"agent_{i}_scores"), "r") as f:
@@ -346,7 +353,8 @@ def analyze_dictator(
         "abort_rate" : num_aborts / len(points[0]),
     }
 
-    print(f"TOTAL: {total_stats}")
+    if verbose:
+        print(f"TOTAL: {total_stats}")
 
     # agreement stats
     agreement_mean = np.mean(agreement_full_points)
@@ -376,8 +384,8 @@ def analyze_dictator(
 
             if is_optimal:
                 num_optimal += 1
-            else:
-                print(f"Game {i} is not pareto optimal")
+            #else:
+                #print(f"Game {i} is not pareto optimal")
 
             # determine whether dictator got the best deal
             is_self_best = dictator_self_best(
@@ -390,8 +398,8 @@ def analyze_dictator(
 
             if is_self_best:
                 num_dictator_self_best += 1
-            else:
-                print(f"Game {i} is not dictator self best")
+            #else:
+                #print(f"Game {i} is not dictator self best")
         except Exception as e:
             print(f"Error in game {i}: {e}")
             print(game_output)
@@ -407,11 +415,101 @@ def analyze_dictator(
         "dictator_self_best_proportion" : num_dictator_self_best / len(points[0]),
     }
 
-    # agreement is when the game is valid...
-    print(f"AGREEMENT: {agreement_stats}") 
+    if verbose:
+        # agreement is when the game is valid...
+        print(f"AGREEMENT: {agreement_stats}") 
 
     return {
         "total" : total_stats,
         "agreement" : agreement_stats,
     }
 
+def main():
+    # model names of models we've done experiments on
+    model_names = os.listdir("logs")
+
+    # dictator paths
+    dictator_paths = [
+        {
+            "path" : os.path.join("logs", model_name, "dictator"),
+            "model_name" : model_name,
+        }
+        for model_name in model_names
+    ]
+
+    # negotiation paths
+    negotiation_paths = sum([
+        [
+            {
+                "path" : os.path.join("logs", model_name, "negotiation", game_type),
+                "model_name" : model_name,
+                "game_type" : game_type,
+            }
+            for game_type in os.listdir(os.path.join("logs", model_name, "negotiation"))
+        ]
+        for model_name in model_names
+    ], [])
+
+    # rockpaperscissors paths
+    rockpaperscissors_paths = sum([
+        [
+            {
+                "path" : os.path.join("logs", model_name, "rockpaperscissors", game_type),
+                "model_name" : model_name,
+                "game_type" : game_type,
+            }
+            for game_type in os.listdir(os.path.join("logs", model_name, "rockpaperscissors"))
+        ]
+        for model_name in model_names
+    ], [])
+
+    results = list()
+
+    # analyze dictator games
+    for path in dictator_paths:
+        result = analyze_dictator(path["path"], False)
+        result["model_name"] = path["model_name"]
+        result["game"] = "dictator"
+        results.append(result)
+        print(json.dumps(result, indent=2))
+        print()
+    
+    print("--------------------------------------------------")
+
+    with open(os.path.join("analysis_results", "dictator.json"), "w") as f:
+        json.dump(results, f, indent=2)
+
+    results = list()
+
+    # analyze negotiation games
+    for path in negotiation_paths:
+        result = analyze_negotiation(path["path"], False)
+        result["model_name"] = path["model_name"]
+        result["game_type"] = path["game_type"]
+        result["game"] = "negotiation"
+        results.append(result)
+        print(json.dumps(result, indent=2))
+        print()
+
+    print("--------------------------------------------------")
+
+    with open(os.path.join("analysis_results", "negotiation.json"), "w") as f:
+        json.dump(results, f, indent=2)
+
+    results = list()
+
+    # analyze rockpaperscissors games
+    for path in rockpaperscissors_paths:
+        result = analyze_rockpaperscissors(path["path"], False)
+        result["model_name"] = path["model_name"]
+        result["game_type"] = path["game_type"]
+        result["game"] = "rockpaperscissors"
+        results.append(result)
+        print(json.dumps(result, indent=2))
+        print()
+
+    with open(os.path.join("analysis_results", "rockpaperscissors.json"), "w") as f:
+        json.dump(results, f, indent=2)
+
+if __name__ == "__main__":
+    main()
