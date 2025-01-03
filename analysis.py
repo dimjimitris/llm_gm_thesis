@@ -259,10 +259,11 @@ def analyze_rockpaperscissors(
         frequencies[key] /= total
 
     # calculate error from Nash Equilibrium
+    # root mean squared error
     error = 0
     for key in frequencies:
-        error += abs((frequencies[key] - optimal_frequencies[key]) ** 2)
-    error = error ** 0.5
+        error += (frequencies[key] - optimal_frequencies[key]) ** 2
+    error = np.sqrt(error / len(frequencies))
     
     # gather statistics frequency vs optimal
     frequency_stats = {
@@ -413,3 +414,4 @@ def analyze_dictator(
         "total" : total_stats,
         "agreement" : agreement_stats,
     }
+
