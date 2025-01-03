@@ -60,6 +60,11 @@ def test_dictator_game(idx):
     return result
 
 if __name__ == "__main__":
-    idx = int(input("Enter model index: "))
-    game_output = test_dictator_game(idx)
-    print(json.dumps(game_output, indent=2))
+    #idx = int(input("Enter model index: "))
+    #game_output = test_dictator_game(idx)
+    #print(json.dumps(game_output, indent=2))
+
+    l = { "hello" : 1, "world" : 2}
+
+    if "hello" in l:
+        print(l["hello"])

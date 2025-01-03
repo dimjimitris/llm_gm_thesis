@@ -33,6 +33,9 @@ def trial_negotiation(
         values = [int(v) for v in context[1::2]]
         return counts, values
 
+    if objective not in ["semi", "coop", "comp"]:
+        raise ValueError("Invalid objective")
+
     # sample from possible game contexts
     with open(os.path.join("data", "negotiation_selfplay.txt")) as file:
         lines = [line.strip() for line in file]
@@ -42,6 +45,7 @@ def trial_negotiation(
     _, vals2 = parse_context(lines[random_indice * 2 + 1])
     
     keys = ["book", "hat", "ball"]
+
 
     log_path = os.path.join("logs", model_name, "negotiation", objective)
 
@@ -66,6 +70,7 @@ def trial_negotiation(
     return game_outcome
 
 def trial_rockpaperscissors(
+    objective : str,
     id : int,
     model_id : str,
     model_name : str,
@@ -76,18 +81,20 @@ def trial_rockpaperscissors(
         context = [int(v) for v in context.split()]
         return context
     
+    if objective not in ["eq1", "eq2", "p2", "r2", "s2"]:
+        raise ValueError("Invalid objective")
+
     # sample from possible game contexts
-    with open(os.path.join("data", "rockpaperscissors_selfplay.txt")) as file:
+    with open(os.path.join("data", "rockpaperscissors_selfplay", f"{objective}.txt")) as file:
         lines = [line.strip() for line in file]
 
-    random_indice = random.randint(0, 4)
-    vals = parse_context(lines[random_indice])
+    vals = parse_context(lines[0])
     paper_beats_rock = vals[0]
     rock_beats_scissors = vals[1]
     scissors_beats_paper = vals[2]
     tie = vals[3]
 
-    log_path = os.path.join("logs", model_name, "rockpaperscissors")
+    log_path = os.path.join("logs", model_name, "rockpaperscissors", objective)
 
     game = RockPaperScissorsGame(
         paper_beats_rock,
@@ -117,7 +124,7 @@ def trial_dictator(
     with open(os.path.join("data", "dictator_selfplay.txt")) as file:
         lines = [line.strip() for line in file]
 
-    random_indice = random.randint(0, 19)
+    random_indice = random.randint(0, 9)
     vals1 = [int(v) for v in lines[random_indice * 3].split()]
     vals2 = [int(v) for v in lines[random_indice * 3 + 1].split()]
     objective = None
@@ -148,7 +155,7 @@ def trial_dictator(
     
 def main():
     VALID_GAMES = ["negotiation", "rockpaperscissors", "dictator"]
-    VALID_OBJECTIVES_NEGOTIATION = ["semi", "coop", "comp"]
+    VALID_OBJECTIVES_NEGOTIATION = ["semi", "coop", "comp"] + ["eq1", "eq2", "p2", "r2", "s2"]
     VALID_MODEL_IDS = [model["model_id"] for model in models]
 
     # parse CLI for objective and model ID
@@ -168,7 +175,7 @@ def main():
         "--objective",
         type=str,
         choices=VALID_OBJECTIVES_NEGOTIATION + ["none"],
-        help=f"Game objective (allowed: {', '.join(VALID_OBJECTIVES_NEGOTIATION)} for negotiation, 'none' for other games)"
+        help=f"Game objective (allowed: {', '.join(VALID_OBJECTIVES_NEGOTIATION[:3])} for negotiation,Game objective (allowed: {', '.join(VALID_OBJECTIVES_NEGOTIATION[3:])} for rock-paper-scissors,'none' for the dictator game)"
     )
     parser.add_argument(
         "-i",
@@ -211,7 +218,7 @@ def main():
         if game_type == "negotiation":
             game_outcome = trial_negotiation(objective, id + i, model_id, model_name)
         elif game_type == "rockpaperscissors":
-            game_outcome = trial_rockpaperscissors(id + i, model_id, model_name)
+            game_outcome = trial_rockpaperscissors(objective, id + i, model_id, model_name)
         elif game_type == "dictator":
             game_outcome = trial_dictator(id + i, model_id, model_name)
         else:
