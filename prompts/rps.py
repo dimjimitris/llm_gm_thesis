@@ -27,5 +27,3 @@ Tips:
 - You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided."""
 }
-
-print(RPS_PROMPTS["initial"])
