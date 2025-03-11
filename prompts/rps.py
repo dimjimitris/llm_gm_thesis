@@ -1,5 +1,5 @@
 RPS_PROMPTS = {
-    "initial":
+"initial":
 """You are playing a game called rock-paper-scissors with other player(s). The game is based on making moves.
 
 Game Description:
