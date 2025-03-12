@@ -8,6 +8,7 @@ from chat.player import Player
 import os
 import random
 import boto3
+import json
 
 class BedrockChat:
     """
@@ -33,6 +34,8 @@ class BedrockChat:
         bedrock model id
     players : list
         list of player objects, should have two players
+    info : dict
+        dictionary to store game information
     """
     def __init__(
         self,
@@ -73,13 +76,14 @@ class BedrockChat:
         self.model_id = model_id
 
         self.players : list[Player] = list()
+        self.info = dict()
 
     def _system_prompt_wrapper(self, system_prompt: str):
         return [{ "text" : system_prompt }]
     
     def _content_wrapper(self, content: str):
         return [{ "text" : content }]
-    
+
     def _generate_response(
         self,
         player : Player,
@@ -113,3 +117,32 @@ class BedrockChat:
             "output_tokens": int(usage["outputTokens"]),
             "total_tokens": int(usage["totalTokens"]),
         }
+    
+    def save_info(self) -> None:
+        """
+        Save game information to the info log file.
+        """
+        with open(self.info_log, "w") as f:
+            json.dump(self.info, f)
+
+    def load_info(self) -> None:
+        """
+        Load game information from the info log file.
+        """
+        with open(self.info_log, "r") as f:
+            self.info = json.load(f)
+
+    def generate_info(self) -> None:
+        pass
+
+    def append_log(self, log : str) -> None:
+        """
+        Append the log to the game's log file.
+
+        Parameters
+        ----------
+        log : str
+            log to append
+        """
+        with open(self.game_log, "a") as f:
+            f.write(log)

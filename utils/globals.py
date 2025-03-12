@@ -11,10 +11,9 @@ AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")  # to access the LLM 
 if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
     raise ValueError("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in a .env file")
 
-# agent roles
-class AgentRole(Enum):
+class PlayerRole(Enum):
     """
-    Enum class for agent roles
+    Enum class for player roles
 
     Attributes
     ----------

@@ -7,9 +7,15 @@ from prompts.rps import (
     RPS_PROMPTS,
 )
 
+from utils.globals import (
+    PlayerRole,
+)
+
 INITIAL_PROMPT = RPS_PROMPTS["initial"]
 
 import random
+import tabulate
+import json
 
 class RockPaperScissorsGame(BedrockChat):
     """
@@ -127,3 +133,166 @@ class RockPaperScissorsGame(BedrockChat):
         """
         self.players = [player1, player2]
         self.first_player_idx = random.choice([0, int(rand_player_seq)])
+
+    def play_round(self) -> list[str]:
+        """
+        Play a round of the game
+
+        Returns
+        -------
+        list[str]
+            list of moves made by the players
+        """
+        curr_player_idx = self.first_player_idx
+        other_player_idx = 1 - curr_player_idx
+        curr_player = self.players[curr_player_idx]
+        other_player = self.players[other_player_idx]
+
+        if other_player.active:
+            curr_player.append_context({
+                "role": PlayerRole.USER.value,
+                "content": self._content_wrapper(
+                    "[hint] Let's play another round. Please make your move.\n"
+                )
+            })
+        else:
+            if other_player.fresh:
+                curr_player.append_context({
+                    "role": PlayerRole.USER.value,
+                    "content": self._content_wrapper(
+                        "[hint] Let's play rock-paper-scissors. You are playing against a fresh player. Please make your move.\n"
+                    )
+                })
+            else:
+                curr_player.append_context({
+                    "role": PlayerRole.USER.value,
+                    "content": self._content_wrapper(
+                        "[hint] Let's play rock-paper-scissors. You are playing against an experienced player. Please make your move.\n"
+                    )
+                })
+
+        round_over = False
+        moves_made = [None, None]
+        while not round_over:
+            response_text = self._player_response(curr_player)
+
+            if "[abort]" in response_text:
+                round_over = True
+            
+            if response_text.startswith("[move]"):
+                moves_made[curr_player_idx] = self._parse_move(response_text)
+                round_over = moves_made[other_player_idx] is not None
+                
+                assistant_msg = response_text
+                user_msg = "[hint] Move made by the other player. You must now respond with a move of your own.\n"
+            else:
+                assistant_msg = response_text
+                user_msg = response_text
+
+            curr_player.append_context({
+                "role": PlayerRole.ASSISTANT.value,
+                "content": self._content_wrapper(assistant_msg)
+            })
+            other_player.append_context({
+                "role": PlayerRole.USER.value,
+                "content": self._content_wrapper(user_msg)
+            })
+
+            curr_player_idx, other_player_idx = other_player_idx, curr_player_idx
+            curr_player = self.players[curr_player_idx]
+            other_player = self.players[other_player_idx]
+
+        curr_player.active = True
+        other_player.active = True
+
+        return moves_made
+
+    def _player_response(
+        self,
+        player : Player,
+    ):
+        response_text = None
+        error_cnt = 0
+        while True:
+            response_obj = self._generate_response(player)
+            response_text : str = response_obj["output_text"]
+            if not response_text.endswith("\n"):
+                response_text += "\n"
+
+            is_valid, error_msg = self._validate_response(response_text)
+            if is_valid:
+                break
+
+            player.append_context({
+                "role": PlayerRole.ASSISTANT.value,
+                "content": self._content_wrapper(response_text)
+            })
+            player.append_context({
+                "role": PlayerRole.USER.value,
+                "content": self._content_wrapper(
+                    f"An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\"\n"
+                )
+            })
+
+            error_cnt += 1
+            if error_cnt >= 5:
+                return "[abort]\n"
+            
+        return response_text
+
+    def _validate_response(self, msg : str) -> tuple[bool, str]:
+        """
+        Validate the response message
+
+        Parameters
+        ----------
+        msg : str
+            response message
+
+        Returns
+        -------
+        tuple[bool, str]
+            whether the message is valid and an error message if not
+        """
+        if msg.startswith("[move]"):
+            return self._validate_move(msg)
+        
+        return False, "Your output should be a move message. Move messages begin with the tag [move] and end with a valid move: 'rock', 'paper', or 'scissors'."
+    
+    def _validate_move(self, msg : str) -> tuple[bool, str]:
+        """
+        Validate the move message
+
+        Parameters
+        ----------
+        msg : str
+            move message
+
+        Returns
+        -------
+        tuple[bool, str]
+            whether the message is valid and an error message if not
+        """
+        msg_aux = msg.lower().strip()
+        # move should be the last word in the message
+        move = msg_aux.split()[-1]
+        if move not in self.move_mapping.values():
+            return False, "Your move must begin with the tag [move] and end with a valid move: 'rock', 'paper', or 'scissors'."
+        
+        return True, ""
+    
+    def _parse_move(self, msg : str) -> str:
+        """
+        Parse the move message
+
+        Parameters
+        ----------
+        msg : str
+            move message
+
+        Returns
+        -------
+        str
+            move made by the player
+        """
+        return msg.lower().strip().split()[-1]

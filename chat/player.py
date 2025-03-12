@@ -21,6 +21,9 @@ class Player:
         path to the player's context file
     fresh : bool
         whether the player is fresh (True) or not (False) (non-fresh players are experienced players and created with the duplicate() method)
+    active : bool
+        an active player has already played some rounds against its current opponent
+        an inactive player will now play their first round against their current opponent
     """
     def __init__(
         self,
@@ -57,6 +60,7 @@ class Player:
         self.context_log = os.path.join(log_path_aux, f"{self.unique_name}.context")
 
         self.fresh = True
+        self.active = False
 
     def duplicate(
         self,
@@ -112,3 +116,43 @@ class Player:
         """
         with open(self.context_log, "r") as f:
             self.context = json.load(f)
+
+    def append_context(self, entry: dict) -> None:
+        """
+        appends the context to the player's context
+
+        Parameters
+        ----------
+        context : dict
+            context to append
+        """
+        if len(self.context) == 0:
+            self.context.append(entry)
+            return
+        
+        last_entry = self.context[-1]
+        if last_entry["role"] == entry["role"]:
+            last_entry_text = self._content_unwrapper(last_entry["content"])
+            entry_text = self._content_unwrapper(entry["content"])
+            last_entry["content"] = self._content_wrapper(f"{last_entry_text}\n{entry_text}")
+        else:
+            self.context.append(entry)
+
+    def _content_wrapper(self, content: str):
+        return [{ "text" : content }]
+
+    def _content_unwrapper(self, content: str):
+        return content[0]["text"]
+
+    def append_log(self, log: str) -> None:
+        """
+        appends the log to the player's log
+
+        Parameters
+        ----------
+        log : str
+            log to append
+        """
+        with open(self.player_log, "a") as f:
+            f.write(log)
+
