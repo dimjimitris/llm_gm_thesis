@@ -107,7 +107,7 @@ class Player:
         """
         saves the player's context to the context log file
         """
-        with open(self.context_log, "w") as f:
+        with open(self.context_log, "a") as f:
             json.dump(self.context, f)
 
     def load_context(self) -> None:
@@ -134,6 +134,9 @@ class Player:
         if last_entry["role"] == entry["role"]:
             last_entry_text = self._content_unwrapper(last_entry["content"])
             entry_text = self._content_unwrapper(entry["content"])
+            # if the entry_text has a tag, remove it
+            if entry_text.startswith("[hint]") or entry_text.startswith("[move]"):
+                entry_text = entry_text[6:]
             last_entry["content"] = self._content_wrapper(f"{last_entry_text}\n{entry_text}")
         else:
             self.context.append(entry)

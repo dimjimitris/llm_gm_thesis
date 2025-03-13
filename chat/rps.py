@@ -11,11 +11,17 @@ from utils.globals import (
     PlayerRole,
 )
 
+from utils.rps import (
+    optimal_strategy,
+)
+
 INITIAL_PROMPT = RPS_PROMPTS["initial"]
 
 import random
 import tabulate
 import json
+import statistics
+from collections import Counter
 
 class RockPaperScissorsGame(BedrockChat):
     """
@@ -53,6 +59,8 @@ class RockPaperScissorsGame(BedrockChat):
         initial system prompt to start the game
     first_player_idx : int
         index of the first player to play
+    total_tokens : list
+        list of total tokens generated
     """
     def __init__(
         self,
@@ -114,6 +122,7 @@ class RockPaperScissorsGame(BedrockChat):
             s=self.s,
         )
         self.first_player_idx = -1
+        self.total_tokens = list()
 
     def add_players(
         self,
@@ -147,6 +156,7 @@ class RockPaperScissorsGame(BedrockChat):
         other_player_idx = 1 - curr_player_idx
         curr_player = self.players[curr_player_idx]
         other_player = self.players[other_player_idx]
+        self.total_tokens.append([0, 0])
 
         if other_player.active:
             curr_player.append_context({
@@ -174,7 +184,8 @@ class RockPaperScissorsGame(BedrockChat):
         round_over = False
         moves_made = [None, None]
         while not round_over:
-            response_text = self._player_response(curr_player)
+            response_text, tokens = self._player_response(curr_player)
+            self.total_tokens[-1][curr_player_idx] += tokens
 
             if "[abort]" in response_text:
                 round_over = True
@@ -210,7 +221,8 @@ class RockPaperScissorsGame(BedrockChat):
     def _player_response(
         self,
         player : Player,
-    ):
+    ) -> tuple[str, int]:
+        tokens = 0
         response_text = None
         error_cnt = 0
         while True:
@@ -218,6 +230,8 @@ class RockPaperScissorsGame(BedrockChat):
             response_text : str = response_obj["output_text"]
             if not response_text.endswith("\n"):
                 response_text += "\n"
+
+            tokens += response_obj["total_tokens"]
 
             is_valid, error_msg = self._validate_response(response_text)
             if is_valid:
@@ -236,9 +250,9 @@ class RockPaperScissorsGame(BedrockChat):
 
             error_cnt += 1
             if error_cnt >= 5:
-                return "[abort]\n"
+                return "[abort]\n", tokens
             
-        return response_text
+        return response_text, tokens
 
     def _validate_response(self, msg : str) -> tuple[bool, str]:
         """
@@ -296,3 +310,118 @@ class RockPaperScissorsGame(BedrockChat):
             move made by the player
         """
         return msg.lower().strip().split()[-1]
+    
+    def _calculate_points(self, moves_made : list[str]) -> tuple[int, int]:
+        """
+        Calculate the points for the players
+
+        Parameters
+        ----------
+        moves_made : list[str]
+            list of moves made by the players
+        
+        Returns
+        -------
+        tuple[int, int]
+            points for the players
+        """
+        if None in moves_made:
+            return (0, 0)
+        
+        move1, move2 = moves_made
+        if move1 == move2:
+            return (0, 0)
+
+        if move1 == self.move_mapping["rock"] and move2 == self.move_mapping["scissors"]:
+            return (self.r, -self.r)
+        if move1 == self.move_mapping["paper"] and move2 == self.move_mapping["rock"]:
+            return (self.p, -self.p)
+        if move1 == self.move_mapping["scissors"] and move2 == self.move_mapping["paper"]:
+            return (self.s, -self.s)
+        if move1 == self.move_mapping["scissors"] and move2 == self.move_mapping["rock"]:
+            return (-self.r, self.r)
+        if move1 == self.move_mapping["rock"] and move2 == self.move_mapping["paper"]:
+            return (-self.p, self.p)
+        if move1 == self.move_mapping["paper"] and move2 == self.move_mapping["scissors"]:
+            return (-self.s, self.s)
+
+    def play(self, rounds : int =1):
+        """
+        Play the game for a given number of rounds
+
+        Parameters
+        ----------
+        rounds : int
+            number of rounds to play
+
+        Returns
+        -------
+        dict
+            game information
+        """
+        total_moves_made = list()
+        total_points = list()
+        for _ in range(rounds):
+            round_moves_made = self.play_round()
+            
+            round_points = self._calculate_points(round_moves_made)
+
+            # update player context
+            points1, points2 = round_points
+            winner_idx = 0 if points1 > points2 else 1 if points2 > points1 else -1
+
+            if winner_idx == -1:
+                for player in self.players:
+                    player.append_context({
+                        "role": PlayerRole.ASSISTANT.value,
+                        "content": self._content_wrapper(
+                            f"[hint] The round ended in a tie. Both players made the same move: {round_moves_made[winner_idx]}.\nYou scored {round_points[0]} points.\n"
+                        )
+                    })
+
+            else:
+                self.players[winner_idx].append_context({
+                    "role": PlayerRole.ASSISTANT.value,
+                    "content": self._content_wrapper(
+                        f"[hint] You won the round. You made the move: {round_moves_made[winner_idx]}. Your opponent made the move: {round_moves_made[1-winner_idx]}.\nYou scored {round_points[winner_idx]} points.\n"
+                    )
+                })
+                self.players[1 - winner_idx].append_context({
+                    "role": PlayerRole.ASSISTANT.value,
+                    "content": self._content_wrapper(
+                        f"[hint] You lost the round. You made the move: {round_moves_made[1-winner_idx]}. Your opponent made the move: {round_moves_made[winner_idx]}.\nYou scored {round_points[1-winner_idx]} points.\n"
+                    )
+                })
+
+            total_moves_made.append(round_moves_made)
+            total_points.append(round_points)
+
+        # both players are inactive after the game ends
+        for player in self.players:
+            player.active = False
+
+        # game info generation
+        valid_outcomes = [None not in moves_made for moves_made in total_moves_made]
+        
+        info = dict()
+        info["valid_outcomes"] = valid_outcomes
+        for i, player in enumerate(self.players):
+            info[f"player_{i}_context"] = player.context
+            info[f"player_{i}_points"] = [points[i] for points in total_points]
+            info[f"player_{i}_moves"] = [moves[i] for moves in total_moves_made]
+        info["total_tokens"] = [statistics.mean(tokens) for tokens in self.total_tokens]
+        info["game_settings"] = {
+            "r": self.r,
+            "p": self.p,
+            "s": self.s,
+            "move_mapping": self.move_mapping,
+        }
+        # single-round optimal strategy
+        info["single_round_optimal_strategy"] = optimal_strategy(self.p, self.r, self.s)
+        # multi-round player strategy
+        for i, player in enumerate(self.players):
+            player_strategy = Counter(info[f"player_{i}_moves"])
+            player_strategy = {k: v / len(info[f"player_{i}_moves"]) for k, v in player_strategy.items()}
+            info[f"player_{i}_strategy"] = player_strategy
+        
+        return info
