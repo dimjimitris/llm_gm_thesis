@@ -57,8 +57,8 @@ class RockPaperScissorsGame(BedrockChat):
         mapping of moves to moves
     system_prompt : str
         initial system prompt to start the game
-    first_player_idx : int
-        index of the first player to play
+    rand_player_seq : bool
+        whether to randomize the player sequence or not on each round. If False, player_0 always goes first, otherwise randomize
     total_tokens : list
         list of total tokens generated
     """
@@ -77,6 +77,7 @@ class RockPaperScissorsGame(BedrockChat):
             "paper": "paper",
             "scissors": "scissors",
         },
+        rand_player_seq : bool =True,
     ):
         """
         Parameters
@@ -99,6 +100,8 @@ class RockPaperScissorsGame(BedrockChat):
             reward for scissors beating paper
         move_mapping : dict
             mapping of moves to moves
+        rand_player_seq : bool
+            whether to randomize the player sequence or not on each round. If False, player_0 always goes first, otherwise randomize
         """
         super().__init__(
             id=id,
@@ -121,14 +124,12 @@ class RockPaperScissorsGame(BedrockChat):
             p=self.p,
             s=self.s,
         )
-        self.first_player_idx = -1
-        self.total_tokens = list()
+        self.rand_player_seq = rand_player_seq
 
     def add_players(
         self,
         player1 : Player,
         player2 : Player,
-        rand_player_seq : bool =True,
     ):
         """
         Parameters
@@ -137,86 +138,93 @@ class RockPaperScissorsGame(BedrockChat):
             player object, refers to player_0
         player2 : Player
             player object, refers to player_1
-        rand_player_seq : bool
-            whether to randomize the player sequence or not. If False, player_0 goes first, otherwise randomize
         """
         self.players = [player1, player2]
-        self.first_player_idx = random.choice([0, int(rand_player_seq)])
 
-    def play_round(self) -> list[str]:
+    def play_round(self) -> tuple[list[str], list[int]]:
         """
         Play a round of the game
 
         Returns
         -------
-        list[str]
-            list of moves made by the players
+        tuple[list[str], list[int]]
+            moves made by the players and the token counts for the players
         """
-        curr_player_idx = self.first_player_idx
-        other_player_idx = 1 - curr_player_idx
-        curr_player = self.players[curr_player_idx]
-        other_player = self.players[other_player_idx]
-        self.total_tokens.append([0, 0])
+        curr_player_idx = random.choice([0, int(self.rand_player_seq)])
+        token_counts = [0, 0]
 
-        if other_player.active:
-            curr_player.append_context({
-                "role": PlayerRole.USER.value,
-                "content": self._content_wrapper(
-                    "[hint] Let's play another round. Please make your move.\n"
-                )
-            })
-        else:
-            if other_player.fresh:
-                curr_player.append_context({
+        for idx, player in enumerate(self.players):
+            other_idx = 1 - idx
+            recommendation = "Please make your move." if idx == curr_player_idx else "The other player made their move. You must respond with a move of your own."
+
+            if self.players[other_idx].active:
+                player.append_context({
                     "role": PlayerRole.USER.value,
                     "content": self._content_wrapper(
-                        "[hint] Let's play rock-paper-scissors. You are playing against a fresh player. Please make your move.\n"
+                        "[hint] Let's play another round. " + recommendation + "\n"
                     )
                 })
             else:
-                curr_player.append_context({
-                    "role": PlayerRole.USER.value,
-                    "content": self._content_wrapper(
-                        "[hint] Let's play rock-paper-scissors. You are playing against an experienced player. Please make your move.\n"
-                    )
-                })
+                if self.players[other_idx].fresh:
+                    player.append_context({
+                        "role": PlayerRole.USER.value,
+                        "content": self._content_wrapper(
+                            "[hint] Let's play rock-paper-scissors. You are playing against a fresh player. " + recommendation + "\n"
+                        )
+                    })
+                else:
+                    player.append_context({
+                        "role": PlayerRole.USER.value,
+                        "content": self._content_wrapper(
+                            "[hint] Let's play rock-paper-scissors. You are playing against an experienced player. " + recommendation + "\n"
+                        )
+                    })
 
-        round_over = False
         moves_made = [None, None]
-        while not round_over:
-            response_text, tokens = self._player_response(curr_player)
-            self.total_tokens[-1][curr_player_idx] += tokens
+        for idx, player in [
+            (curr_player_idx, self.players[curr_player_idx]),
+            (1 - curr_player_idx, self.players[1 - curr_player_idx])
+            ]:
+            other_idx = 1 - idx
+            other_player = self.players[other_idx]
+
+            response_text, tokens = self._player_response(player)
+            token_counts[idx] += tokens
 
             if "[abort]" in response_text:
-                round_over = True
-            
+                player.append_context({
+                    "role": PlayerRole.ASSISTANT.value,
+                    "content": self._content_wrapper(
+                        response_text
+                    )
+                })
+                other_player.append_context({
+                    "role": PlayerRole.USER.value,
+                    "content": self._content_wrapper(
+                        "[hint] The other player has aborted the game. The game has ended.\n"
+                    )
+                })
+                break
+
             if response_text.startswith("[move]"):
-                moves_made[curr_player_idx] = self._parse_move(response_text)
-                round_over = moves_made[other_player_idx] is not None
-                
-                assistant_msg = response_text
-                user_msg = "[hint] Move made by the other player. You must now respond with a move of your own.\n"
-            else:
-                assistant_msg = response_text
-                user_msg = response_text
-
-            curr_player.append_context({
-                "role": PlayerRole.ASSISTANT.value,
-                "content": self._content_wrapper(assistant_msg)
-            })
-            other_player.append_context({
-                "role": PlayerRole.USER.value,
-                "content": self._content_wrapper(user_msg)
-            })
-
-            curr_player_idx, other_player_idx = other_player_idx, curr_player_idx
-            curr_player = self.players[curr_player_idx]
-            other_player = self.players[other_player_idx]
-
-        curr_player.active = True
-        other_player.active = True
-
-        return moves_made
+                moves_made[idx] = self._parse_move(response_text)
+                player.append_context({
+                    "role": PlayerRole.ASSISTANT.value,
+                    "content": self._content_wrapper(
+                        response_text
+                    )
+                })
+                player.append_context({
+                    "role": PlayerRole.USER.value,
+                    "content": self._content_wrapper(
+                        "[hint] Move made. Waiting for the game to end.\n"
+                    )
+                })
+        
+        for player in self.players:
+            player.active = True
+        
+        return moves_made, token_counts
 
     def _player_response(
         self,
@@ -244,13 +252,14 @@ class RockPaperScissorsGame(BedrockChat):
             player.append_context({
                 "role": PlayerRole.USER.value,
                 "content": self._content_wrapper(
-                    f"An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\"\n"
+                    f"[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\"\n"
                 )
             })
 
             error_cnt += 1
             if error_cnt >= 5:
-                return "[abort]\n", tokens
+                response_text = "[abort]\n"
+                break
             
         return response_text, tokens
 
@@ -359,39 +368,49 @@ class RockPaperScissorsGame(BedrockChat):
         dict
             game information
         """
+        total_tokens = list()
         total_moves_made = list()
         total_points = list()
         for _ in range(rounds):
-            round_moves_made = self.play_round()
-            
+            round_moves_made, token_counts = self.play_round()
+            total_tokens.append(token_counts)
             round_points = self._calculate_points(round_moves_made)
 
             # update player context
             points1, points2 = round_points
             winner_idx = 0 if points1 > points2 else 1 if points2 > points1 else -1
 
-            if winner_idx == -1:
-                for player in self.players:
-                    player.append_context({
-                        "role": PlayerRole.ASSISTANT.value,
+            if None not in round_moves_made:
+                if winner_idx == -1:
+                    for player in self.players:
+                        player.append_context({
+                            "role": PlayerRole.USER.value,
+                            "content": self._content_wrapper(
+                                f"[hint] The round ended in a tie. Both players made the same move: {round_moves_made[winner_idx]}.\nYou scored {round_points[0]} points.\n"
+                            )
+                        })
+
+                else:
+                    self.players[winner_idx].append_context({
+                        "role": PlayerRole.USER.value,
                         "content": self._content_wrapper(
-                            f"[hint] The round ended in a tie. Both players made the same move: {round_moves_made[winner_idx]}.\nYou scored {round_points[0]} points.\n"
+                            f"[hint] You won the round. You made the move: {round_moves_made[winner_idx]}. Your opponent made the move: {round_moves_made[1-winner_idx]}.\nYou scored {round_points[winner_idx]} points.\n"
                         )
                     })
-
+                    self.players[1 - winner_idx].append_context({
+                        "role": PlayerRole.USER.value,
+                        "content": self._content_wrapper(
+                            f"[hint] You lost the round. You made the move: {round_moves_made[1-winner_idx]}. Your opponent made the move: {round_moves_made[winner_idx]}.\nYou scored {round_points[1-winner_idx]} points.\n"
+                        )
+                    })
             else:
-                self.players[winner_idx].append_context({
-                    "role": PlayerRole.ASSISTANT.value,
-                    "content": self._content_wrapper(
-                        f"[hint] You won the round. You made the move: {round_moves_made[winner_idx]}. Your opponent made the move: {round_moves_made[1-winner_idx]}.\nYou scored {round_points[winner_idx]} points.\n"
-                    )
-                })
-                self.players[1 - winner_idx].append_context({
-                    "role": PlayerRole.ASSISTANT.value,
-                    "content": self._content_wrapper(
-                        f"[hint] You lost the round. You made the move: {round_moves_made[1-winner_idx]}. Your opponent made the move: {round_moves_made[winner_idx]}.\nYou scored {round_points[1-winner_idx]} points.\n"
-                    )
-                })
+                for player in self.players:
+                    player.append_context({
+                        "role": PlayerRole.USER.value,
+                        "content": self._content_wrapper(
+                            f"[hint] The round ended abnormally. You scored 0 points.\n"
+                        )
+                    })
 
             total_moves_made.append(round_moves_made)
             total_points.append(round_points)
@@ -409,7 +428,7 @@ class RockPaperScissorsGame(BedrockChat):
             info[f"player_{i}_context"] = player.context
             info[f"player_{i}_points"] = [points[i] for points in total_points]
             info[f"player_{i}_moves"] = [moves[i] for moves in total_moves_made]
-        info["total_tokens"] = [statistics.mean(tokens) for tokens in self.total_tokens]
+        info["total_tokens"] = [statistics.mean(tokens) for tokens in total_tokens]
         info["game_settings"] = {
             "r": self.r,
             "p": self.p,
