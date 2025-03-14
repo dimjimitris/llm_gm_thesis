@@ -191,6 +191,9 @@ class RockPaperScissorsGame(BedrockChat):
             response_text, tokens = self._player_response(player)
             token_counts[idx] += tokens
 
+            # log the response
+            self.append_log(f"[player_{idx}] {response_text}\n")
+
             if "[abort]" in response_text:
                 player.append_context({
                     "role": PlayerRole.ASSISTANT.value,
@@ -241,6 +244,9 @@ class RockPaperScissorsGame(BedrockChat):
 
             tokens += response_obj["total_tokens"]
 
+            # log the response
+            player.append_log(f"[assistant] {response_text}\n")
+
             is_valid, error_msg = self._validate_response(response_text)
             if is_valid:
                 break
@@ -255,6 +261,9 @@ class RockPaperScissorsGame(BedrockChat):
                     f"[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\"\n"
                 )
             })
+
+            # log the error
+            player.append_log(f"[error] {error_msg}\n")
 
             error_cnt += 1
             if error_cnt >= 5:
@@ -368,10 +377,29 @@ class RockPaperScissorsGame(BedrockChat):
         dict
             game information
         """
+        # log game start
+        move_mapping_str = json.dumps(self.move_mapping)
+        payoff_matrix_str = tabulate.tabulate(
+            tabular_data=[
+                [self.move_mapping["rock"], (0, 0), (-self.p, self.p), (self.r, -self.r)],
+                [self.move_mapping["paper"], (self.p, -self.p), (0, 0), (-self.s, self.s)],
+                [self.move_mapping["scissors"], (-self.r, self.r), (self.s, -self.s), (0, 0)]
+            ],
+            headers=["", self.move_mapping["rock"], self.move_mapping["paper"], self.move_mapping["scissors"]],
+            tablefmt="github",
+        )
+
+        self.append_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
+        self.append_log(f"{rounds} rounds.\n")
+        for player in self.players:
+            player.append_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
+            player.append_log(f"{rounds} rounds.\n")
+        
+
         total_tokens = list()
         total_moves_made = list()
         total_points = list()
-        for _ in range(rounds):
+        for r in range(rounds):
             round_moves_made, token_counts = self.play_round()
             total_tokens.append(token_counts)
             round_points = self._calculate_points(round_moves_made)
@@ -379,6 +407,9 @@ class RockPaperScissorsGame(BedrockChat):
             # update player context
             points1, points2 = round_points
             winner_idx = 0 if points1 > points2 else 1 if points2 > points1 else -1
+
+            # log the round results
+            self.append_log(f"Round {r} results: {round_moves_made}, {round_points}\n")
 
             if None not in round_moves_made:
                 if winner_idx == -1:
@@ -442,5 +473,10 @@ class RockPaperScissorsGame(BedrockChat):
             player_strategy = Counter(info[f"player_{i}_moves"])
             player_strategy = {k: v / len(info[f"player_{i}_moves"]) for k, v in player_strategy.items()}
             info[f"player_{i}_strategy"] = player_strategy
+
+        # add log paths to info
+        info["game_log"] = self.game_log
+        for i, player in enumerate(self.players):
+            info[f"player_{i}_log"] = player.player_log
         
         return info
