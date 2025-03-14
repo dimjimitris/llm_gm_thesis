@@ -114,7 +114,7 @@ class RockPaperScissorsGame(BedrockChat):
 
         for idx, player in enumerate(self.players):
             other_idx = 1 - idx
-            recommendation = "Please make your move." if idx == curr_player_idx else "The other player made their move. You must respond with a move of your own."
+            recommendation = "Please make your move." if idx == curr_player_idx else "The other player made their move. Please make a move too."
 
             if self.players[other_idx].active:
                 player.append_context({

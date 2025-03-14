@@ -90,10 +90,10 @@ class Player:
             last_entry_text = self._content_unwrapper(last_entry["content"])
             entry_text = self._content_unwrapper(entry["content"])
             # if the entry_text has a tag, remove it
-            if entry_text.startswith("[hint]") or entry_text.startswith("[move]"):
-                entry_text = entry_text[6:]
-            elif entry_text.startswith("[hint] ") or entry_text.startswith("[move] "):
+            if entry_text.startswith("[hint] ") or entry_text.startswith("[move] "):
                 entry_text = entry_text[7:]
+            elif entry_text.startswith("[hint]") or entry_text.startswith("[move]"):
+                entry_text = entry_text[6:]
             last_entry["content"] = self._content_wrapper(f"{last_entry_text}\n{entry_text}")
         else:
             self.context.append(entry)
