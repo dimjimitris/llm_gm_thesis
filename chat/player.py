@@ -29,9 +29,7 @@ class Player:
         self,
         id: int,
         system_prompt: str,
-        game_type: str,
-        game_id: int,
-        log_path: str,
+        game_log_path: str,
     ) -> None:
         """
         Parameters
@@ -40,24 +38,17 @@ class Player:
             player id, should be 0 or 1
         system_prompt : str
             initial system prompt to start the game
-        game_type : str
-            type of the game, e.g., "rps"
-        game_id : int
-            game id
-        log_path : str
-            path to the root log directory
+        game_log_path : str
+            path to the log directory of the specific game played
         """
         self.id = id
         self.unique_name = f"player_{self.id}"
         self.system_prompt = system_prompt
         self.context = list()
 
-        game_unique_name = f"{game_type}_{game_id}"
-        log_path_aux = os.path.join(log_path, game_type, game_unique_name)
-
-        os.makedirs(log_path_aux, exist_ok=True)
-        self.player_log = os.path.join(log_path_aux, f"{self.unique_name}.log")
-        self.context_log = os.path.join(log_path_aux, f"{self.unique_name}.context")
+        os.makedirs(game_log_path, exist_ok=True)
+        self.player_log = os.path.join(game_log_path, f"{self.unique_name}.log")
+        self.context_log = os.path.join(game_log_path, f"{self.unique_name}.json")
 
         self.fresh = True
         self.active = False
@@ -108,7 +99,7 @@ class Player:
         saves the player's context to the context log file
         """
         with open(self.context_log, "a") as f:
-            json.dump(self.context, f)
+            json.dump(self.context, f, indent=2)
 
     def load_context(self) -> None:
         """
@@ -137,6 +128,8 @@ class Player:
             # if the entry_text has a tag, remove it
             if entry_text.startswith("[hint]") or entry_text.startswith("[move]"):
                 entry_text = entry_text[6:]
+            elif entry_text.startswith("[hint] ") or entry_text.startswith("[move] "):
+                entry_text = entry_text[7:]
             last_entry["content"] = self._content_wrapper(f"{last_entry_text}\n{entry_text}")
         else:
             self.context.append(entry)

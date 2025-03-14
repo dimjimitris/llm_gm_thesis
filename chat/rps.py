@@ -3,8 +3,8 @@ from chat.bedrock import (
     BedrockChat,
 )
 
-from prompts.rps import (
-    RPS_PROMPTS,
+from descriptions.rps import (
+    RPS_DESC,
 )
 
 from utils.globals import (
@@ -15,7 +15,7 @@ from utils.rps import (
     optimal_strategy,
 )
 
-INITIAL_PROMPT = RPS_PROMPTS["initial"]
+INITIAL_PROMPT : str = RPS_DESC["init"]
 
 import random
 import tabulate
@@ -69,6 +69,7 @@ class RockPaperScissorsGame(BedrockChat):
         temp: float,
         max_tokens: int,
         model_id: str,
+        game_setting: str,
         rock_beats_scissors: int,
         paper_beats_rock: int,
         scissors_beats_paper: int,
@@ -92,6 +93,8 @@ class RockPaperScissorsGame(BedrockChat):
             maximum number of tokens to generate
         model_id : str
             bedrock model id
+        game_setting : str
+            game setting, one of ["eq1", "eq2", "r2", "p2", "s2"]
         rock_beats_scissors : int
             reward for rock beating scissors
         paper_beats_rock : int
@@ -106,6 +109,7 @@ class RockPaperScissorsGame(BedrockChat):
         super().__init__(
             id=id,
             game_type="rps",
+            game_setting=game_setting,
             log_path=log_path,
             temp=temp,
             max_tokens=max_tokens,
@@ -378,7 +382,7 @@ class RockPaperScissorsGame(BedrockChat):
             game information
         """
         # log game start
-        move_mapping_str = json.dumps(self.move_mapping)
+        move_mapping_str = json.dumps(self.move_mapping, indent=2)
         payoff_matrix_str = tabulate.tabulate(
             tabular_data=[
                 [self.move_mapping["rock"], (0, 0), (-self.p, self.p), (self.r, -self.r)],
@@ -450,6 +454,10 @@ class RockPaperScissorsGame(BedrockChat):
         for player in self.players:
             player.active = False
 
+        # log player context
+        for player in self.players:
+            player.save_context()
+
         # game info generation
         valid_outcomes = [None not in moves_made for moves_made in total_moves_made]
         
@@ -479,4 +487,7 @@ class RockPaperScissorsGame(BedrockChat):
         for i, player in enumerate(self.players):
             info[f"player_{i}_log"] = player.player_log
         
+        # log the game information
+        self.save_info(info)
+
         return info

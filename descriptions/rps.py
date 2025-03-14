@@ -1,5 +1,5 @@
-RPS_PROMPTS = {
-"initial":
+RPS_DESC = {
+"init":
 """You are playing a game called rock-paper-scissors with other player(s). The game is based on making moves.
 
 Game Description:
@@ -27,5 +27,59 @@ Tips:
 - Try to formulate a strategy by reasoning on the provided information.
 - Pay attention to the payoff matrix of the game moves.
 - You should only send move messages. Hint messages will only be provided to you.
-- Pay attention to hints when provided."""
+- Pay attention to hints when provided.""",
+
+"game_settings": {
+        "eq1" : {
+            "r": 1,
+            "p": 1,
+            "s": 1,
+            "move_mapping": {
+                "rock": "rock",
+                "paper": "paper",
+                "scissors": "scissors",
+            }
+        },
+        "eq2" : {
+            "r": 2,
+            "p": 2,
+            "s": 2,
+            "move_mapping": {
+                "rock": "rock",
+                "paper": "paper",
+                "scissors": "scissors",
+            }
+        },
+        "r2" : {
+            "r": 2,
+            "p": 1,
+            "s": 1,
+            "move_mapping": {
+                "rock": "rock",
+                "paper": "paper",
+                "scissors": "scissors",
+            }
+        },
+        "p2" : {
+            "r": 1,
+            "p": 2,
+            "s": 1,
+            "move_mapping": {
+                "rock": "rock",
+                "paper": "paper",
+                "scissors": "scissors",
+            }
+        },
+        "s2" : {
+            "r": 1,
+            "p": 1,
+            "s": 2,
+            "move_mapping": {
+                "rock": "rock",
+                "paper": "paper",
+                "scissors": "scissors",
+            }
+        },
+    }
+
 }

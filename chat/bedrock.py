@@ -6,7 +6,6 @@ from utils.globals import (
 from chat.player import Player
 
 import os
-import random
 import boto3
 import json
 
@@ -41,6 +40,7 @@ class BedrockChat:
         self,
         id: int,
         game_type: str,
+        game_setting: str,
         log_path: str,
         temp: float,
         max_tokens: int,
@@ -53,6 +53,8 @@ class BedrockChat:
             game id
         game_type : str
             type of the game, e.g., "rps"
+        game_setting : str
+            game setting, one of ["eq1", "eq2", "r2", "p2", "s2"]
         log_path : str
             path to the root log directory
         temp : float
@@ -66,10 +68,10 @@ class BedrockChat:
         self.game_type = game_type
         self.unique_name = f"{self.game_type}_{self.id}"
 
-        log_path_aux = os.path.join(log_path, game_type, self.unique_name)
+        log_path_aux = os.path.join(log_path, game_type, game_setting, self.unique_name)
         os.makedirs(log_path_aux, exist_ok=True)
         self.game_log = os.path.join(log_path_aux, "game.log")
-        self.info_log = os.path.join(log_path_aux, "game.info")
+        self.info_log = os.path.join(log_path_aux, "game.json")
 
         self.temp = temp
         self.max_tokens = max_tokens
@@ -120,19 +122,31 @@ class BedrockChat:
             "total_tokens": int(usage["totalTokens"]),
         }
     
-    def save_info(self) -> None:
+    def save_info(self, info) -> None:
         """
         Save game information to the info log file.
+
+        Parameters
+        ----------
+        info : dict
+            game information to save
         """
         with open(self.info_log, "w") as f:
-            json.dump(self.info, f)
+            json.dump(info, f, indent=2)
 
-    def load_info(self) -> None:
+    def load_info(self) -> dict:
         """
         Load game information from the info log file.
+
+        Returns
+        -------
+        dict
+            game information
         """
         with open(self.info_log, "r") as f:
-            self.info = json.load(f)
+            info = json.load(f)
+
+        return info
 
     def generate_info(self) -> None:
         pass
