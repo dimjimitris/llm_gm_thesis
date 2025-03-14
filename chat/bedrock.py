@@ -111,6 +111,8 @@ class BedrockChat:
         output_text = response["output"]["message"]["content"][0]["text"]
         usage = response["usage"]
 
+        print(f"{player.player_log}: {output_text}\n")
+
         return {
             "output_text": output_text,
             "input_tokens": int(usage["inputTokens"]),
