@@ -443,7 +443,7 @@ class RockPaperScissorsGame(BedrockChat):
             "move_mapping": self.move_mapping,
         }
         # single-round optimal strategy
-        info["single_round_optimal_strategy"] = optimal_strategy(self.p, self.r, self.s)
+        info["single_round_optimal_strategy"] = optimal_strategy(self.r, self.p, self.s)
         # multi-round player strategy
         for i, player in enumerate(self.players):
             player_strategy = Counter(info[f"player_{i}_moves"])
