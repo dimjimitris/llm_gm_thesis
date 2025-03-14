@@ -14,7 +14,7 @@ In each round of the game you play against one other player. You and the other p
 Message Formats:
 Move messages are sent when you want to make a move.
 Move messages are formatted like this:
-[move] (You may provide an explanation of your move here) Your move here
+[move] (Optional explanation here) Your move here
 
 Hint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.
 Hint messages are formatted like this:
