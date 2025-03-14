@@ -8,7 +8,7 @@ AWS_ACCESS_KEY_ID = os.getenv("AWS_ACCESS_KEY_ID")          # These keys are nee
 AWS_SECRET_ACCESS_KEY = os.getenv("AWS_SECRET_ACCESS_KEY")  # to access the LLM API
 
 # check if environment variables are set
-if not AWS_ACCESS_KEY_ID or not AWS_SECRET_ACCESS_KEY:
+if AWS_ACCESS_KEY_ID is None or AWS_SECRET_ACCESS_KEY is None:
     raise ValueError("AWS_ACCESS_KEY_ID and AWS_SECRET_ACCESS_KEY must be set in a .env file")
 
 class PlayerRole(Enum):

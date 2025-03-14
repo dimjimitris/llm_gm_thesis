@@ -1,43 +1,31 @@
-from chat.bedrock import (
-    Player,
-    BedrockChat,
-)
-
-from descriptions.rps import (
-    RPS_DESC,
-)
-
-from utils.globals import (
-    PlayerRole,
-)
-
-from utils.rps import (
-    optimal_strategy,
-)
-
-INITIAL_PROMPT : str = RPS_DESC["init"]
+from chat.bedrock import BedrockChat
+from chat.player import Player
+from utils.globals import PlayerRole
+from utils.rps import optimal_strategy
 
 import random
+import statistics
 import tabulate
 import json
-import statistics
 from collections import Counter
 
 class RockPaperScissorsGame(BedrockChat):
     """
-    Parameterized Rock-Paper-Scissors game. Allows for easy creation of counterfactual RPS games.
+    Represents a Rock-Paper-Scissors game. Allows for easy creation of counterfactual rps games.
 
     Attributes
     ----------
     id : int
         game id
+    players : list
+        list of player objects, should have two players
     game_type : str
         type of the game, e.g., "rps"
     unique_name : str
         unique name for the game, should be {game_type}_{id}
-    game_log : str
+    game_file : str
         path to the game's log file
-    info_log : str
+    info_file : str
         path to the game's info file
     temp : float
         temperature parameter for sampling
@@ -45,105 +33,72 @@ class RockPaperScissorsGame(BedrockChat):
         maximum number of tokens to generate
     model_id : str
         bedrock model id
-    players : list
-        list of player objects, should have two players
-    r : int
+    r : str
         reward for rock beating scissors
-    p : int
+    p : str
         reward for paper beating rock
-    s : int
+    s : str
         reward for scissors beating paper
     move_mapping : dict
         mapping of moves to moves
     system_prompt : str
-        initial system prompt to start the game
+        system prompt for the game
     rand_player_seq : bool
-        whether to randomize the player sequence or not on each round. If False, player_0 always goes first, otherwise randomize
-    total_tokens : list
-        list of total tokens generated
+        whether to randomize the player sequence or not on each round. If False, player_0 will always play first.
+    players : list
+        list of player objects, should have two players
     """
     def __init__(
         self,
         id: int,
-        log_path: str,
+        players: list[Player],
+        game_settings_type: str,
+        game_settings: dict,
+        model_id: str,
+        log_dir: str,
         temp: float,
         max_tokens: int,
-        model_id: str,
-        game_setting: str,
-        rock_beats_scissors: int,
-        paper_beats_rock: int,
-        scissors_beats_paper: int,
-        move_mapping: dict = {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        },
-        rand_player_seq : bool =True,
+        rand_player_seq : bool = True,
     ):
         """
         Parameters
         ----------
         id : int
             game id
-        log_path : str
+        players : list
+            list of player objects, should have two players
+        game_settings_type : str
+            game settings type, one of ["eq1", "eq2", "r2", "p2", "s2"]
+        game_settings : dict
+            dictionary containing the game settings
+        model_id : str
+            bedrock model id
+        log_dir : str
             path to the root log directory
         temp : float
             temperature parameter for sampling
         max_tokens : int
             maximum number of tokens to generate
-        model_id : str
-            bedrock model id
-        game_setting : str
-            game setting, one of ["eq1", "eq2", "r2", "p2", "s2"]
-        rock_beats_scissors : int
-            reward for rock beating scissors
-        paper_beats_rock : int
-            reward for paper beating rock
-        scissors_beats_paper : int
-            reward for scissors beating paper
-        move_mapping : dict
-            mapping of moves to moves
         rand_player_seq : bool
-            whether to randomize the player sequence or not on each round. If False, player_0 always goes first, otherwise randomize
+            whether to randomize the player sequence or not on each round. If False, player_0 will always play first.
         """
         super().__init__(
-            id=id,
-            game_type="rps",
-            game_setting=game_setting,
-            log_path=log_path,
-            temp=temp,
-            max_tokens=max_tokens,
-            model_id=model_id,
+            id,
+            players,
+            "rps",
+            game_settings_type,
+            model_id,
+            log_dir,
+            temp,
+            max_tokens,
         )
-        self.r = rock_beats_scissors
-        self.p = paper_beats_rock
-        self.s = scissors_beats_paper
-        self.move_mapping = move_mapping
-
-        self.system_prompt = INITIAL_PROMPT.format(
-            rock=self.move_mapping["rock"],
-            paper=self.move_mapping["paper"],
-            scissors=self.move_mapping["scissors"],
-            r=self.r,
-            p=self.p,
-            s=self.s,
-        )
+        self.r = game_settings["r"]
+        self.p = game_settings["p"]
+        self.s = game_settings["s"]
+        self.move_mapping : dict = game_settings["move_mapping"]
+        self.system_prompt = players[0].system_prompt
         self.rand_player_seq = rand_player_seq
-
-    def add_players(
-        self,
-        player1 : Player,
-        player2 : Player,
-    ):
-        """
-        Parameters
-        ----------
-        player1 : Player
-            player object, refers to player_0
-        player2 : Player
-            player object, refers to player_1
-        """
-        self.players = [player1, player2]
+        self.players = players
 
     def play_round(self) -> tuple[list[str], list[int]]:
         """
@@ -196,7 +151,7 @@ class RockPaperScissorsGame(BedrockChat):
             token_counts[idx] += tokens
 
             # log the response
-            self.append_log(f"[player_{idx}] {response_text}\n")
+            self.save_log(f"[player_{idx}] {response_text}\n")
 
             if "[abort]" in response_text:
                 player.append_context({
@@ -249,7 +204,7 @@ class RockPaperScissorsGame(BedrockChat):
             tokens += response_obj["total_tokens"]
 
             # log the response
-            player.append_log(f"[assistant] {response_text}\n")
+            player.save_log(f"[assistant] {response_text}\n")
 
             is_valid, error_msg = self._validate_response(response_text)
             if is_valid:
@@ -267,7 +222,7 @@ class RockPaperScissorsGame(BedrockChat):
             })
 
             # log the error
-            player.append_log(f"[error] {error_msg}\n")
+            player.save_log(f"[error] {error_msg}\n")
 
             error_cnt += 1
             if error_cnt >= 5:
@@ -367,7 +322,7 @@ class RockPaperScissorsGame(BedrockChat):
         if move1 == self.move_mapping["paper"] and move2 == self.move_mapping["scissors"]:
             return (-self.s, self.s)
 
-    def play(self, rounds : int =1):
+    def play(self, rounds : int) -> dict:
         """
         Play the game for a given number of rounds
 
@@ -393,11 +348,11 @@ class RockPaperScissorsGame(BedrockChat):
             tablefmt="github",
         )
 
-        self.append_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
-        self.append_log(f"{rounds} rounds.\n")
+        self.save_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
+        self.save_log(f"{rounds} rounds.\n")
         for player in self.players:
-            player.append_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
-            player.append_log(f"{rounds} rounds.\n")
+            player.save_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
+            player.save_log(f"{rounds} rounds.\n")
         
 
         total_tokens = list()
@@ -413,7 +368,7 @@ class RockPaperScissorsGame(BedrockChat):
             winner_idx = 0 if points1 > points2 else 1 if points2 > points1 else -1
 
             # log the round results
-            self.append_log(f"Round {r} results: {round_moves_made}, {round_points}\n")
+            self.save_log(f"Round {r} results: {round_moves_made}, {round_points}\n")
 
             if None not in round_moves_made:
                 if winner_idx == -1:
@@ -459,6 +414,19 @@ class RockPaperScissorsGame(BedrockChat):
             player.save_context()
 
         # game info generation
+        info = self._generate_info(total_tokens, total_moves_made, total_points)
+
+        # log the game information
+        self.save_info(info)
+
+        return info
+    
+    def _generate_info(
+        self,
+        total_tokens : list[list[int]],
+        total_moves_made : list[list[str]],
+        total_points : list[list[int]],
+    ) -> dict:
         valid_outcomes = [None not in moves_made for moves_made in total_moves_made]
         
         info = dict()
@@ -483,11 +451,8 @@ class RockPaperScissorsGame(BedrockChat):
             info[f"player_{i}_strategy"] = player_strategy
 
         # add log paths to info
-        info["game_log"] = self.game_log
+        info["game_log"] = self.game_file
         for i, player in enumerate(self.players):
-            info[f"player_{i}_log"] = player.player_log
-        
-        # log the game information
-        self.save_info(info)
+            info[f"player_{i}_log"] = player.player_file
 
         return info

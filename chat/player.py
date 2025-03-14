@@ -3,7 +3,7 @@ import json
 
 class Player:
     """
-    represents a player in the chat game keeps player's log and context history
+    Represents a player in the chat game.
 
     Attributes
     ----------
@@ -15,9 +15,9 @@ class Player:
         initial system prompt to start the game
     context : list
         list of chat history
-    player_log : str
+    player_file : str
         path to the player's log file
-    context_log : str
+    context_file : str
         path to the player's context file
     fresh : bool
         whether the player is fresh (True) or not (False) (non-fresh players are experienced players and created with the duplicate() method)
@@ -29,8 +29,8 @@ class Player:
         self,
         id: int,
         system_prompt: str,
-        game_log_path: str,
-    ) -> None:
+        log_dir: str,
+    ):
         """
         Parameters
         ----------
@@ -38,7 +38,7 @@ class Player:
             player id, should be 0 or 1
         system_prompt : str
             initial system prompt to start the game
-        game_log_path : str
+        log_dir : str
             path to the log directory of the specific game played
         """
         self.id = id
@@ -46,67 +46,31 @@ class Player:
         self.system_prompt = system_prompt
         self.context = list()
 
-        os.makedirs(game_log_path, exist_ok=True)
-        self.player_log = os.path.join(game_log_path, f"{self.unique_name}.log")
-        self.context_log = os.path.join(game_log_path, f"{self.unique_name}.json")
+        os.makedirs(log_dir, exist_ok=True)
+        self.player_file = os.path.join(log_dir, f"{self.unique_name}.log")
+        self.context_file = os.path.join(log_dir, f"{self.unique_name}.json")
 
         self.fresh = True
         self.active = False
-
-    def duplicate(
-        self,
-        id: int,
-        system_prompt: str,
-        game_type: str,
-        game_id: int,
-        log_path: str,
-    ) -> "Player":
-        """
-        creates a duplicate player object. All parameters of duplicate() refer to the target player. duplicate() duplicates information of the source player (self) to the target player.
-
-        Parameters
-        ----------
-        id : int
-            player id, should be 0 or 1
-        system_prompt : str
-            initial system prompt to start the game
-        game_type : str
-            type of the game, e.g., "rps"
-        game_id : int
-            game id
-        log_path : str
-            path to the root log directory
-
-        Returns
-        -------
-        Player
-            target player object
-        """
-        target_player = Player(id, system_prompt, game_type, game_id, log_path)
-
-        with open(self.player_log, "r") as f1, open(target_player.player_log, "w") as f2:
-            f2.write(f1.read())
-        with open(self.context_log, "r") as f1, open(target_player.context_log, "w") as f2:
-            f2.write(f1.read())
-        with open(target_player.context_log, "r") as f:
-            target_player.context = json.load(f)
-        
-        target_player.fresh = False
-        return target_player
-
-    def save_context(self) -> None:
-        """
-        saves the player's context to the context log file
-        """
-        with open(self.context_log, "a") as f:
-            json.dump(self.context, f, indent=2)
 
     def load_context(self) -> None:
         """
         loads the player's context from the context log file
         """
-        with open(self.context_log, "r") as f:
+        with open(self.context_file, "r") as f:
             self.context = json.load(f)
+
+    def save_context(self) -> None:
+        """
+        saves the player's context to the context log file
+        """
+        with open(self.context_file, "a+") as f:
+            # if context file is not empty, it contains a list of dictionaries
+            # so we need to put the current context entries in this list
+            context = json.load(f) if os.path.getsize(self.context_file) > 0 else []
+            context.extend(self.context)
+            f.seek(0)
+            json.dump(context, f, indent=2)
 
     def append_context(self, entry: dict) -> None:
         """
@@ -114,8 +78,8 @@ class Player:
 
         Parameters
         ----------
-        context : dict
-            context to append
+        entry : dict
+            context entry to append to the player's context
         """
         if len(self.context) == 0:
             self.context.append(entry)
@@ -134,21 +98,20 @@ class Player:
         else:
             self.context.append(entry)
 
-    def _content_wrapper(self, content: str):
-        return [{ "text" : content }]
-
-    def _content_unwrapper(self, content: str):
-        return content[0]["text"]
-
-    def append_log(self, log: str) -> None:
+    def save_log(self, log: str) -> None:
         """
-        appends the log to the player's log
+        Append the log to the player's log file.
 
         Parameters
         ----------
         log : str
             log to append
         """
-        with open(self.player_log, "a") as f:
+        with open(self.player_file, "a") as f:
             f.write(log)
 
+    def _content_wrapper(self, content: str):
+        return [{ "text" : content }]
+
+    def _content_unwrapper(self, content: str):
+        return content[0]["text"]

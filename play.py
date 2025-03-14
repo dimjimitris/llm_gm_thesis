@@ -1,5 +1,6 @@
 from chat.player import Player
 from chat.rps import RockPaperScissorsGame
+from chat.prompt import PromptGenerator
 from descriptions.rps import RPS_DESC
 
 import os
@@ -7,7 +8,7 @@ import argparse
 import time
 import json
 
-game_settings : dict = RPS_DESC["game_settings"]
+GAME_SETTINGS : dict = RPS_DESC["game_settings"]
 
 models = [
     {
@@ -23,43 +24,41 @@ models = [
 def trial_rps(
     id: int,
     rounds: int,
-    game_setting: str,
-    this_game_settings: dict,
+    game_settings_type: str,
+    game_settings: dict,
     model_id: str,
     model_name: str,
 ):
-    log_path = os.path.join("logs", model_name)
-
-    r = this_game_settings["r"]
-    p = this_game_settings["p"]
-    s = this_game_settings["s"]
-
-    # create a game object
-    game = RockPaperScissorsGame(
-        id,
-        log_path,
-        1.0,
-        256,
-        model_id,
-        game_setting,
-        r,
-        p,
-        s,
-        this_game_settings["move_mapping"],
-        True,
+    # generate game prompt
+    prompt_generator = PromptGenerator(
+        "rps",
+        game_settings,
     )
+    system_prompt = prompt_generator.get_prompt()
+
+    log_dir = os.path.join("logs", model_name)
 
     # create player objects
     players = [
         Player(
             i,
-            game.system_prompt,
-            os.path.dirname(game.game_log),
+            system_prompt,
+            os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
         ) for i in range(2)
     ]
 
-    # add players to the game
-    game.add_players(players[0], players[1])
+    # create a game object
+    game = RockPaperScissorsGame(
+        id,
+        players,
+        game_settings_type,
+        game_settings,
+        model_id,
+        log_dir,
+        0.8,
+        512,
+        True,
+    )
 
     # play the game
     game_outcome = game.play(rounds)
@@ -116,8 +115,8 @@ def main():
     args = parser.parse_args()
 
     game_type = args.game
-    game_setting = args.setting
-    this_game_settings = game_settings[game_setting]
+    game_settings_type = args.setting
+    game_settings = GAME_SETTINGS[game_settings_type]
     model_id = args.model
     model_name = next(model["model_name"] for model in models if model["model_id"] == model_id)
     trial_id = args.trial_id
@@ -129,8 +128,8 @@ def main():
     game_outcome = trial_rps(
         trial_id,
         rounds,
-        game_setting,
-        this_game_settings,
+        game_settings_type,
+        game_settings,
         model_id,
         model_name,
     )

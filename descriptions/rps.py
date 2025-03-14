@@ -27,7 +27,8 @@ Tips:
 - Try to formulate a strategy by reasoning on the provided information.
 - Pay attention to the payoff matrix of the game moves.
 - You should only send move messages. Hint messages will only be provided to you.
-- Pay attention to hints when provided.""",
+- Pay attention to hints when provided.
+""",
 
 "game_settings": {
         "eq1" : {
