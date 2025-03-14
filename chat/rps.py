@@ -293,7 +293,7 @@ class RockPaperScissorsGame(BedrockChat):
         if msg.startswith("[move]"):
             return self._validate_move(msg)
         
-        return False, "Your output should be a move message. Move messages begin with the tag [move] and end with a valid move: 'rock', 'paper', or 'scissors'. Format: [move] (Optional explanation here) Your move here."
+        return False, "Your output should be a move message. Move messages begin with the tag [move] and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
     
     def _validate_move(self, msg : str) -> tuple[bool, str]:
         """
@@ -313,7 +313,7 @@ class RockPaperScissorsGame(BedrockChat):
         # move should be the last word in the message
         move = msg_aux.split()[-1]
         if move not in self.move_mapping.values():
-            return False, "Your move must begin with the tag [move] and end with a valid move: 'rock', 'paper', or 'scissors'. Format: [move] (Optional explanation here) Your move here."
+            return False, "Your move must begin with the tag [move] and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
         
         return True, ""
     
