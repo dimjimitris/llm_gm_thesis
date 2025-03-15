@@ -1,3 +1,4 @@
+from typing import Iterable
 from chat.bedrock import BedrockChat
 from chat.player import Player
 from utils.globals import PlayerRole
@@ -427,6 +428,23 @@ class RockPaperScissorsGame(BedrockChat):
         total_moves_made : list[list[str]],
         total_points : list[list[int]],
     ) -> dict:
+        """
+        Generate the game information
+
+        Parameters
+        ----------
+        total_tokens : list[list[int]]
+            list of token counts for each round
+        total_moves_made : list[list[str]]
+            list of moves made by the players for each round
+        total_points : list[list[int]]
+            list of points scored by the players for each round
+
+        Returns
+        -------
+        dict
+            game information
+        """
         valid_outcomes = [None not in moves_made for moves_made in total_moves_made]
         
         info = dict()
@@ -435,7 +453,15 @@ class RockPaperScissorsGame(BedrockChat):
             info[f"player_{i}_context"] = player.context
             info[f"player_{i}_points"] = [points[i] for points in total_points]
             info[f"player_{i}_moves"] = [moves[i] for moves in total_moves_made]
-        info["total_tokens"] = [statistics.mean(tokens) for tokens in total_tokens]
+            
+
+            info[f"player{i}_rates"] = {
+                "win": self._mean_aux(1 for points in info[f"player_{i}_points"] if points > 0),
+                "loss": self._mean_aux(1 for points in info[f"player_{i}_points"] if points < 0),
+                "tie": self._mean_aux(1 for points in info[f"player_{i}_points"] if points == 0),
+            }
+
+        info["total_tokens"] = [self._mean_aux(tokens) for tokens in total_tokens]
         info["game_settings"] = {
             "r": self.r,
             "p": self.p,
@@ -456,3 +482,22 @@ class RockPaperScissorsGame(BedrockChat):
             info[f"player_{i}_log"] = player.player_file
 
         return info
+    
+    def _mean_aux(self, data : Iterable[int]) -> float:
+        """
+        Calculate the mean of the data
+
+        Parameters
+        ----------
+        data : Iterable[int]
+            data to calculate the mean of
+
+        Returns
+        -------
+        float
+            mean of the data
+        """
+        try:
+            return statistics.mean(data)
+        except statistics.StatisticsError:
+            return 0.0
