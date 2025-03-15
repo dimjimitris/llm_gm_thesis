@@ -456,12 +456,12 @@ class RockPaperScissorsGame(BedrockChat):
             
 
             info[f"player_{i}_rates"] = {
-                "win": self._mean_aux(int(points > 0) for points in info[f"player_{i}_points"]),
-                "loss": self._mean_aux(int(points < 0) for points in info[f"player_{i}_points"]),
-                "tie": self._mean_aux(int(points == 0) for points in info[f"player_{i}_points"]),
+                "win": statistics.mean(int(points > 0) for points in info[f"player_{i}_points"]),
+                "loss": statistics.mean(int(points < 0) for points in info[f"player_{i}_points"]),
+                "tie": statistics.mean(int(points == 0) for points in info[f"player_{i}_points"]),
             }
 
-        info["total_tokens"] = [self._mean_aux(tokens) for tokens in total_tokens]
+        info["total_tokens"] = [statistics.mean(tokens) for tokens in total_tokens]
         info["game_settings"] = {
             "r": self.r,
             "p": self.p,
@@ -482,22 +482,3 @@ class RockPaperScissorsGame(BedrockChat):
             info[f"player_{i}_log"] = player.player_file
 
         return info
-    
-    def _mean_aux(self, data : Iterable[int]) -> float:
-        """
-        Calculate the mean of the data
-
-        Parameters
-        ----------
-        data : Iterable[int]
-            data to calculate the mean of
-
-        Returns
-        -------
-        float
-            mean of the data
-        """
-        try:
-            return statistics.mean(data)
-        except statistics.StatisticsError:
-            return 0.0
