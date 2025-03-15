@@ -349,6 +349,12 @@ class RockPaperScissorsGame(BedrockChat):
             tablefmt="github",
         )
 
+        # log model information
+        self.save_log(f"Model: {self.model_id}\n")
+        self.save_log(f"Temperature: {self.temp}\n")
+        self.save_log(f"Max tokens: {self.max_tokens}\n")
+        self.save_log(f"Random player sequence: {self.rand_player_seq}\n")
+
         self.save_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
         self.save_log(f"{rounds} rounds.\n")
         for player in self.players:
@@ -445,10 +451,15 @@ class RockPaperScissorsGame(BedrockChat):
         dict
             game information
         """
-        valid_outcomes = [None not in moves_made for moves_made in total_moves_made]
-        
         info = dict()
-        info["valid_outcomes"] = valid_outcomes
+        # add model information to info
+        info["model_id"] = self.model_id
+        info["temperature"] = self.temp
+        info["max_tokens"] = self.max_tokens
+        info["random_player_sequence"] = self.rand_player_seq
+
+ 
+        info["valid_outcomes"] = [None not in moves_made for moves_made in total_moves_made]
         for i, player in enumerate(self.players):
             info[f"player_{i}_context"] = player.context
             info[f"player_{i}_points"] = [points[i] for points in total_points]

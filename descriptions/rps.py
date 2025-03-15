@@ -81,6 +81,16 @@ Tips:
                 "scissors": "scissors",
             }
         },
+        "p5" : {
+            "r": 1,
+            "p": 5,
+            "s": 1,
+            "move_mapping": {
+                "rock": "rock",
+                "paper": "paper",
+                "scissors": "scissors",
+            }
+        },
     }
 
 }

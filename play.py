@@ -28,6 +28,7 @@ def trial_rps(
     game_settings: dict,
     model_id: str,
     model_name: str,
+    temp: float,
 ):
     # generate game prompt
     prompt_generator = PromptGenerator(
@@ -55,7 +56,7 @@ def trial_rps(
         game_settings,
         model_id,
         log_dir,
-        0.8,
+        temp,
         512,
         True,
     )
@@ -66,7 +67,7 @@ def trial_rps(
     return game_outcome
 
 VALID_GAMES = ["rps"]
-VALID_GAME_SETTINGS = ["eq1", "eq2", "r2", "p2", "s2"]
+VALID_GAME_SETTINGS = ["eq1", "eq2", "r2", "p2", "s2", "p5"]
 VALID_MODEL_IDS = [model["model_id"] for model in models]
 
 def argument_parser() -> argparse.Namespace:
@@ -82,7 +83,7 @@ def argument_parser() -> argparse.Namespace:
         epilog="""
 Examples:
   play.py -g rps -s eq1 -m anthropic.claude-3-5-sonnet-20241022-v2:0
-  play.py -g rps -s p2 -m us.meta.llama3-3-70b-instruct-v1:0 -r 5 -i 42
+  play.py -g rps -s p2 -m us.meta.llama3-3-70b-instruct-v1:0 -t 1.0 -r 5 -i 42
         """
     )
     
@@ -112,6 +113,14 @@ Examples:
         metavar="MODEL_ID",
         help="LLM model ID\n  Options:\n    " + "  \n    ".join(VALID_MODEL_IDS)
     )
+
+    parser.add_argument(
+        "-t", "--temp",
+        type=float,
+        default=0.8,
+        metavar="TEMP",
+        help="Sampling temperature (default: 0.8)"
+    )
     
     parser.add_argument(
         "-i", "--trial_id",
@@ -138,6 +147,7 @@ def main():
     game_settings_type = args.setting
     game_settings = GAME_SETTINGS[game_settings_type]
     model_id = args.model
+    temp = args.temp
     model_name = next(model["model_name"] for model in models if model["model_id"] == model_id)
     trial_id = args.trial_id
     rounds = args.rounds
@@ -152,6 +162,7 @@ def main():
         game_settings,
         model_id,
         model_name,
+        temp,
     )
 
     end_time = time.time()
