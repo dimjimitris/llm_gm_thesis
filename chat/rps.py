@@ -455,10 +455,10 @@ class RockPaperScissorsGame(BedrockChat):
             info[f"player_{i}_moves"] = [moves[i] for moves in total_moves_made]
             
 
-            info[f"player{i}_rates"] = {
-                "win": self._mean_aux(1 for points in info[f"player_{i}_points"] if points > 0),
-                "loss": self._mean_aux(1 for points in info[f"player_{i}_points"] if points < 0),
-                "tie": self._mean_aux(1 for points in info[f"player_{i}_points"] if points == 0),
+            info[f"player_{i}_rates"] = {
+                "win": self._mean_aux(int(points > 0) for points in info[f"player_{i}_points"]),
+                "loss": self._mean_aux(int(points < 0) for points in info[f"player_{i}_points"]),
+                "tie": self._mean_aux(int(points == 0) for points in info[f"player_{i}_points"]),
             }
 
         info["total_tokens"] = [self._mean_aux(tokens) for tokens in total_tokens]
