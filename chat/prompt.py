@@ -1,7 +1,3 @@
-from descriptions.rps import RPS_DESC
-
-INITIAL_PROMPT : str = RPS_DESC["init"]
-
 class PromptGenerator:
     """
     A class to generate properly formatted prompts for the chat game.
@@ -15,6 +11,7 @@ class PromptGenerator:
         self,
         game_type: str,
         game_settings: dict,
+        system_prompt_skeleton: str,
     ):
         """
         Parameters
@@ -23,16 +20,20 @@ class PromptGenerator:
             type of the game, e.g., "rps"
         game_settings : dict
             dictionary containing game settings
+        system_prompt_skeleton : str
+            skeleton of the system prompt for the game to be played
         """
         if game_type == "rps":
-            self.system_prompt = self._generate_prompt_rps(game_settings)
+            self.system_prompt = self._generate_prompt_rps(system_prompt_skeleton, game_settings)
 
-    def _generate_prompt_rps(self, game_settings: dict) -> str:
+    def _generate_prompt_rps(self, system_prompt_skeleton: str, game_settings: dict) -> str:
         """
-        Generates a system prompt for the Rock-Paper-Scissors game.
+        Generates a system prompt for the game to be played.
 
         Parameters
         ----------
+        system_prompt_skeleton : str
+            skeleton of the system prompt for the game to be played
         game_settings : dict
             dictionary containing game settings
 
@@ -46,7 +47,7 @@ class PromptGenerator:
         s = game_settings["s"]
         move_mapping : dict = game_settings["move_mapping"]
         
-        return INITIAL_PROMPT.format(
+        return system_prompt_skeleton.format(
             rock=move_mapping["rock"],
             paper=move_mapping["paper"],
             scissors=move_mapping["scissors"],

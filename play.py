@@ -1,14 +1,16 @@
 from chat.player import Player
 from chat.rps import RockPaperScissorsGame
 from chat.prompt import PromptGenerator
-from descriptions.rps import RPS_DESC
+from descriptions.rps import (
+    RPS_INIT_DEFAULT,
+    RPS_INIT_SPP,
+    RPS_GAME_SETTINGS,
+)
 
 import os
 import argparse
 import time
 import json
-
-GAME_SETTINGS : dict = RPS_DESC["game_settings"]
 
 models = [
     {
@@ -24,28 +26,35 @@ models = [
 def trial_rps(
     id: int,
     rounds: int,
+    system_prompt_skeletons: list[str],
     game_settings_type: str,
     game_settings: dict,
     model_id: str,
     model_name: str,
     temp: float,
 ):
-    # generate game prompt
-    prompt_generator = PromptGenerator(
-        "rps",
-        game_settings,
-    )
-    system_prompt = prompt_generator.get_prompt()
-
     log_dir = os.path.join("logs", model_name)
 
     # create player objects
     players = [
         Player(
-            i,
-            system_prompt,
+            0,
+            PromptGenerator(
+                "rps",
+                game_settings,
+                system_prompt_skeletons[0],
+            ).get_prompt(),
             os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-        ) for i in range(2)
+        ),
+        Player(
+            1,
+            PromptGenerator(
+                "rps",
+                game_settings,
+                system_prompt_skeletons[1],
+            ).get_prompt(),
+            os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+        ),
     ]
 
     # create a game object
@@ -57,7 +66,7 @@ def trial_rps(
         model_id,
         log_dir,
         temp,
-        512,
+        1024,
         True,
     )
 
@@ -67,7 +76,7 @@ def trial_rps(
     return game_outcome
 
 VALID_GAMES = ["rps"]
-VALID_GAME_SETTINGS = ["eq1", "eq2", "r2", "p2", "s2", "p5"]
+VALID_GAME_SETTINGS = [k for k in RPS_GAME_SETTINGS.keys()]
 VALID_MODEL_IDS = [model["model_id"] for model in models]
 
 def argument_parser() -> argparse.Namespace:
@@ -145,7 +154,7 @@ def main():
 
     game_type = args.game
     game_settings_type = args.setting
-    game_settings = GAME_SETTINGS[game_settings_type]
+    game_settings = RPS_GAME_SETTINGS[game_settings_type]
     model_id = args.model
     temp = args.temp
     model_name = next(model["model_name"] for model in models if model["model_id"] == model_id)
@@ -158,6 +167,7 @@ def main():
     game_outcome = trial_rps(
         trial_id,
         rounds,
+        [RPS_INIT_SPP, RPS_INIT_DEFAULT],
         game_settings_type,
         game_settings,
         model_id,

@@ -9,6 +9,7 @@ import statistics
 import tabulate
 import json
 from collections import Counter
+import re
 
 class RockPaperScissorsGame(BedrockChat):
     """
@@ -42,8 +43,6 @@ class RockPaperScissorsGame(BedrockChat):
         reward for scissors beating paper
     move_mapping : dict
         mapping of moves to moves
-    system_prompt : str
-        system prompt for the game
     rand_player_seq : bool
         whether to randomize the player sequence or not on each round. If False, player_0 will always play first.
     players : list
@@ -97,7 +96,6 @@ class RockPaperScissorsGame(BedrockChat):
         self.p = game_settings["p"]
         self.s = game_settings["s"]
         self.move_mapping : dict = game_settings["move_mapping"]
-        self.system_prompt = players[0].system_prompt
         self.rand_player_seq = rand_player_seq
         self.players = players
 
@@ -169,7 +167,7 @@ class RockPaperScissorsGame(BedrockChat):
                 })
                 break
 
-            if response_text.startswith("[move]"):
+            if self._is_move_message(response_text):
                 moves_made[idx] = self._parse_move(response_text)
                 player.append_context({
                     "role": PlayerRole.ASSISTANT.value,
@@ -246,11 +244,32 @@ class RockPaperScissorsGame(BedrockChat):
         tuple[bool, str]
             whether the message is valid and an error message if not
         """
-        if msg.startswith("[move]"):
+        if self._is_move_message(msg):
             return self._validate_move(msg)
-        
-        return False, "Your output should be a move message. Move messages begin with the tag [move], which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
+        else:
+            return False, "Your output should be a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
     
+    def _is_move_message(self, msg : str) -> bool:
+        """
+        Check if the message is a move message
+
+        Parameters
+        ----------
+        msg : str
+            message to check
+
+        Returns
+        -------
+        bool
+            whether the message is a move message
+        """
+        pattern = r"\[[^\]]+\]"
+        matches = re.findall(pattern, msg)
+
+        if len(matches) == 0 or len(matches) > 1 or matches[0] != "[move]":
+            return False
+        return True
+
     def _validate_move(self, msg : str) -> tuple[bool, str]:
         """
         Validate the move message
@@ -266,11 +285,12 @@ class RockPaperScissorsGame(BedrockChat):
             whether the message is valid and an error message if not
         """
         msg_aux = msg.lower().strip()
-        # move should be the last word in the message
-        move = msg_aux.split()[-1]
-        if move not in self.move_mapping.values():
-            return False, "Your move must begin with the tag [move], which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
-        
+        pattern = r'\[move\](?: \(([^)]+)\))? (rock|paper|scissors)'
+        matches = re.findall(pattern, msg_aux)
+
+        if len(matches) == 0:
+            return False, "Your output should be a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
+
         return True, ""
     
     def _parse_move(self, msg : str) -> str:
@@ -287,7 +307,11 @@ class RockPaperScissorsGame(BedrockChat):
         str
             move made by the player
         """
-        return msg.lower().strip().split()[-1]
+        msg_aux = msg.lower().strip()
+        pattern = r'\[move\](?: \(([^)]+)\))? (rock|paper|scissors)'
+        matches = re.findall(pattern, msg_aux)
+       
+        return matches[0][-1]
     
     def _calculate_points(self, moves_made : list[str]) -> tuple[int, int]:
         """
@@ -491,5 +515,9 @@ class RockPaperScissorsGame(BedrockChat):
         info["game_log"] = self.game_file
         for i, player in enumerate(self.players):
             info[f"player_{i}_log"] = player.player_file
+
+        # add player system prompts
+        for i, player in enumerate(self.players):
+            info[f"player_{i}_prompt"] = player.system_prompt
 
         return info

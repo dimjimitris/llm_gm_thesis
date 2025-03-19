@@ -58,7 +58,11 @@ class Player:
         loads the player's context from the context log file
         """
         with open(self.context_file, "r") as f:
-            self.context = json.load(f)
+            full_json = json.load(f)
+            if len(full_json) == 0:
+                self.context = list()
+            else:
+                self.context = full_json[-1]["context"]
 
     def save_context(self) -> None:
         """
@@ -67,10 +71,13 @@ class Player:
         with open(self.context_file, "a+") as f:
             # if context file is not empty, it contains a list of dictionaries
             # so we need to put the current context entries in this list
-            context = json.load(f) if os.path.getsize(self.context_file) > 0 else []
-            context.extend(self.context)
+            full_json : list = json.load(f) if os.path.getsize(self.context_file) > 0 else []
+            full_json.append({
+                "system_prompt": self.system_prompt,
+                "context": self.context,
+            })
             f.seek(0)
-            json.dump(context, f, indent=2)
+            json.dump(full_json, f, indent=2)
 
     def append_context(self, entry: dict) -> None:
         """
