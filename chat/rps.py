@@ -167,20 +167,22 @@ class RockPaperScissorsGame(BedrockChat):
                 })
                 break
 
-            if self._is_move_message(response_text):
-                moves_made[idx] = self._parse_move(response_text)
-                player.append_context({
-                    "role": PlayerRole.ASSISTANT.value,
-                    "content": self._content_wrapper(
-                        response_text
-                    )
-                })
-                player.append_context({
-                    "role": PlayerRole.USER.value,
-                    "content": self._content_wrapper(
-                        "[hint] Move made. Waiting for the game to end.\n"
-                    )
-                })
+            # if we get to this point, _player_response() has returned a valid response
+            # that response has already passed the _is_move_message() check
+            # so we can safely parse the move
+            moves_made[idx] = self._parse_move(response_text)
+            player.append_context({
+                "role": PlayerRole.ASSISTANT.value,
+                "content": self._content_wrapper(
+                    response_text
+                )
+            })
+            player.append_context({
+                "role": PlayerRole.USER.value,
+                "content": self._content_wrapper(
+                    "[hint] Move made. Waiting for the game to end.\n"
+                )
+            })
         
         for player in self.players:
             player.active = True
@@ -265,10 +267,7 @@ class RockPaperScissorsGame(BedrockChat):
         """
         pattern = r"\[[^\]]+\]"
         matches = re.findall(pattern, msg)
-
-        if len(matches) == 0 or len(matches) > 1 or matches[0] != "[move]":
-            return False
-        return True
+        return len(matches) == 1 and matches[0] == "[move]"
 
     def _validate_move(self, msg : str) -> tuple[bool, str]:
         """

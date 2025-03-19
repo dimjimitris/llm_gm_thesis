@@ -30,6 +30,7 @@ Tips:
 - Pay attention to hints when provided.
 """
 
+# Solo-Performance Prompting
 RPS_INIT_SPP = \
 """You are going to play a game with other player(s). Begin by identifying the personas who could contribute to you winning. Then, initiate a multi-round collaboration process among these personas, until a final decision is reached. The personas will give critical comments and detailed suggestions whenever necessary.
 
