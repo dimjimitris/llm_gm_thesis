@@ -59,7 +59,7 @@ Final decision: 6 * (1 + 1) + 12 = 24
 
 ---
 
-Now, the game you will be playing is rock-paper-scissors. Identify the personas and collaboratively play the game.
+Now, the game you will be playing is rock-paper-scissors. Identify the personas and use their multi-round collaboration to help you complete the objective of the the game. You may discuss with your personas on any round of the game, as you see fit.
 
 Game Description:
 

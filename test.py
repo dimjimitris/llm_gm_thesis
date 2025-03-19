@@ -35,7 +35,7 @@ def main(s : str):
         s += "\n"
 
     response = client.converse(
-        modelId="anthropic.claude-3-5-sonnet-20241022-v2:0",
+        modelId="us.meta.llama3-3-70b-instruct-v1:0",
         messages = [
             {
                 "role": "user",
@@ -57,12 +57,12 @@ import re
 
 if __name__ == "__main__":
     # read the input
-    #s = input("Enter a prompt: ")
-    #main(s)
-    msg = "[move] (scissors|paper|rocck) rock"
-
-    msg_aux = msg.lower().strip()
-    pattern = r'\[move\](?: \(([^)]+)\))? (rock|paper|scissors)'
-    matches = re.findall(pattern, msg_aux)
-    
-    print(matches[0][-1])
+    s = input("Enter a prompt: ")
+    main(s)
+    #msg = "[move] (scissors|paper|rocck) rock"
+#
+    #msg_aux = msg.lower().strip()
+    #pattern = r'\[move\](?: \(([^)]+)\))? (rock|paper|scissors)'
+    #matches = re.findall(pattern, msg_aux)
+    #
+    #print(matches[0][-1])
