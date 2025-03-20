@@ -1,4 +1,3 @@
-from typing import Iterable
 from chat.bedrock import BedrockChat
 from chat.player import Player
 from utils.globals import PlayerRole
