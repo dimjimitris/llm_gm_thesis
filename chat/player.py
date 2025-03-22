@@ -4,9 +4,14 @@ from utils.globals import (
     PlayerRole,
 )
 
+from utils.rps import (
+    optimal_strategy as rps_optimal_strategy,
+)
+
 import os
 import json
 import boto3
+import random
 
 class Player:
     """
@@ -256,4 +261,253 @@ class BedrockPlayer(Player):
             "input_tokens": int(usage["inputTokens"]),
             "output_tokens": int(usage["outputTokens"]),
             "total_tokens": int(usage["totalTokens"]),
+        }
+    
+class SingleRoundEquilibriumPlayer(Player):
+    """
+    Represents a single-round equilibrium player in the chat game.
+
+    Attributes
+    ----------
+    id : int
+        player id, should be 0 or 1
+    unique_name : str
+        unique name for the player, should be player_{id}
+    system_prompt : str
+        initial system prompt to start the game
+    context : list
+        list of chat history
+    player_file : str
+        path to the player's log file
+    context_file : str
+        path to the player's context file
+    fresh : bool
+        whether the player is fresh (True) or not (False) (non-fresh players are experienced players and created with the duplicate() method)
+    active : bool
+        an active player has already played some rounds against its current opponent
+        an inactive player will now play their first round against their current opponent
+    r : float
+        reward for rock
+    p : float
+        reward for paper
+    s : float
+        reward for scissors
+    move_mapping : dict
+        mapping of moves to moves in the game
+    """
+    def __init__(
+        self,
+        id: int,
+        system_prompt: str,
+        log_dir: str,
+        game_settings: dict,
+    ):
+        """
+        Parameters
+        ----------
+        id : int
+            player id, should be 0 or 1
+        system_prompt : str
+            initial system prompt to start the game
+        log_dir : str
+            path to the log directory of the specific game played
+        game_settings : dict
+            game settings for the rock-paper-scissors game
+        """
+        super().__init__(id, system_prompt, log_dir)
+        self.r = game_settings["r"]
+        self.p = game_settings["p"]
+        self.s = game_settings["s"]
+        self.move_mapping = game_settings["move_mapping"]
+
+    def generate_response(self):
+        opt_strategy = rps_optimal_strategy(self.r, self.p, self.s)
+    
+        # generate random number in [0, 1)
+        random_number = random.random()
+        if (random_number < opt_strategy[self.move_mapping["rock"]]):
+            move = self.move_mapping["rock"]
+        elif (random_number < opt_strategy[self.move_mapping["rock"]] + opt_strategy[self.move_mapping["paper"]]):
+            move = self.move_mapping["paper"]
+        else:
+            move = self.move_mapping["scissors"]
+
+        output_text = f"[move] (single-round-equilibrium-player) {move}"
+
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
+        }
+    
+class PatternPlayer(Player):
+    """
+    Represents a pattern player in the chat game.
+
+    Attributes
+    ----------
+    id : int
+        player id, should be 0 or 1
+    unique_name : str
+        unique name for the player, should be player_{id}
+    system_prompt : str
+        initial system prompt to start the game
+    context : list
+        list of chat history
+    player_file : str
+        path to the player's log file
+    context_file : str
+        path to the player's context file
+    fresh : bool
+        whether the player is fresh (True) or not (False) (non-fresh players are experienced players and created with the duplicate() method)
+    active : bool
+        an active player has already played some rounds against its current opponent
+        an inactive player will now play their first round against their current opponent
+    pattern : list
+        list of moves in the pattern
+    """
+    def __init__(
+        self,
+        id: int,
+        system_prompt: str,
+        log_dir: str,
+        pattern: list,
+    ):
+        """
+        Parameters
+        ----------
+        id : int
+            player id, should be 0 or 1
+        system_prompt : str
+            initial system prompt to start the game
+        log_dir : str
+            path to the log directory of the specific game played
+        pattern : list
+            list of moves in the pattern
+        """
+        super().__init__(id, system_prompt, log_dir)
+        self.pattern = pattern
+        self.pattern_index = 0
+
+    def generate_response(self):
+        move = self.pattern[self.pattern_index]
+        self.pattern_index = (self.pattern_index + 1) % len(self.pattern)
+
+        output_text = f"[move] (pattern-player) {move}"
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
+        }
+    
+class AdaptivePlayer(Player):
+    """
+    Represents a player who uses frequency analysis to adapt to the opponent's moves.
+    """
+    def __init__(
+        self,
+        id: int,
+        system_prompt: str,
+        log_dir: str,
+        move_mapping: dict,
+    ):
+        super().__init__(id, system_prompt, log_dir)
+        self.move_mapping = move_mapping
+        self.moves = list()
+        self.opponent_moves = list()
+
+    def append_context(self, role, content):
+        super().append_context(role, content)
+
+        if "tie" in content:
+            self.opponent_moves.append(self.moves[-1])
+        elif "won" in content:
+            self.opponent_moves.append(self.lose_to_move(self.moves[-1]))
+        elif "lost" in content:
+            self.opponent_moves.append(self.win_to_move(self.moves[-1]))
+        else:
+            raise ValueError("Invalid content, it should contain 'tie', 'won', or 'lost'\n")
+        
+    def win_to_move(self, move):
+        if move == self.move_mapping["rock"]:
+            return self.move_mapping["paper"]
+        elif move == self.move_mapping["paper"]:
+            return self.move_mapping["scissors"]
+        else:
+            return self.move_mapping["rock"]
+    
+    def lose_to_move(self, move):
+        if move == self.move_mapping["rock"]:
+            return self.move_mapping["scissors"]
+        elif move == self.move_mapping["paper"]:
+            return self.move_mapping["rock"]
+        else:
+            return self.move_mapping["paper"]
+        
+    def generate_response(self):
+        if len(self.opponent_moves) == 0: 
+            move = random.choice(list(self.move_mapping.values()))
+        else:
+            move_counts = { move : 0 for move in self.move_mapping.values() }
+            for opponent_move in self.opponent_moves:
+                move_counts[opponent_move] += 1
+            move = max(move_counts, key=move_counts.get)
+            move = self.win_to_move(move)
+        
+        self.moves.append(move)
+        output_text = f"[move] (adaptive-player) {move}"
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
+        }
+    
+class TitForTatPlayer(Player):
+    """
+    Represents a player who counters the opponent's previous move.
+    """
+    def __init__(
+            self,
+            id,
+            system_prompt,
+            log_dir,
+            move_mapping : dict,
+        ):
+        super().__init__(id, system_prompt, log_dir)
+        self.move_mapping = move_mapping
+        self.opponent_moves = list()
+
+
+    def win_to_move(self, move):
+        if move == self.move_mapping["rock"]:
+            return self.move_mapping["paper"]
+        elif move == self.move_mapping["paper"]:
+            return self.move_mapping["scissors"]
+        else:
+            return self.move_mapping["rock"]
+    
+    def lose_to_move(self, move):
+        if move == self.move_mapping["rock"]:
+            return self.move_mapping["scissors"]
+        elif move == self.move_mapping["paper"]:
+            return self.move_mapping["rock"]
+        else:
+            return self.move_mapping["paper"]
+        
+    def generate_response(self):
+        if len(self.opponent_moves) == 0: 
+            move = random.choice(list(self.move_mapping.values()))
+        else:
+            opponent_move = self.opponent_moves[-1]
+            move = self.win_to_move(opponent_move)
+        
+        output_text = f"[move] (tit-for-tat-player) {move}"
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
         }
