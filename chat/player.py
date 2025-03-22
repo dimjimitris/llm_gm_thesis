@@ -31,21 +31,12 @@ class Player:
     active : bool
         an active player has already played some rounds against its current opponent
         an inactive player will now play their first round against their current opponent
-    temp : float
-        temperature parameter for sampling
-    max_tokens : int
-        maximum number of tokens to generate
-    model_id : str
-        bedrock model id
     """
     def __init__(
         self,
         id: int,
         system_prompt: str,
         log_dir: str,
-        model_id: str,
-        temp: float,
-        max_tokens: int,
     ):
         """
         Parameters
@@ -56,12 +47,6 @@ class Player:
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
-        model_id : str
-            bedrock model id
-        temp : float
-            temperature parameter for sampling
-        max_tokens : int
-            maximum number of tokens to generate
         """
         self.id = id
         self.unique_name = f"player_{self.id}"
@@ -74,10 +59,6 @@ class Player:
 
         self.fresh = True
         self.active = False
-
-        self.temp = temp
-        self.max_tokens = max_tokens
-        self.model_id = model_id
 
     def load_context(self) -> None:
         """
@@ -97,6 +78,7 @@ class Player:
         with open(self.context_file, "a+") as f:
             # if context file is not empty, it contains a list of dictionaries
             # so we need to put the current context entries in this list
+            f.seek(0)
             full_json : list = json.load(f) if os.path.getsize(self.context_file) > 0 else []
             full_json.append({
                 "system_prompt": self.system_prompt,
@@ -161,6 +143,89 @@ class Player:
         dict
             a dictionary containing the output text, input tokens, output tokens, and total tokens
         """
+        pass
+    
+    def _system_prompt_wrapper(self, system_prompt: str):
+        return [{ "text" : system_prompt }]
+
+    def _content_wrapper(self, content: str):
+        return [{ "text" : content }]
+
+    def _content_unwrapper(self, content: str):
+        return content[0]["text"]
+    
+class BedrockPlayer(Player):
+    """
+    Represents an AI player in the chat game.
+
+    Attributes
+    ----------
+    id : int
+        player id, should be 0 or 1
+    unique_name : str
+        unique name for the player, should be player_{id}
+    system_prompt : str
+        initial system prompt to start the game
+    context : list
+        list of chat history
+    player_file : str
+        path to the player's log file
+    context_file : str
+        path to the player's context file
+    fresh : bool
+        whether the player is fresh (True) or not (False) (non-fresh players are experienced players and created with the duplicate() method)
+    active : bool
+        an active player has already played some rounds against its current opponent
+        an inactive player will now play their first round against their current opponent
+    temp : float
+        temperature parameter for sampling
+    max_tokens : int
+        maximum number of tokens to generate
+    model_id : str
+        bedrock model id
+    """
+    def __init__(
+        self,
+        id: int,
+        system_prompt: str,
+        log_dir: str,
+        model_id: str,
+        temp: float,
+        max_tokens: int,
+    ):
+        """
+        Parameters
+        ----------
+        id : int
+            player id, should be 0 or 1
+        system_prompt : str
+            initial system prompt to start the game
+        log_dir : str
+            path to the log directory of the specific game played
+        model_id : str
+            bedrock model id
+        temp : float
+            temperature parameter for sampling
+        max_tokens : int
+            maximum number of tokens to generate
+        """
+        super().__init__(id, system_prompt, log_dir)
+
+        self.temp = temp
+        self.max_tokens = max_tokens
+        self.model_id = model_id
+
+    def generate_response(
+        self,
+    ):
+        """
+        Generate a response from the player's model.
+
+        Returns
+        -------
+        dict
+            a dictionary containing the output text, input tokens, output tokens, and total tokens
+        """
         # create a boto3 client for the LLM API
         client = boto3.client(
             "bedrock-runtime",
@@ -192,12 +257,3 @@ class Player:
             "output_tokens": int(usage["outputTokens"]),
             "total_tokens": int(usage["totalTokens"]),
         }
-    
-    def _system_prompt_wrapper(self, system_prompt: str):
-        return [{ "text" : system_prompt }]
-
-    def _content_wrapper(self, content: str):
-        return [{ "text" : content }]
-
-    def _content_unwrapper(self, content: str):
-        return content[0]["text"]

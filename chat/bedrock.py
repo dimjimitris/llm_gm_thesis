@@ -1,7 +1,6 @@
 from chat.player import Player
 
 import os
-
 import json
 
 class BedrockChat:

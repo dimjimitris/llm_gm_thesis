@@ -1,4 +1,4 @@
-from chat.player import Player
+from chat.player import BedrockPlayer
 from chat.rps import RockPaperScissorsGame
 from chat.prompt import PromptGenerator
 from descriptions.rps import (
@@ -37,7 +37,7 @@ def trial_rps(
 
     # create player objects
     players = [
-        Player(
+        BedrockPlayer(
             0,
             PromptGenerator(
                 "rps",
@@ -49,7 +49,7 @@ def trial_rps(
             temp,
             1024,
         ),
-        Player(
+        BedrockPlayer(
             1,
             PromptGenerator(
                 "rps",
