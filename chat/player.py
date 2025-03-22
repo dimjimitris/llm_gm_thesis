@@ -153,6 +153,14 @@ class Player:
     def generate_response(
         self,
     ):
+        """
+        Generate a response from the player's model.
+
+        Returns
+        -------
+        dict
+            a dictionary containing the output text, input tokens, output tokens, and total tokens
+        """
         # create a boto3 client for the LLM API
         client = boto3.client(
             "bedrock-runtime",

@@ -163,7 +163,7 @@ class RockPaperScissorsGame(BedrockChat):
         response_text = None
         error_cnt = 0
         while True:
-            response_obj = self._generate_response(player)
+            response_obj = player.generate_response()
             response_text : str = response_obj["output_text"]
             if not response_text.endswith("\n"):
                 response_text += "\n"
@@ -337,10 +337,12 @@ class RockPaperScissorsGame(BedrockChat):
         )
 
         # log model information
-        self.save_log(f"Model: {self.model_id}\n")
-        self.save_log(f"Temperature: {self.temp}\n")
-        self.save_log(f"Max tokens: {self.max_tokens}\n")
-        self.save_log(f"Random player sequence: {self.rand_player_seq}\n")
+        for player in self.players:
+            player.save_log(f"Player: {player.unique_name}\n")
+            player.save_log(f"Model: {player.model_id}\n")
+            player.save_log(f"Temperature: {player.temp}\n")
+            player.save_log(f"Max tokens: {player.max_tokens}\n")
+            player.save_log(f"Random player sequence: {self.rand_player_seq}\n")
 
         self.save_log(move_mapping_str + "\n" + payoff_matrix_str + "\n")
         self.save_log(f"{rounds} rounds.\n")
@@ -432,9 +434,10 @@ class RockPaperScissorsGame(BedrockChat):
         """
         info = dict()
         # add model information to info
-        info["model_id"] = self.model_id
-        info["temperature"] = self.temp
-        info["max_tokens"] = self.max_tokens
+        for player in self.players:
+            info[f"player_{player.id}_model_id"] = player.model_id
+            info[f"player_{player.id}_temperature"] = player.temp
+            info[f"player_{player.id}_max_tokens"] = player.max_tokens
         info["random_player_sequence"] = self.rand_player_seq
 
  
