@@ -45,6 +45,9 @@ def trial_rps(
                 system_prompt_skeletons[0],
             ).get_prompt(),
             os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+            model_id,
+            temp,
+            1024,
         ),
         Player(
             1,
@@ -54,6 +57,9 @@ def trial_rps(
                 system_prompt_skeletons[1],
             ).get_prompt(),
             os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+            model_id,
+            temp,
+            1024,
         ),
     ]
 
@@ -63,10 +69,7 @@ def trial_rps(
         players,
         game_settings_type,
         game_settings,
-        model_id,
         log_dir,
-        temp,
-        1024,
         True,
     )
 

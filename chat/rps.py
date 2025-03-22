@@ -28,12 +28,6 @@ class RockPaperScissorsGame(BedrockChat):
         path to the game's log file
     info_file : str
         path to the game's info file
-    temp : float
-        temperature parameter for sampling
-    max_tokens : int
-        maximum number of tokens to generate
-    model_id : str
-        bedrock model id
     r : str
         reward for rock beating scissors
     p : str
@@ -53,10 +47,7 @@ class RockPaperScissorsGame(BedrockChat):
         players: list[Player],
         game_settings_type: str,
         game_settings: dict,
-        model_id: str,
         log_dir: str,
-        temp: float,
-        max_tokens: int,
         rand_player_seq : bool = True,
     ):
         """
@@ -70,14 +61,8 @@ class RockPaperScissorsGame(BedrockChat):
             game settings type, one of ["eq1", "eq2", "r2", "p2", "s2"]
         game_settings : dict
             dictionary containing the game settings
-        model_id : str
-            bedrock model id
         log_dir : str
             path to the root log directory
-        temp : float
-            temperature parameter for sampling
-        max_tokens : int
-            maximum number of tokens to generate
         rand_player_seq : bool
             whether to randomize the player sequence or not on each round. If False, player_0 will always play first.
         """
@@ -86,17 +71,13 @@ class RockPaperScissorsGame(BedrockChat):
             players,
             "rps",
             game_settings_type,
-            model_id,
             log_dir,
-            temp,
-            max_tokens,
         )
         self.r = game_settings["r"]
         self.p = game_settings["p"]
         self.s = game_settings["s"]
         self.move_mapping : dict = game_settings["move_mapping"]
         self.rand_player_seq = rand_player_seq
-        self.players = players
 
     def play_round(self) -> tuple[list[str], list[int]]:
         """
@@ -115,27 +96,21 @@ class RockPaperScissorsGame(BedrockChat):
             recommendation = "Please make your move." if idx == curr_player_idx else "The other player made their move. Please make a move too."
 
             if self.players[other_idx].active:
-                player.append_context({
-                    "role": PlayerRole.USER.value,
-                    "content": self._content_wrapper(
-                        "[hint] Let's play another round. " + recommendation + "\n"
-                    )
-                })
+                player.append_context(
+                    PlayerRole.USER,
+                    "[hint] Let's play another round. " + recommendation + "\n",
+                )
             else:
                 if self.players[other_idx].fresh:
-                    player.append_context({
-                        "role": PlayerRole.USER.value,
-                        "content": self._content_wrapper(
-                            "[hint] Let's play rock-paper-scissors. You are playing against a fresh player. " + recommendation + "\n"
-                        )
-                    })
+                    player.append_context(
+                        PlayerRole.USER,
+                        "[hint] Let's play rock-paper-scissors. You are playing against a fresh player. " + recommendation + "\n",
+                    )
                 else:
-                    player.append_context({
-                        "role": PlayerRole.USER.value,
-                        "content": self._content_wrapper(
-                            "[hint] Let's play rock-paper-scissors. You are playing against an experienced player. " + recommendation + "\n"
-                        )
-                    })
+                    player.append_context(
+                        PlayerRole.USER,
+                            "[hint] Let's play rock-paper-scissors. You are playing against an experienced player. " + recommendation + "\n",
+                    )
 
         moves_made = [None, None]
         for idx, player in [
@@ -152,36 +127,28 @@ class RockPaperScissorsGame(BedrockChat):
             self.save_log(f"[player_{idx}] {response_text}\n")
 
             if "[abort]" in response_text:
-                player.append_context({
-                    "role": PlayerRole.ASSISTANT.value,
-                    "content": self._content_wrapper(
-                        response_text
-                    )
-                })
-                other_player.append_context({
-                    "role": PlayerRole.USER.value,
-                    "content": self._content_wrapper(
-                        "[hint] The other player has aborted the game. The game has ended.\n"
-                    )
-                })
+                player.append_context(
+                    PlayerRole.ASSISTANT,
+                    response_text,
+                )
+                other_player.append_context(
+                    PlayerRole.USER,
+                    "[hint] The other player has aborted the game. The game has ended.\n",
+                )
                 break
 
             # if we get to this point, _player_response() has returned a valid response
             # that response has already passed the _is_move_message() check
             # so we can safely parse the move
             moves_made[idx] = self._parse_move(response_text)
-            player.append_context({
-                "role": PlayerRole.ASSISTANT.value,
-                "content": self._content_wrapper(
-                    response_text
-                )
-            })
-            player.append_context({
-                "role": PlayerRole.USER.value,
-                "content": self._content_wrapper(
-                    "[hint] Move made. Waiting for the game to end.\n"
-                )
-            })
+            player.append_context(
+                PlayerRole.ASSISTANT,
+                response_text,
+            )
+            player.append_context(
+                PlayerRole.USER,
+                "[hint] Move made. Waiting for the game to end.\n",
+            )
         
         for player in self.players:
             player.active = True
@@ -210,16 +177,14 @@ class RockPaperScissorsGame(BedrockChat):
             if is_valid:
                 break
 
-            player.append_context({
-                "role": PlayerRole.ASSISTANT.value,
-                "content": self._content_wrapper(response_text)
-            })
-            player.append_context({
-                "role": PlayerRole.USER.value,
-                "content": self._content_wrapper(
-                    f"[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\"\n"
-                )
-            })
+            player.append_context(
+                PlayerRole.ASSISTANT,
+                response_text,
+            )
+            player.append_context(
+                PlayerRole.USER,
+                f"[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"{error_msg}\"\n",
+            )
 
             # log the error
             player.save_log(f"[error] {error_msg}\n")
@@ -402,34 +367,26 @@ class RockPaperScissorsGame(BedrockChat):
             if None not in round_moves_made:
                 if winner_idx == -1:
                     for player in self.players:
-                        player.append_context({
-                            "role": PlayerRole.USER.value,
-                            "content": self._content_wrapper(
-                                f"[hint] The round ended in a tie. Both players made the same move: {round_moves_made[winner_idx]}.\nYou scored {round_points[0]} points.\n"
-                            )
-                        })
+                        player.append_context(
+                            PlayerRole.USER,
+                            f"[hint] The round ended in a tie. Both players made the same move: {round_moves_made[winner_idx]}.\nYou scored {round_points[0]} points.\n",
+                        )
 
                 else:
-                    self.players[winner_idx].append_context({
-                        "role": PlayerRole.USER.value,
-                        "content": self._content_wrapper(
-                            f"[hint] You won the round. You made the move: {round_moves_made[winner_idx]}. Your opponent made the move: {round_moves_made[1-winner_idx]}.\nYou scored {round_points[winner_idx]} points.\n"
-                        )
-                    })
-                    self.players[1 - winner_idx].append_context({
-                        "role": PlayerRole.USER.value,
-                        "content": self._content_wrapper(
-                            f"[hint] You lost the round. You made the move: {round_moves_made[1-winner_idx]}. Your opponent made the move: {round_moves_made[winner_idx]}.\nYou scored {round_points[1-winner_idx]} points.\n"
-                        )
-                    })
+                    self.players[winner_idx].append_context(
+                        PlayerRole.USER,
+                        f"[hint] You won the round. You made the move: {round_moves_made[winner_idx]}. Your opponent made the move: {round_moves_made[1-winner_idx]}.\nYou scored {round_points[winner_idx]} points.\n",
+                    )
+                    self.players[1 - winner_idx].append_context(
+                        PlayerRole.USER,
+                        f"[hint] You lost the round. You made the move: {round_moves_made[1-winner_idx]}. Your opponent made the move: {round_moves_made[winner_idx]}.\nYou scored {round_points[1-winner_idx]} points.\n",
+                    )
             else:
                 for player in self.players:
-                    player.append_context({
-                        "role": PlayerRole.USER.value,
-                        "content": self._content_wrapper(
-                            f"[hint] The round ended abnormally. You scored 0 points.\n"
-                        )
-                    })
+                    player.append_context(
+                        PlayerRole.USER,
+                        f"[hint] The round ended abnormally. You scored 0 points.\n",
+                    )
 
             total_moves_made.append(round_moves_made)
             total_points.append(round_points)
@@ -485,8 +442,9 @@ class RockPaperScissorsGame(BedrockChat):
         for i, player in enumerate(self.players):
             info[f"player_{i}_context"] = player.context
             info[f"player_{i}_points"] = [points[i] for points in total_points]
+            info[f"player_{i}_average_points"] = statistics.mean(points[i] for points in total_points)
             info[f"player_{i}_moves"] = [moves[i] for moves in total_moves_made]
-            
+            info[f"player_{i}_tokens"] = [tokens[i] for tokens in total_tokens]
 
             info[f"player_{i}_rates"] = {
                 "win": statistics.mean(int(points > 0) for points in info[f"player_{i}_points"]),
@@ -494,7 +452,6 @@ class RockPaperScissorsGame(BedrockChat):
                 "tie": statistics.mean(int(points == 0) for points in info[f"player_{i}_points"]),
             }
 
-        info["total_tokens"] = [statistics.mean(tokens) for tokens in total_tokens]
         info["game_settings"] = {
             "r": self.r,
             "p": self.p,

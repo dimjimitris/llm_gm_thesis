@@ -1,5 +1,12 @@
+from utils.globals import (
+    AWS_ACCESS_KEY_ID,
+    AWS_SECRET_ACCESS_KEY,
+    PlayerRole,
+)
+
 import os
 import json
+import boto3
 
 class Player:
     """
@@ -24,12 +31,21 @@ class Player:
     active : bool
         an active player has already played some rounds against its current opponent
         an inactive player will now play their first round against their current opponent
+    temp : float
+        temperature parameter for sampling
+    max_tokens : int
+        maximum number of tokens to generate
+    model_id : str
+        bedrock model id
     """
     def __init__(
         self,
         id: int,
         system_prompt: str,
         log_dir: str,
+        model_id: str,
+        temp: float,
+        max_tokens: int,
     ):
         """
         Parameters
@@ -40,6 +56,12 @@ class Player:
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        model_id : str
+            bedrock model id
+        temp : float
+            temperature parameter for sampling
+        max_tokens : int
+            maximum number of tokens to generate
         """
         self.id = id
         self.unique_name = f"player_{self.id}"
@@ -52,6 +74,10 @@ class Player:
 
         self.fresh = True
         self.active = False
+
+        self.temp = temp
+        self.max_tokens = max_tokens
+        self.model_id = model_id
 
     def load_context(self) -> None:
         """
@@ -79,15 +105,22 @@ class Player:
             f.seek(0)
             json.dump(full_json, f, indent=2)
 
-    def append_context(self, entry: dict) -> None:
+    def append_context(self, role : PlayerRole, content : str) -> None:
         """
         appends the context to the player's context
 
         Parameters
         ----------
-        entry : dict
-            context entry to append to the player's context
+        role : str
+            role of the entry, should be a value from PlayerRole
+        content : str
+            content of the entry
         """
+        entry = {
+            "role": role.value,
+            "content": self._content_wrapper(content)
+        }
+
         if len(self.context) == 0:
             self.context.append(entry)
             return
@@ -116,6 +149,44 @@ class Player:
         """
         with open(self.player_file, "a") as f:
             f.write(log)
+    
+    def generate_response(
+        self,
+    ):
+        # create a boto3 client for the LLM API
+        client = boto3.client(
+            "bedrock-runtime",
+            aws_access_key_id=AWS_ACCESS_KEY_ID,
+            aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+            region_name="us-west-2",
+        )
+        
+        inference_config = {
+            "maxTokens": self.max_tokens,
+            "temperature": self.temp,
+        }
+
+        response = client.converse(
+            modelId=self.model_id,
+            messages=self.context,
+            system=self._system_prompt_wrapper(self.system_prompt),
+            inferenceConfig=inference_config,
+        )
+
+        output_text = response["output"]["message"]["content"][0]["text"]
+        usage = response["usage"]
+
+        print(f"{self.player_file}: {output_text}\n")
+
+        return {
+            "output_text": output_text,
+            "input_tokens": int(usage["inputTokens"]),
+            "output_tokens": int(usage["outputTokens"]),
+            "total_tokens": int(usage["totalTokens"]),
+        }
+    
+    def _system_prompt_wrapper(self, system_prompt: str):
+        return [{ "text" : system_prompt }]
 
     def _content_wrapper(self, content: str):
         return [{ "text" : content }]
