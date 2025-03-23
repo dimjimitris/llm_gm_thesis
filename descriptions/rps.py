@@ -32,12 +32,12 @@ Tips:
 
 # Solo-Performance Prompting
 RPS_INIT_SPP = \
-"""You are going to play a game with other player(s). Begin by identifying the personas who could contribute to you winning. Then, initiate a multi-round collaboration process among these personas, until a final decision is reached. The personas will give critical comments and detailed suggestions whenever necessary.
+"""You are going to play a game with other player(s). Begin by identifying the personas who could contribute to you winning. Then initiate a multi-round collaboration process among these personas, until a final decision is reached. The personas will give critical comments and detailed suggestions whenever necessary.
 
 Here is an example on a simpler task from what you will be playing:
 
 ---
-Example Task 1: Use numbers and basic arithmetic operations (+ - * /) to obtain 24. You need to use all numbers, and each number can only be used once.
+Example Task: Use numbers and basic arithmetic operations (+ - * /) to obtain 24. You need to use all numbers, and each number can only be used once.
 Input: 6 12 1 1
 
 Personas: AI Assistant (you); Math Expert
@@ -61,6 +61,60 @@ Final decision: 6 * (1 + 1) + 12 = 24
 ---
 
 Now, the game you will be playing is rock-paper-scissors. Identify the personas and use their multi-round collaboration to help you complete the objective of the the game. You may discuss with your personas on any round of the game, as you see fit.
+
+Game Description:
+
+You are playing a game called rock-paper-scissors with other player(s). The game is based on making moves.
+
+Game Description:
+There are three possible moves: {rock}, {paper}, and {scissors}.
+- {rock} beats {scissors} giving the winner {r} points and the loser -{r} points.
+- {paper} beats {rock} giving the winner {p} points and the loser -{p} points.
+- {scissors} beats {paper} giving the winner {s} points and the loser -{s} points.
+- If both players make the same move, the game is a tie and no points are awarded.
+
+In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
+
+Message Formats:
+Move messages are sent when you want to make a move.
+Move messages are formatted like this:
+[move] (Optional explanation here) Your move here
+
+Hint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.
+Hint messages are formatted like this:
+[hint] Hint message here
+
+Objective:
+Maximize your points and/or minimize your penalties.
+
+Tips:
+- Try to formulate a strategy by reasoning on the provided information.
+- Pay attention to the payoff matrix of the game moves.
+- You should only send move messages. Hint messages will only be provided to you.
+- Pay attention to hints when provided.
+"""
+
+RPS_INIT_COT = \
+"""You are going to play a game with other player(s). Think step-by-step. Begin by identifying steps that will contribute to you winning. Then reason through the steps, until a final decision is reached. The steps should reflect a meaningful thought process.
+
+Here is an example on a simpler task from what you will be playing:
+
+---
+Example Task: Roger has 5 tennis balls. He buys 2 more cans of tennis balls. Each can has 3 tennis balls. How many tennis balls does Roger have now?
+
+Steps:
+
+1. Roger starts with 5 tennis balls.
+2. 2 cans of 3 tennis balls each are bought. This is 2 * 3 = 6 tennis balls.
+3. Roger now has 5 + 6 = 11 tennis balls.
+
+Finish steps!
+
+Final decision: 11 tennis balls
+
+---
+
+Now, the game you will be playing is rock-paper-scissors. Think step-by-step. Identify the steps and reason through them to complete the objective of the game. You may come up with different reasoning steps for each round, as you see fit.
 
 Game Description:
 
