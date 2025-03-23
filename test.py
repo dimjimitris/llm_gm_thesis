@@ -57,8 +57,8 @@ import re
 
 if __name__ == "__main__":
     # read the input
-    s = input("Enter a prompt: ")
-    main(s)
+    #s = input("Enter a prompt: ")
+    #main(s)
     #msg = "[move] (scissors|paper|rocck) rock"
 #
     #msg_aux = msg.lower().strip()
@@ -66,3 +66,4 @@ if __name__ == "__main__":
     #matches = re.findall(pattern, msg_aux)
     #
     #print(matches[0][-1])
+    pass
