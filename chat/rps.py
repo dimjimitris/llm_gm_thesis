@@ -79,9 +79,14 @@ class RockPaperScissorsGame(BedrockChat):
         self.move_mapping : dict = game_settings["move_mapping"]
         self.rand_player_seq = rand_player_seq
 
-    def play_round(self) -> tuple[list[str], list[int]]:
+    def play_round(self, total_moves_made : list[list[str]]) -> tuple[list[str], list[int]]:
         """
         Play a round of the game
+
+        Parameters
+        ----------
+        total_moves_made : list[list[str]]
+            list of moves made by the players for each round so far
 
         Returns
         -------
@@ -120,7 +125,7 @@ class RockPaperScissorsGame(BedrockChat):
             other_idx = 1 - idx
             other_player = self.players[other_idx]
 
-            response_text, tokens = self._player_response(player)
+            response_text, tokens = self._player_response(player, total_moves_made)
             token_counts[idx] += tokens
 
             # log the response
@@ -158,12 +163,13 @@ class RockPaperScissorsGame(BedrockChat):
     def _player_response(
         self,
         player : Player,
+        total_moves_made : list[list[str]],
     ) -> tuple[str, int]:
         tokens = 0
         response_text = None
         error_cnt = 0
         while True:
-            response_obj = player.generate_response()
+            response_obj = player.generate_response(total_moves_made)
             response_text : str = response_obj["output_text"]
             if not response_text.endswith("\n"):
                 response_text += "\n"
@@ -355,7 +361,7 @@ class RockPaperScissorsGame(BedrockChat):
         total_moves_made = list()
         total_points = list()
         for r in range(rounds):
-            round_moves_made, token_counts = self.play_round()
+            round_moves_made, token_counts = self.play_round(total_moves_made)
             total_tokens.append(token_counts)
             round_points = self._calculate_points(round_moves_made)
 

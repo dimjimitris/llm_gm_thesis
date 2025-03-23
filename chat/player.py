@@ -105,7 +105,7 @@ class Player:
         """
         entry = {
             "role": role.value,
-            "content": self._content_wrapper(content)
+            "content": Player._content_wrapper(content)
         }
 
         if len(self.context) == 0:
@@ -114,14 +114,14 @@ class Player:
         
         last_entry = self.context[-1]
         if last_entry["role"] == entry["role"]:
-            last_entry_text = self._content_unwrapper(last_entry["content"])
-            entry_text = self._content_unwrapper(entry["content"])
+            last_entry_text = Player._content_unwrapper(last_entry["content"])
+            entry_text = Player._content_unwrapper(entry["content"])
             # if the entry_text has a tag, remove it
             if entry_text.startswith("[hint] ") or entry_text.startswith("[move] "):
                 entry_text = entry_text[7:]
             elif entry_text.startswith("[hint]") or entry_text.startswith("[move]"):
                 entry_text = entry_text[6:]
-            last_entry["content"] = self._content_wrapper(f"{last_entry_text}\n{entry_text}")
+            last_entry["content"] = Player._content_wrapper(f"{last_entry_text}\n{entry_text}")
         else:
             self.context.append(entry)
 
@@ -139,9 +139,15 @@ class Player:
     
     def generate_response(
         self,
+        total_moves_made: list[list[str]],
     ):
         """
         Generate a response from the player's model.
+
+        Parameters
+        ----------
+        total_moves_made : list
+            list of all moves made by both players in previous rounds
 
         Returns
         -------
@@ -150,13 +156,16 @@ class Player:
         """
         pass
     
-    def _system_prompt_wrapper(self, system_prompt: str):
+    @staticmethod
+    def _system_prompt_wrapper(system_prompt: str):
         return [{ "text" : system_prompt }]
 
-    def _content_wrapper(self, content: str):
+    @staticmethod
+    def _content_wrapper(content: str):
         return [{ "text" : content }]
 
-    def _content_unwrapper(self, content: str):
+    @staticmethod
+    def _content_unwrapper(content: str):
         return content[0]["text"]
     
 class BedrockPlayer(Player):
@@ -222,6 +231,7 @@ class BedrockPlayer(Player):
 
     def generate_response(
         self,
+        total_moves_made: list[list[str]],
     ):
         """
         Generate a response from the player's model.
@@ -247,7 +257,7 @@ class BedrockPlayer(Player):
         response = client.converse(
             modelId=self.model_id,
             messages=self.context,
-            system=self._system_prompt_wrapper(self.system_prompt),
+            system=BedrockPlayer._system_prompt_wrapper(self.system_prompt),
             inferenceConfig=inference_config,
         )
 
@@ -320,7 +330,7 @@ class SingleRoundEquilibriumPlayer(Player):
         self.s = game_settings["s"]
         self.move_mapping = game_settings["move_mapping"]
 
-    def generate_response(self):
+    def generate_response(self, total_moves_made: list[list[str]]):
         opt_strategy = rps_optimal_strategy(self.r, self.p, self.s)
     
         # generate random number in [0, 1)
@@ -390,7 +400,7 @@ class PatternPlayer(Player):
         self.pattern = pattern
         self.pattern_index = 0
 
-    def generate_response(self):
+    def generate_response(self, total_moves_made: list[list[str]]):
         move = self.pattern[self.pattern_index]
         self.pattern_index = (self.pattern_index + 1) % len(self.pattern)
 
@@ -415,20 +425,6 @@ class AdaptivePlayer(Player):
     ):
         super().__init__(id, system_prompt, log_dir)
         self.move_mapping = move_mapping
-        self.moves = list()
-        self.opponent_moves = list()
-
-    def append_context(self, role, content):
-        super().append_context(role, content)
-
-        if "tie" in content:
-            self.opponent_moves.append(self.moves[-1])
-        elif "won" in content:
-            self.opponent_moves.append(self.lose_to_move(self.moves[-1]))
-        elif "lost" in content:
-            self.opponent_moves.append(self.win_to_move(self.moves[-1]))
-        else:
-            raise ValueError("Invalid content, it should contain 'tie', 'won', or 'lost'\n")
         
     def win_to_move(self, move):
         if move == self.move_mapping["rock"]:
@@ -437,26 +433,17 @@ class AdaptivePlayer(Player):
             return self.move_mapping["scissors"]
         else:
             return self.move_mapping["rock"]
-    
-    def lose_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["scissors"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["rock"]
-        else:
-            return self.move_mapping["paper"]
         
-    def generate_response(self):
-        if len(self.opponent_moves) == 0: 
+    def generate_response(self, total_moves_made: list[list[str]]):
+        if len(total_moves_made) == 0:
             move = random.choice(list(self.move_mapping.values()))
         else:
-            move_counts = { move : 0 for move in self.move_mapping.values() }
-            for opponent_move in self.opponent_moves:
-                move_counts[opponent_move] += 1
-            move = max(move_counts, key=move_counts.get)
-            move = self.win_to_move(move)
+            opponent_moves = { k : 0 for k in self.move_mapping.values() }
+            for round_moves in total_moves_made:
+                opponent_moves[round_moves[1 - self.id]] += 1
+            opponent_most_frequent_move = max(opponent_moves, key=opponent_moves.get)
+            move = self.win_to_move(opponent_most_frequent_move)
         
-        self.moves.append(move)
         output_text = f"[move] (adaptive-player) {move}"
         return {
             "output_text": output_text,
@@ -465,7 +452,7 @@ class AdaptivePlayer(Player):
             "total_tokens": len(output_text.split()),
         }
     
-class TitForTatPlayer(Player):
+class TitForTatPlayer(AdaptivePlayer):
     """
     Represents a player who counters the opponent's previous move.
     """
@@ -478,30 +465,12 @@ class TitForTatPlayer(Player):
         ):
         super().__init__(id, system_prompt, log_dir)
         self.move_mapping = move_mapping
-        self.opponent_moves = list()
-
-
-    def win_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["paper"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["scissors"]
-        else:
-            return self.move_mapping["rock"]
-    
-    def lose_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["scissors"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["rock"]
-        else:
-            return self.move_mapping["paper"]
         
-    def generate_response(self):
-        if len(self.opponent_moves) == 0: 
+    def generate_response(self, total_moves_made: list[list[str]]):
+        if len(total_moves_made) == 0: 
             move = random.choice(list(self.move_mapping.values()))
         else:
-            opponent_move = self.opponent_moves[-1]
+            opponent_move = total_moves_made[-1][1 - self.id]
             move = self.win_to_move(opponent_move)
         
         output_text = f"[move] (tit-for-tat-player) {move}"

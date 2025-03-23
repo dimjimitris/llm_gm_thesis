@@ -24,9 +24,10 @@ class PromptGenerator:
             skeleton of the system prompt for the game to be played
         """
         if game_type == "rps":
-            self.system_prompt = self._generate_prompt_rps(system_prompt_skeleton, game_settings)
+            self.system_prompt = PromptGenerator._generate_prompt_rps(system_prompt_skeleton, game_settings)
 
-    def _generate_prompt_rps(self, system_prompt_skeleton: str, game_settings: dict) -> str:
+    @staticmethod
+    def _generate_prompt_rps(system_prompt_skeleton: str, game_settings: dict) -> str:
         """
         Generates a system prompt for the game to be played.
 
