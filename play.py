@@ -84,7 +84,7 @@ def trial_rps(
                     i,
                     "",
                     os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-                    [game_settings["move_mapping"].values()]
+                    [v for v in game_settings["move_mapping"].values()]
                 )
             )
         elif player_type == "ap":
