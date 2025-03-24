@@ -176,7 +176,7 @@ class RockPaperScissorsGame(BedrockChat):
             responses = list()
             players : list[Player] = list()
             for i in range(player.k):
-                new_player : BedrockPlayer = player.copy()
+                new_player : BedrockPlayer = player.copy(i)
                 response, tokens = self._player_response_aux(new_player, total_moves_made)
                 total_tokens += tokens
                 responses.append(response)
