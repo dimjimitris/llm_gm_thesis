@@ -1,5 +1,5 @@
 from chat.bedrock import BedrockChat
-from chat.player import Player
+from chat.player import Player, BedrockPlayer
 from utils.globals import PlayerRole
 from utils.rps import optimal_strategy
 
@@ -9,6 +9,7 @@ import tabulate
 import json
 from collections import Counter
 import re
+import copy
 
 class RockPaperScissorsGame(BedrockChat):
     """
@@ -65,6 +66,8 @@ class RockPaperScissorsGame(BedrockChat):
             path to the root log directory
         rand_player_seq : bool
             whether to randomize the player sequence or not on each round. If False, player_0 will always play first.
+        trees_of_thought : list
+            lists of thoughts of players
         """
         super().__init__(
             id,
@@ -78,6 +81,7 @@ class RockPaperScissorsGame(BedrockChat):
         self.s = game_settings["s"]
         self.move_mapping : dict = game_settings["move_mapping"]
         self.rand_player_seq = rand_player_seq
+        self.trees_of_thought = [list() for _ in range(len(players))]
 
     def play_round(self, total_moves_made : list[list[str]]) -> tuple[list[str], list[int]]:
         """
@@ -161,6 +165,38 @@ class RockPaperScissorsGame(BedrockChat):
         return moves_made, token_counts
 
     def _player_response(
+        self,
+        player : Player,
+        total_moves_made : list[list[str]],
+    ):
+        if (player.k < 2):
+            return self._player_response_aux(player, total_moves_made)
+        else:
+            total_tokens = 0
+            responses = list()
+            players : list[Player] = list()
+            for i in range(player.k):
+                new_player : BedrockPlayer = player.copy()
+                response, tokens = self._player_response_aux(new_player, total_moves_made)
+                total_tokens += tokens
+                responses.append(response)
+                players.append(new_player)
+            
+            # voting phase - most popular move wins, pick randomly a response with that move
+            move_counts = Counter(self._parse_move(response) for response in responses)
+            max_count = max(move_counts.values())
+            max_moves = [move for move, count in move_counts.items() if count == max_count]
+            max_move = random.choice(max_moves)
+            for idx, response in enumerate(responses):
+                if self._parse_move(response) == max_move:
+                    player.context = players[idx].context
+                    self.trees_of_thought[player.id].append({
+                        "options": responses,
+                        "opt_id": idx,
+                    })
+                    return response, total_tokens
+
+    def _player_response_aux(
         self,
         player : Player,
         total_moves_made : list[list[str]],
@@ -483,5 +519,9 @@ class RockPaperScissorsGame(BedrockChat):
         # add player system prompts
         for i, player in enumerate(self.players):
             info[f"player_{i}_prompt"] = player.system_prompt
+
+        # add trees of thought
+        for i, player in enumerate(self.players):
+            info[f"player_{i}_tot"] = self.trees_of_thought[player.id]
 
         return info

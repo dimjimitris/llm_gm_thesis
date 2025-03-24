@@ -12,6 +12,7 @@ import os
 import json
 import boto3
 import random
+import copy
 
 class Player:
     """
@@ -27,6 +28,8 @@ class Player:
         initial system prompt to start the game
     context : list
         list of chat history
+    log_dir : str
+        path to the log directory of the specific game played
     player_file : str
         path to the player's log file
     context_file : str
@@ -36,12 +39,15 @@ class Player:
     active : bool
         an active player has already played some rounds against its current opponent
         an inactive player will now play their first round against their current opponent
+    k : int
+        number of responses to generate for ToT evaluation
     """
     def __init__(
         self,
         id: int,
         system_prompt: str,
         log_dir: str,
+        k : int = 1,
     ):
         """
         Parameters
@@ -52,11 +58,14 @@ class Player:
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        k : int
+            number of responses to generate for ToT evaluation
         """
         self.id = id
         self.unique_name = f"player_{self.id}"
         self.system_prompt = system_prompt
         self.context = list()
+        self.log_dir = log_dir
 
         os.makedirs(log_dir, exist_ok=True)
         self.player_file = os.path.join(log_dir, f"{self.unique_name}.log")
@@ -64,6 +73,7 @@ class Player:
 
         self.fresh = True
         self.active = False
+        self.k = k
 
     def load_context(self) -> None:
         """
@@ -168,6 +178,9 @@ class Player:
     def _content_unwrapper(content: str):
         return content[0]["text"]
     
+    def copy(self, idx : int) -> "Player":
+        pass
+    
 class BedrockPlayer(Player):
     """
     Represents an AI player in the chat game.
@@ -203,6 +216,7 @@ class BedrockPlayer(Player):
         id: int,
         system_prompt: str,
         log_dir: str,
+        k : int,
         model_id: str,
         temp: float,
         max_tokens: int,
@@ -216,6 +230,8 @@ class BedrockPlayer(Player):
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        k : int
+            number of responses to generate for ToT evaluation
         model_id : str
             bedrock model id
         temp : float
@@ -223,7 +239,7 @@ class BedrockPlayer(Player):
         max_tokens : int
             maximum number of tokens to generate
         """
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, k)
 
         self.temp = temp
         self.max_tokens = max_tokens
@@ -272,6 +288,21 @@ class BedrockPlayer(Player):
             "output_tokens": int(usage["outputTokens"]),
             "total_tokens": int(usage["totalTokens"]),
         }
+    
+    def copy(self, idx : int) -> "BedrockPlayer":
+        new_player = BedrockPlayer(
+            10*(idx + 1) + self.id,
+            self.system_prompt,
+            self.log_dir,
+            1,
+            self.model_id,
+            self.temp,
+            self.max_tokens,
+        )
+        new_player.active = self.active
+        new_player.fresh = self.fresh
+        new_player.context = copy.deepcopy(self.context)
+        return new_player
     
 class SingleRoundEquilibriumPlayer(Player):
     """
