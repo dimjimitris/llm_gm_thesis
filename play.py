@@ -62,6 +62,7 @@ def trial_rps(
                         DESCRIPTIONS[player_type],
                     ).get_prompt(),
                     os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+                    player_type,
                     1,
                     model_id,
                     temp,
