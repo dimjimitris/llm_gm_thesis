@@ -41,12 +41,15 @@ class Player:
         an inactive player will now play their first round against their current opponent
     k : int
         number of responses to generate for ToT evaluation
+    player_type : str
+        type of the player
     """
     def __init__(
         self,
         id: int,
         system_prompt: str,
         log_dir: str,
+        player_type : str,
         k : int = 1,
     ):
         """
@@ -58,6 +61,8 @@ class Player:
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        player_type : str
+            type of the player
         k : int
             number of responses to generate for ToT evaluation
         """
@@ -74,6 +79,7 @@ class Player:
         self.fresh = True
         self.active = False
         self.k = k
+        self.player_type = player_type
 
     def load_context(self) -> None:
         """
@@ -216,6 +222,7 @@ class BedrockPlayer(Player):
         id: int,
         system_prompt: str,
         log_dir: str,
+        player_type : str,
         k : int,
         model_id: str,
         temp: float,
@@ -230,6 +237,8 @@ class BedrockPlayer(Player):
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        player_type : str
+            type of the player
         k : int
             number of responses to generate for ToT evaluation
         model_id : str
@@ -239,7 +248,7 @@ class BedrockPlayer(Player):
         max_tokens : int
             maximum number of tokens to generate
         """
-        super().__init__(id, system_prompt, log_dir, k)
+        super().__init__(id, system_prompt, log_dir, player_type, k)
 
         self.temp = temp
         self.max_tokens = max_tokens
@@ -355,7 +364,7 @@ class SingleRoundEquilibriumPlayer(Player):
         game_settings : dict
             game settings for the rock-paper-scissors game
         """
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, "srep")
         self.r = game_settings["r"]
         self.p = game_settings["p"]
         self.s = game_settings["s"]
@@ -427,7 +436,7 @@ class PatternPlayer(Player):
         pattern : list
             list of moves in the pattern
         """
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, "pp")
         self.pattern = pattern
         self.pattern_index = 0
 
@@ -453,8 +462,9 @@ class AdaptivePlayer(Player):
         system_prompt: str,
         log_dir: str,
         move_mapping: dict,
+        player_type : str = "ap",
     ):
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, player_type)
         self.move_mapping = move_mapping
         
     def win_to_move(self, move):
@@ -494,8 +504,7 @@ class TitForTatPlayer(AdaptivePlayer):
             log_dir,
             move_mapping : dict,
         ):
-        super().__init__(id, system_prompt, log_dir)
-        self.move_mapping = move_mapping
+        super().__init__(id, system_prompt, log_dir, move_mapping, "tft")
         
     def generate_response(self, total_moves_made: list[list[str]]):
         if len(total_moves_made) == 0: 

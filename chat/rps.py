@@ -379,7 +379,7 @@ class RockPaperScissorsGame(BedrockChat):
         )
 
         # log model information
-        for player in self.players:
+        for player in [p for p in self.players if isinstance(p, BedrockPlayer)]:
             player.save_log(f"Player: {player.unique_name}\n")
             player.save_log(f"Model: {player.model_id}\n")
             player.save_log(f"Temperature: {player.temp}\n")
@@ -475,8 +475,11 @@ class RockPaperScissorsGame(BedrockChat):
             game information
         """
         info = dict()
-        # add model information to info
         for player in self.players:
+            info[f"player_{player.id}_player_type"] = player.player_type
+
+        # add model information to info
+        for player in [p for p in self.players if isinstance(p, BedrockPlayer)]:
             info[f"player_{player.id}_model_id"] = player.model_id
             info[f"player_{player.id}_temperature"] = player.temp
             info[f"player_{player.id}_max_tokens"] = player.max_tokens

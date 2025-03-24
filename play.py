@@ -1,11 +1,24 @@
-from chat.player import BedrockPlayer
+from chat.player import (
+    BedrockPlayer,
+    SingleRoundEquilibriumPlayer,
+    PatternPlayer,
+    AdaptivePlayer,
+    TitForTatPlayer,
+)
 from chat.rps import RockPaperScissorsGame
 from chat.prompt import PromptGenerator
 from descriptions.rps import (
     RPS_INIT_DEFAULT,
     RPS_INIT_SPP,
+    RPS_INIT_COT,
     RPS_GAME_SETTINGS,
 )
+
+DESCRIPTIONS = {
+    "default": RPS_INIT_DEFAULT,
+    "spp": RPS_INIT_SPP,
+    "cot": RPS_INIT_COT,
+}
 
 import os
 import argparse
@@ -26,44 +39,71 @@ models = [
 def trial_rps(
     id: int,
     rounds: int,
-    system_prompt_skeletons: list[str],
     game_settings_type: str,
     game_settings: dict,
     model_id: str,
     model_name: str,
     temp: float,
+    max_tokens: int,
+    player_types: list[str],
 ):
     log_dir = os.path.join("logs", model_name)
 
     # create player objects
-    players = [
-        BedrockPlayer(
-            0,
-            PromptGenerator(
-                "rps",
-                game_settings,
-                system_prompt_skeletons[0],
-            ).get_prompt(),
-            os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-            5,
-            model_id,
-            temp,
-            1024,
-        ),
-        BedrockPlayer(
-            1,
-            PromptGenerator(
-                "rps",
-                game_settings,
-                system_prompt_skeletons[1],
-            ).get_prompt(),
-            os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-            1,
-            model_id,
-            temp,
-            1024,
-        ),
-    ]
+    players = list()
+    for i, player_type in enumerate(player_types):
+        if player_type in ["default", "spp", "cot"]:
+            players.append(
+                BedrockPlayer(
+                    i,
+                    PromptGenerator(
+                        "rps",
+                        game_settings,
+                        DESCRIPTIONS[player_type],
+                    ).get_prompt(),
+                    os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+                    1,
+                    model_id,
+                    temp,
+                    max_tokens,
+                )
+            )
+        elif player_type == "srep":
+            players.append(
+                SingleRoundEquilibriumPlayer(
+                    i,
+                    "",
+                    os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+                    game_settings,
+                )
+            )
+        elif player_type == "pp":
+            players.append(
+                PatternPlayer(
+                    i,
+                    "",
+                    os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+                    [game_settings["move_mapping"].values()]
+                )
+            )
+        elif player_type == "ap":
+            players.append(
+                AdaptivePlayer(
+                    i,
+                    "",
+                    os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+                    game_settings["move_mapping"],
+                )
+            )
+        elif player_type == "tft":
+            players.append(
+                TitForTatPlayer(
+                    i,
+                    "",
+                    os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
+                    game_settings["move_mapping"],
+                )
+            )
 
     # create a game object
     game = RockPaperScissorsGame(
@@ -80,6 +120,7 @@ def trial_rps(
 
     return game_outcome
 
+VALID_PLAYER_TYPES = ["default", "spp", "cot", "srep", "pp", "ap", "tft"]
 VALID_GAMES = ["rps"]
 VALID_GAME_SETTINGS = [k for k in RPS_GAME_SETTINGS.keys()]
 VALID_MODEL_IDS = [model["model_id"] for model in models]
@@ -94,11 +135,6 @@ def argument_parser() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Rock-Paper-Scissors Game Simulator",
         formatter_class=argparse.RawTextHelpFormatter,
-        epilog="""
-Examples:
-  play.py -g rps -s eq1 -m anthropic.claude-3-5-sonnet-20241022-v2:0
-  play.py -g rps -s p2 -m us.meta.llama3-3-70b-instruct-v1:0 -t 1.0 -r 5 -i 42
-        """
     )
     
     parser.add_argument(
@@ -152,6 +188,24 @@ Examples:
         help="Number of rounds (default: 3)"
     )
 
+    parser.add_argument(
+        "-p1", "--player1",
+        type=str,
+        choices=VALID_PLAYER_TYPES,
+        required=True,
+        metavar="PLAYER1",
+        help="Player 1 type\n  Options: " + " ".join(VALID_PLAYER_TYPES)
+    )
+
+    parser.add_argument(
+        "-p2", "--player2",
+        type=str,
+        choices=VALID_PLAYER_TYPES,
+        required=True,
+        metavar="PLAYER2",
+        help="Player 2 type\n  Options: " + " ".join(VALID_PLAYER_TYPES)
+    )
+
     return parser.parse_args()
 
 def main():
@@ -165,6 +219,8 @@ def main():
     model_name = next(model["model_name"] for model in models if model["model_id"] == model_id)
     trial_id = args.trial_id
     rounds = args.rounds
+    player1_type = args.player1
+    player2_type = args.player2
 
     # duration calculation
     start_time = time.time()
@@ -172,12 +228,13 @@ def main():
     game_outcome = trial_rps(
         trial_id,
         rounds,
-        [RPS_INIT_SPP, RPS_INIT_DEFAULT],
         game_settings_type,
         game_settings,
         model_id,
         model_name,
         temp,
+        1024,
+        [player1_type, player2_type],
     )
 
     end_time = time.time()
