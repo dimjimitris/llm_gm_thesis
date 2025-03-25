@@ -303,6 +303,7 @@ class BedrockPlayer(Player):
             10*(idx + 1) + self.id,
             self.system_prompt,
             self.log_dir,
+            self.player_type,
             1,
             self.model_id,
             self.temp,
