@@ -35,6 +35,14 @@ models = [
         "model_id" : "us.meta.llama3-3-70b-instruct-v1:0",
         "model_name" : "Llama 3.3 70B Instruct",
     },
+    {
+        "model_id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "model_name" : "Claude 3.7 Sonnet",
+    },
+    #{
+    #    "model_id" : "us.deepseek.r1-v1:0",
+    #    "model_name" : "DeepSeek-R1",
+    #},
 ]
 
 def trial_rps(
@@ -48,8 +56,9 @@ def trial_rps(
     max_tokens: int,
     player_types: list[str],
     player_tot: list[int],
+    log_root_dir : str,
 ):
-    log_dir = os.path.join("logs_tot", model_name)
+    log_dir = os.path.join(log_root_dir, model_name)
 
     # create player objects
     players = list()
@@ -239,6 +248,7 @@ def main():
         1024,
         [player1_type, player2_type],
         [1, 1],
+        "logs",
     )
 
     end_time = time.time()
@@ -248,10 +258,11 @@ def main():
 
     print(f"The script took {duration:.2f} seconds to run {rounds} rounds.\n")
 
-def main2():
-    threads : list[Thread] = list()
+def main2(iteration : int):
+    threads : list[list[Thread]] = list()
     for model_id in VALID_MODEL_IDS:
         trial_idx = 0
+        threads.append(list())
         for valid_game_setting in ["eq1", "p3"]:
             for player1_type, player2_type in [
                 ("default", "default"),
@@ -273,91 +284,39 @@ def main2():
                 ("cot", "ap"),
                 ("cot", "tft"),
             ]:
-                threads.append(
+                threads[-1].append(
                     Thread(
+                        name=f"Thread-{iteration}-{trial_idx}-{model_id}-{valid_game_setting}-{player1_type}-{player2_type}",
                         target=trial_rps,
                         args=(
                             trial_idx,
-                            20,
+                            30,
                             valid_game_setting,
                             RPS_GAME_SETTINGS[valid_game_setting],
                             model_id,
                             next(model["model_name"] for model in models if model["model_id"] == model_id),
                             0.8,
-                            1024,
+                            4096,
                             [player1_type, player2_type],
                             [1, 1],
+                            os.path.join("data", f"iteration_{iteration}"),
                         )
                     )
                 )
                 trial_idx += 1
-    
-    # do this in 4 batches
+
+    # do this in batches
     for i in range(4):
-        step = len(threads)//4
-        for j in range(step*i, step*(i+1)):
-            threads[j].start()
-        
-        for j in range(step*i, step*(i+1)):
-            threads[j].join()
+        for thread_list in threads:
+            step = len(thread_list)//4
+            for j in range(step*i, step*(i+1)):
+                thread_list[j].start()
 
-def main3():
-    threads : list[Thread] = list()
-    for model_id in ["us.meta.llama3-3-70b-instruct-v1:0"]:
-        trial_idx = 0
-        for valid_game_setting in ["eq1", "p3"]:
-            for player1_type, player2_type in [
-                ("default", "default"),
-                ("default", "spp"),
-                ("default", "cot"),
-                ("spp", "spp"),
-                ("spp", "cot"),
-                ("cot", "cot"),
-                ("default", "srep"),
-                ("default", "pp"),
-                ("default", "ap"),
-                ("default", "tft"),
-                ("spp", "srep"),
-                ("spp", "pp"),
-                ("spp", "ap"),
-                ("spp", "tft"),
-                ("cot", "srep"),
-                ("cot", "pp"),
-                ("cot", "ap"),
-                ("cot", "tft"),
-            ]:
-                threads.append(
-                    Thread(
-                        target=trial_rps,
-                        args=(
-                            trial_idx,
-                            20,
-                            valid_game_setting,
-                            RPS_GAME_SETTINGS[valid_game_setting],
-                            model_id,
-                            next(model["model_name"] for model in models if model["model_id"] == model_id),
-                            0.8,
-                            1024,
-                            [player1_type, player2_type],
-                            [5, 1],
-                        )
-                    )
-                )
-                trial_idx += 1
-    
-    # do this in 4 batches
-    #for i in range(4):
-    #    step = len(threads)//4
-    #    for j in range(step*i, step*(i+1)):
-    #        threads[j].start()
-    #    
-    #    for j in range(step*i, step*(i+1)):
-    #        threads[j].join()
-    for i in [12, 16, 27, 29, 33, 34]:
-        threads[i].start()
-
-    for i in [12, 16, 27, 29, 33, 34]:
-        threads[i].join()
+        for thread_list in threads:
+            step = len(thread_list)//4
+            for j in range(step*i, step*(i+1)):
+                thread_list[j].join()
 
 if __name__ == "__main__":
-    main3()
+    for i in range(5):
+        main2(i)

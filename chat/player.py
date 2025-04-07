@@ -286,6 +286,8 @@ class BedrockPlayer(Player):
             inferenceConfig=inference_config,
         )
 
+        #print(f"{self.player_file} Response: {response}")
+
         output_text = response["output"]["message"]["content"][0]["text"]
         usage = response["usage"]
 
