@@ -298,25 +298,30 @@ def main2(iteration : int):
                             0.8,
                             4096,
                             [player1_type, player2_type],
-                            [1, 1],
-                            os.path.join("data", f"iteration_{iteration}"),
+                            [5, 1],
+                            os.path.join("data_tot", f"iteration_{iteration}"),
                         )
                     )
                 )
                 trial_idx += 1
 
     # do this in batches
-    for i in range(4):
-        for thread_list in threads:
-            step = len(thread_list)//4
-            for j in range(step*i, step*(i+1)):
-                thread_list[j].start()
+    #for i in range(4):
+    #    for thread_list in threads:
+    #        step = len(thread_list)//4
+    #        for j in range(step*i, step*(i+1)):
+    #            thread_list[j].start()
+#
+    #    for thread_list in threads:
+    #        step = len(thread_list)//4
+    #        for j in range(step*i, step*(i+1)):
+    #            thread_list[j].join()
+    threads[2][21].start()
+    threads[2][35].start()
 
-        for thread_list in threads:
-            step = len(thread_list)//4
-            for j in range(step*i, step*(i+1)):
-                thread_list[j].join()
+    threads[2][21].join()
+    threads[2][35].join()
 
 if __name__ == "__main__":
-    for i in range(5):
+    for i in range(1,2):
         main2(i)
