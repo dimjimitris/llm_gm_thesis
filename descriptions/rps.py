@@ -1,12 +1,12 @@
 
 RPS_INIT_DEFAULT = \
-"""You are playing a game called rock-paper-scissors with other player(s). The game is based on making moves.
+"""You are playing a game against other player(s). The game is based on making moves.
 
 Game Description:
-There are three possible moves: {rock}, {paper}, and {scissors}.
-- {rock} beats {scissors} giving the winner {r} points and the loser -{r} points.
-- {paper} beats {rock} giving the winner {p} points and the loser -{p} points.
-- {scissors} beats {paper} giving the winner {s} points and the loser -{s} points.
+There are three possible moves: {a}, {b}, and {c}.
+- {a} beats {c} giving the winner {ac} points and the loser -{ac} points.
+- {b} beats {a} giving the winner {ba} points and the loser -{ba} points.
+- {c} beats {b} giving the winner {cb} points and the loser -{cb} points.
 - If both players make the same move, the game is a tie and no points are awarded.
 
 In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
@@ -60,17 +60,17 @@ Final decision: 6 * (1 + 1) + 12 = 24
 
 ---
 
-Now, the game you will be playing is rock-paper-scissors. Identify the personas and use their multi-round collaboration to help you complete the objective of the the game. You may discuss with your personas on any round of the game, as you see fit.
+Now, the game you will be playing is presented. Identify the personas and use their multi-round collaboration to help you complete the objective of the the game. You may discuss with your personas on any round of the game, as you see fit.
 
 Game Description:
 
-You are playing a game called rock-paper-scissors with other player(s). The game is based on making moves.
+You are playing a game against other player(s). The game is based on making moves.
 
 Game Description:
-There are three possible moves: {rock}, {paper}, and {scissors}.
-- {rock} beats {scissors} giving the winner {r} points and the loser -{r} points.
-- {paper} beats {rock} giving the winner {p} points and the loser -{p} points.
-- {scissors} beats {paper} giving the winner {s} points and the loser -{s} points.
+There are three possible moves: {a}, {b}, and {c}.
+- {a} beats {c} giving the winner {ac} points and the loser -{ac} points.
+- {b} beats {a} giving the winner {ba} points and the loser -{ba} points.
+- {c} beats {b} giving the winner {cb} points and the loser -{cb} points.
 - If both players make the same move, the game is a tie and no points are awarded.
 
 In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
@@ -114,17 +114,17 @@ Final decision: 11 tennis balls
 
 ---
 
-Now, the game you will be playing is rock-paper-scissors. Think step-by-step. Identify the steps and reason through them to complete the objective of the game. You may come up with different reasoning steps for each round, as you see fit.
+Now, the game you will be playing is presented. Think step-by-step. Identify the steps and reason through them to complete the objective of the game. You may come up with different reasoning steps for each round, as you see fit.
 
 Game Description:
 
-You are playing a game called rock-paper-scissors with other player(s). The game is based on making moves.
+You are playing a game against other player(s). The game is based on making moves.
 
 Game Description:
-There are three possible moves: {rock}, {paper}, and {scissors}.
-- {rock} beats {scissors} giving the winner {r} points and the loser -{r} points.
-- {paper} beats {rock} giving the winner {p} points and the loser -{p} points.
-- {scissors} beats {paper} giving the winner {s} points and the loser -{s} points.
+There are three possible moves: {a}, {b}, and {c}.
+- {a} beats {c} giving the winner {ac} points and the loser -{ac} points.
+- {b} beats {a} giving the winner {ba} points and the loser -{ba} points.
+- {c} beats {b} giving the winner {cb} points and the loser -{cb} points.
 - If both players make the same move, the game is a tie and no points are awarded.
 
 In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
@@ -148,65 +148,37 @@ Tips:
 - Pay attention to hints when provided.
 """
 
-RPS_GAME_SETTINGS = {
-    "eq1" : {
-        "r": 1,
-        "p": 1,
-        "s": 1,
-        "move_mapping": {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        }
+RPS_SETTINGS_COLLECTION = {
+    "eq1": {
+        "a": "rock",
+        "b": "paper",
+        "c": "scissors",
+        "ac": 1,
+        "ba": 1,
+        "cb": 1,
     },
-    "eq2" : {
-        "r": 2,
-        "p": 2,
-        "s": 2,
-        "move_mapping": {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        }
+    "ba3": {
+        "a": "rock",
+        "b": "paper",
+        "c": "scissors",
+        "ac": 1,
+        "ba": 3,
+        "cb": 1,
     },
-    "r2" : {
-        "r": 2,
-        "p": 1,
-        "s": 1,
-        "move_mapping": {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        }
+    "eq1-alt": {
+        "a": "paper",
+        "b": "scissors",
+        "c": "rock",
+        "ac": 1,
+        "ba": 1,
+        "cb": 1,
     },
-    "p2" : {
-        "r": 1,
-        "p": 2,
-        "s": 1,
-        "move_mapping": {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        }
-    },
-    "s2" : {
-        "r": 1,
-        "p": 1,
-        "s": 2,
-        "move_mapping": {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        }
-    },
-    "p3" : {
-        "r": 1,
-        "p": 3,
-        "s": 1,
-        "move_mapping": {
-            "rock": "rock",
-            "paper": "paper",
-            "scissors": "scissors",
-        }
+    "ba3-alt": {
+        "a": "paper",
+        "b": "scissors",
+        "c": "rock",
+        "ac": 1,
+        "ba": 3,
+        "cb": 1,
     },
 }

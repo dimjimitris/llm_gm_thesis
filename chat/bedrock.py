@@ -40,7 +40,7 @@ class BedrockChat:
         game_type : str
             type of the game, e.g., "rps"
         game_settings_type : str
-            game settings type, one of ["eq1", "eq2", "r2", "p2", "s2"]
+            game settings type, one of ["eq1", "ba3", "eq1-alt", "ba3-alt"]
         log_dir : str
             path to the root log directory
         """

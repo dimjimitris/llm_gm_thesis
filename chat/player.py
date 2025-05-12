@@ -368,22 +368,24 @@ class SingleRoundEquilibriumPlayer(Player):
             game settings for the rock-paper-scissors game
         """
         super().__init__(id, system_prompt, log_dir, "srep")
-        self.r = game_settings["r"]
-        self.p = game_settings["p"]
-        self.s = game_settings["s"]
-        self.move_mapping = game_settings["move_mapping"]
+        self.ac = game_settings["ac"]
+        self.ba = game_settings["ba"]
+        self.cb = game_settings["cb"]
+        self.a = game_settings["a"]
+        self.b = game_settings["b"]
+        self.c = game_settings["c"]
 
     def generate_response(self, total_moves_made: list[list[str]]):
-        opt_strategy = rps_optimal_strategy(self.r, self.p, self.s)
+        opt_strategy = rps_optimal_strategy(self.ac, self.ba, self.cb)
     
         # generate random number in [0, 1)
         random_number = random.random()
-        if (random_number < opt_strategy[self.move_mapping["rock"]]):
-            move = self.move_mapping["rock"]
-        elif (random_number < opt_strategy[self.move_mapping["rock"]] + opt_strategy[self.move_mapping["paper"]]):
-            move = self.move_mapping["paper"]
+        if (random_number < opt_strategy["a"]):
+            move = self.a
+        elif (random_number < opt_strategy["a"] + opt_strategy["b"]):
+            move = self.b
         else:
-            move = self.move_mapping["scissors"]
+            move = self.c
 
         output_text = f"[move] (single-round-equilibrium-player) {move}"
 
@@ -464,25 +466,25 @@ class AdaptivePlayer(Player):
         id: int,
         system_prompt: str,
         log_dir: str,
-        move_mapping: dict,
+        game_settings: dict,
         player_type : str = "ap",
     ):
         super().__init__(id, system_prompt, log_dir, player_type)
-        self.move_mapping = move_mapping
+        self.game_settings = game_settings
         
     def win_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["paper"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["scissors"]
+        if move == self.game_settings["a"]:
+            return self.game_settings["b"]
+        elif move == self.game_settings["b"]:
+            return self.game_settings["c"]
         else:
-            return self.move_mapping["rock"]
+            return self.game_settings["a"]
         
     def generate_response(self, total_moves_made: list[list[str]]):
         if len(total_moves_made) == 0:
-            move = random.choice(list(self.move_mapping.values()))
+            move = random.choice(list(self.game_settings.values()))
         else:
-            opponent_moves = { k : 0 for k in self.move_mapping.values() }
+            opponent_moves = { k : 0 for k in self.game_settings.values() }
             for round_moves in total_moves_made:
                 opponent_moves[round_moves[1 - self.id]] += 1
             opponent_most_frequent_move = max(opponent_moves, key=opponent_moves.get)
@@ -511,7 +513,7 @@ class TitForTatPlayer(AdaptivePlayer):
         
     def generate_response(self, total_moves_made: list[list[str]]):
         if len(total_moves_made) == 0: 
-            move = random.choice(list(self.move_mapping.values()))
+            move = random.choice(list(self.game_settings.values()))
         else:
             opponent_move = total_moves_made[-1][1 - self.id]
             move = self.win_to_move(opponent_move)

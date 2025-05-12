@@ -1,21 +1,21 @@
 def optimal_strategy(
-    r : int,
-    p : int,
-    s : int,
+    ac : int,
+    ba : int,
+    cb : int,
 ):
     """
-    r : rock beats scissors giving the winner r points and the loser -r points
-    p : paper beats rock giving the winner p points and the loser -p points
-    s : scissors beats paper giving the winner s points and the loser -s points
+    ac : a beats c giving the winner ac points and the loser -ac points
+    ba : b beats a giving the winner ba points and the loser -ba points
+    cb : c beats b giving the winner cb points and the loser -cb points
     ties give 0 points to both players
 
     The payoff matrix is given below:
 
-    | payoff   | rock        | paper       | scissors    |
+    | payoff   |      a      |      b      |      c      |
     |----------|-------------|-------------|-------------|
-    | rock     |   (0, 0)    |   (-p, p)   |   (r, -r)   |
-    | paper    |   (p, -p)   |   (0, 0)    |   (-s, s)   |
-    | scissors |   (-r, r)   |   (s, -s)   |   (0, 0)    |
+    |    a     |  (0, 0)     |  (-ba, ba)  |  (ac, -ac)  |
+    |    b     |  (ba, -ba)  |  (0, 0)     |  (-cb, cb)  |
+    |    c     |  (-ac, ac)  |  (cb, -cb)  |  (0, 0)     |
 
     This function calculates the Mixed Nash Equilibrium strategy a player
     should follow, when playing one round of rock-paper-scissors against an
@@ -23,15 +23,15 @@ def optimal_strategy(
 
     Parameters
     ----------
-    r : int
-        reward of rock beating scissors
-    p : int
-        reward of paper beating rock
-    s : int
-        reward of scissors beating paper
+    ac : int
+        reward of a beating c
+    ba : int
+        reward of b beating a
+    cb : int
+        reward of c beating b
     """
     return {
-        "rock": s / (p + r + s),
-        "paper": r / (p + r + s),
-        "scissors": p / (p + r + s),
+        "a": cb / (ba + ac + cb),
+        "b": ac / (ba + ac + cb),
+        "c": ba / (ba + ac + cb),
     }

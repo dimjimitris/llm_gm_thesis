@@ -24,7 +24,10 @@ class PromptGenerator:
             skeleton of the system prompt for the game to be played
         """
         if game_type == "rps":
-            self.system_prompt = PromptGenerator._generate_prompt_rps(system_prompt_skeleton, game_settings)
+            self.system_prompt = PromptGenerator._generate_prompt_rps(
+                system_prompt_skeleton, 
+                game_settings,
+            )
 
     @staticmethod
     def _generate_prompt_rps(system_prompt_skeleton: str, game_settings: dict) -> str:
@@ -43,18 +46,20 @@ class PromptGenerator:
         str
             system prompt for the Rock-Paper-Scissors game
         """
-        r = game_settings["r"]
-        p = game_settings["p"]
-        s = game_settings["s"]
-        move_mapping : dict = game_settings["move_mapping"]
+        a = game_settings["a"]
+        b = game_settings["b"]
+        c = game_settings["c"]
+        ac = game_settings["ac"]
+        ba = game_settings["ba"]
+        cb = game_settings["cb"]
         
         return system_prompt_skeleton.format(
-            rock=move_mapping["rock"],
-            paper=move_mapping["paper"],
-            scissors=move_mapping["scissors"],
-            r=r,
-            p=p,
-            s=s,
+            a=a,
+            b=b,
+            c=c,
+            ac=ac,
+            ba=ba,
+            cb=cb,
         )
     
     def get_prompt(self) -> str:

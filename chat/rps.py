@@ -29,14 +29,6 @@ class RockPaperScissorsGame(BedrockChat):
         path to the game's log file
     info_file : str
         path to the game's info file
-    r : str
-        reward for rock beating scissors
-    p : str
-        reward for paper beating rock
-    s : str
-        reward for scissors beating paper
-    move_mapping : dict
-        mapping of moves to moves
     rand_player_seq : bool
         whether to randomize the player sequence or not on each round. If False, player_0 will always play first.
     players : list
@@ -49,7 +41,7 @@ class RockPaperScissorsGame(BedrockChat):
         game_settings_type: str,
         game_settings: dict,
         log_dir: str,
-        rand_player_seq : bool = True,
+        rand_player_seq : bool = False,
     ):
         """
         Parameters
@@ -76,10 +68,12 @@ class RockPaperScissorsGame(BedrockChat):
             game_settings_type,
             log_dir,
         )
-        self.r = game_settings["r"]
-        self.p = game_settings["p"]
-        self.s = game_settings["s"]
-        self.move_mapping : dict = game_settings["move_mapping"]
+        self.ac = game_settings["ac"]
+        self.ba = game_settings["ba"]
+        self.cb = game_settings["cb"]
+        self.a = game_settings["a"]
+        self.b = game_settings["b"]
+        self.c = game_settings["c"]
         self.rand_player_seq = rand_player_seq
         self.trees_of_thought = [list() for _ in range(len(players))]
 
@@ -102,7 +96,7 @@ class RockPaperScissorsGame(BedrockChat):
 
         for idx, player in enumerate(self.players):
             other_idx = 1 - idx
-            recommendation = "Please make your move." if idx == curr_player_idx else "The other player made their move. Please make a move too."
+            recommendation = "Please make your move."
 
             if self.players[other_idx].active:
                 player.append_context(
@@ -113,12 +107,12 @@ class RockPaperScissorsGame(BedrockChat):
                 if self.players[other_idx].fresh:
                     player.append_context(
                         PlayerRole.USER,
-                        "[hint] Let's play rock-paper-scissors. You are playing against a fresh player. " + recommendation + "\n",
+                        "[hint] Let's play this game. You are playing against a fresh player. " + recommendation + "\n",
                     )
                 else:
                     player.append_context(
                         PlayerRole.USER,
-                            "[hint] Let's play rock-paper-scissors. You are playing against an experienced player. " + recommendation + "\n",
+                            "[hint] Let's play this game. You are playing against an experienced player. " + recommendation + "\n",
                     )
 
         moves_made = [None, None]
@@ -255,7 +249,7 @@ class RockPaperScissorsGame(BedrockChat):
         if self._is_move_message(msg):
             return self._validate_move(msg)
         else:
-            return False, "You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
+            return False, f"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: '{self.a}', '{self.b}', or '{self.c}'.\nFormat: [move] (Optional explanation here) Your move here"
     
     def _is_move_message(self, msg : str) -> bool:
         """
@@ -290,11 +284,11 @@ class RockPaperScissorsGame(BedrockChat):
             whether the message is valid and an error message if not
         """
         msg_aux = msg.lower().strip()
-        pattern = r'\[move\](?: \(([^)]+)\))? (rock|paper|scissors)'
+        pattern = rf'\[move\](?: \(([^)]+)\))? ({re.escape(self.a)}|{re.escape(self.b)}|{re.escape(self.c)})'
         matches = re.findall(pattern, msg_aux)
 
         if len(matches) == 0:
-            return False, "You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here"
+            return False, f"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: '{self.a}', '{self.b}', or '{self.c}'.\nFormat: [move] (Optional explanation here) Your move here"
 
         return True, ""
     
@@ -313,7 +307,7 @@ class RockPaperScissorsGame(BedrockChat):
             move made by the player
         """
         msg_aux = msg.lower().strip()
-        pattern = r'\[move\](?: \(([^)]+)\))? (rock|paper|scissors)'
+        pattern = rf'\[move\](?: \(([^)]+)\))? ({re.escape(self.a)|re.escape(self.b)|re.escape(self.c)})'
         matches = re.findall(pattern, msg_aux)
        
         return matches[0][-1]
@@ -339,18 +333,18 @@ class RockPaperScissorsGame(BedrockChat):
         if move1 == move2:
             return (0, 0)
 
-        if move1 == self.move_mapping["rock"] and move2 == self.move_mapping["scissors"]:
-            return (self.r, -self.r)
-        if move1 == self.move_mapping["paper"] and move2 == self.move_mapping["rock"]:
-            return (self.p, -self.p)
-        if move1 == self.move_mapping["scissors"] and move2 == self.move_mapping["paper"]:
-            return (self.s, -self.s)
-        if move1 == self.move_mapping["scissors"] and move2 == self.move_mapping["rock"]:
-            return (-self.r, self.r)
-        if move1 == self.move_mapping["rock"] and move2 == self.move_mapping["paper"]:
-            return (-self.p, self.p)
-        if move1 == self.move_mapping["paper"] and move2 == self.move_mapping["scissors"]:
-            return (-self.s, self.s)
+        if move1 == self.a and move2 == self.c:
+            return (self.ac, -self.ac)
+        if move1 == self.b and move2 == self.a:
+            return (self.ba, -self.ba)
+        if move1 == self.c and move2 == self.b:
+            return (self.cb, -self.cb)
+        if move1 == self.c and move2 == self.a:
+            return (-self.ac, self.ac)
+        if move1 == self.a and move2 == self.b:
+            return (-self.ba, self.ba)
+        if move1 == self.b and move2 == self.c:
+            return (-self.cb, self.cb)
 
     def play(self, rounds : int) -> dict:
         """
@@ -367,14 +361,14 @@ class RockPaperScissorsGame(BedrockChat):
             game information
         """
         # log game start
-        move_mapping_str = json.dumps(self.move_mapping, indent=2)
+        move_mapping_str = json.dumps({ "a": self.a, "b": self.b, "c": self.c }, indent=2)
         payoff_matrix_str = tabulate.tabulate(
             tabular_data=[
-                [self.move_mapping["rock"], (0, 0), (-self.p, self.p), (self.r, -self.r)],
-                [self.move_mapping["paper"], (self.p, -self.p), (0, 0), (-self.s, self.s)],
-                [self.move_mapping["scissors"], (-self.r, self.r), (self.s, -self.s), (0, 0)]
+                [self.a, (0, 0), (-self.ba, self.ba), (self.ac, -self.ac)],
+                [self.b, (self.ba, -self.ba), (0, 0), (-self.cb, self.cb)],
+                [self.c, (-self.ac, self.ac), (self.cb, -self.cb), (0, 0)]
             ],
-            headers=["", self.move_mapping["rock"], self.move_mapping["paper"], self.move_mapping["scissors"]],
+            headers=["", self.a, self.b, self.c],
             tablefmt="github",
         )
 
@@ -501,13 +495,15 @@ class RockPaperScissorsGame(BedrockChat):
             }
 
         info["game_settings"] = {
-            "r": self.r,
-            "p": self.p,
-            "s": self.s,
-            "move_mapping": self.move_mapping,
+            "a": self.a,
+            "b": self.b,
+            "c": self.c,
+            "ac": self.ac,
+            "ba": self.ba,
+            "cb": self.cb,
         }
         # single-round optimal strategy
-        info["single_round_optimal_strategy"] = optimal_strategy(self.r, self.p, self.s)
+        info["single_round_optimal_strategy"] = optimal_strategy(self.ac, self.ba, self.cb)
         # multi-round player strategy
         for i, player in enumerate(self.players):
             player_strategy = Counter(info[f"player_{i}_moves"])
