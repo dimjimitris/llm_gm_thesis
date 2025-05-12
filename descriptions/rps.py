@@ -199,9 +199,9 @@ RPS_GAME_SETTINGS = {
             "scissors": "scissors",
         }
     },
-    "p5" : {
+    "p3" : {
         "r": 1,
-        "p": 5,
+        "p": 3,
         "s": 1,
         "move_mapping": {
             "rock": "rock",

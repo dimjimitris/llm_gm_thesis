@@ -12,6 +12,7 @@ import os
 import json
 import boto3
 import random
+import copy
 
 class Player:
     """
@@ -27,6 +28,8 @@ class Player:
         initial system prompt to start the game
     context : list
         list of chat history
+    log_dir : str
+        path to the log directory of the specific game played
     player_file : str
         path to the player's log file
     context_file : str
@@ -36,12 +39,18 @@ class Player:
     active : bool
         an active player has already played some rounds against its current opponent
         an inactive player will now play their first round against their current opponent
+    k : int
+        number of responses to generate for ToT evaluation
+    player_type : str
+        type of the player
     """
     def __init__(
         self,
         id: int,
         system_prompt: str,
         log_dir: str,
+        player_type : str,
+        k : int = 1,
     ):
         """
         Parameters
@@ -52,11 +61,16 @@ class Player:
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        player_type : str
+            type of the player
+        k : int
+            number of responses to generate for ToT evaluation
         """
         self.id = id
         self.unique_name = f"player_{self.id}"
         self.system_prompt = system_prompt
         self.context = list()
+        self.log_dir = log_dir
 
         os.makedirs(log_dir, exist_ok=True)
         self.player_file = os.path.join(log_dir, f"{self.unique_name}.log")
@@ -64,6 +78,8 @@ class Player:
 
         self.fresh = True
         self.active = False
+        self.k = k
+        self.player_type = player_type
 
     def load_context(self) -> None:
         """
@@ -105,7 +121,7 @@ class Player:
         """
         entry = {
             "role": role.value,
-            "content": self._content_wrapper(content)
+            "content": Player._content_wrapper(content)
         }
 
         if len(self.context) == 0:
@@ -114,14 +130,14 @@ class Player:
         
         last_entry = self.context[-1]
         if last_entry["role"] == entry["role"]:
-            last_entry_text = self._content_unwrapper(last_entry["content"])
-            entry_text = self._content_unwrapper(entry["content"])
+            last_entry_text = Player._content_unwrapper(last_entry["content"])
+            entry_text = Player._content_unwrapper(entry["content"])
             # if the entry_text has a tag, remove it
             if entry_text.startswith("[hint] ") or entry_text.startswith("[move] "):
                 entry_text = entry_text[7:]
             elif entry_text.startswith("[hint]") or entry_text.startswith("[move]"):
                 entry_text = entry_text[6:]
-            last_entry["content"] = self._content_wrapper(f"{last_entry_text}\n{entry_text}")
+            last_entry["content"] = Player._content_wrapper(f"{last_entry_text}\n{entry_text}")
         else:
             self.context.append(entry)
 
@@ -139,9 +155,15 @@ class Player:
     
     def generate_response(
         self,
+        total_moves_made: list[list[str]],
     ):
         """
         Generate a response from the player's model.
+
+        Parameters
+        ----------
+        total_moves_made : list
+            list of all moves made by both players in previous rounds
 
         Returns
         -------
@@ -150,14 +172,20 @@ class Player:
         """
         pass
     
-    def _system_prompt_wrapper(self, system_prompt: str):
+    @staticmethod
+    def _system_prompt_wrapper(system_prompt: str):
         return [{ "text" : system_prompt }]
 
-    def _content_wrapper(self, content: str):
+    @staticmethod
+    def _content_wrapper(content: str):
         return [{ "text" : content }]
 
-    def _content_unwrapper(self, content: str):
+    @staticmethod
+    def _content_unwrapper(content: str):
         return content[0]["text"]
+    
+    def copy(self, idx : int) -> "Player":
+        pass
     
 class BedrockPlayer(Player):
     """
@@ -194,6 +222,8 @@ class BedrockPlayer(Player):
         id: int,
         system_prompt: str,
         log_dir: str,
+        player_type : str,
+        k : int,
         model_id: str,
         temp: float,
         max_tokens: int,
@@ -207,6 +237,10 @@ class BedrockPlayer(Player):
             initial system prompt to start the game
         log_dir : str
             path to the log directory of the specific game played
+        player_type : str
+            type of the player
+        k : int
+            number of responses to generate for ToT evaluation
         model_id : str
             bedrock model id
         temp : float
@@ -214,7 +248,7 @@ class BedrockPlayer(Player):
         max_tokens : int
             maximum number of tokens to generate
         """
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, player_type, k)
 
         self.temp = temp
         self.max_tokens = max_tokens
@@ -222,6 +256,7 @@ class BedrockPlayer(Player):
 
     def generate_response(
         self,
+        total_moves_made: list[list[str]],
     ):
         """
         Generate a response from the player's model.
@@ -247,9 +282,11 @@ class BedrockPlayer(Player):
         response = client.converse(
             modelId=self.model_id,
             messages=self.context,
-            system=self._system_prompt_wrapper(self.system_prompt),
+            system=BedrockPlayer._system_prompt_wrapper(self.system_prompt),
             inferenceConfig=inference_config,
         )
+
+        #print(f"{self.player_file} Response: {response}")
 
         output_text = response["output"]["message"]["content"][0]["text"]
         usage = response["usage"]
@@ -262,6 +299,22 @@ class BedrockPlayer(Player):
             "output_tokens": int(usage["outputTokens"]),
             "total_tokens": int(usage["totalTokens"]),
         }
+    
+    def copy(self, idx : int) -> "BedrockPlayer":
+        new_player = BedrockPlayer(
+            10*(idx + 1) + self.id,
+            self.system_prompt,
+            self.log_dir,
+            self.player_type,
+            1,
+            self.model_id,
+            self.temp,
+            self.max_tokens,
+        )
+        new_player.active = self.active
+        new_player.fresh = self.fresh
+        new_player.context = copy.deepcopy(self.context)
+        return new_player
     
 class SingleRoundEquilibriumPlayer(Player):
     """
@@ -314,13 +367,13 @@ class SingleRoundEquilibriumPlayer(Player):
         game_settings : dict
             game settings for the rock-paper-scissors game
         """
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, "srep")
         self.r = game_settings["r"]
         self.p = game_settings["p"]
         self.s = game_settings["s"]
         self.move_mapping = game_settings["move_mapping"]
 
-    def generate_response(self):
+    def generate_response(self, total_moves_made: list[list[str]]):
         opt_strategy = rps_optimal_strategy(self.r, self.p, self.s)
     
         # generate random number in [0, 1)
@@ -386,11 +439,11 @@ class PatternPlayer(Player):
         pattern : list
             list of moves in the pattern
         """
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, "pp")
         self.pattern = pattern
         self.pattern_index = 0
 
-    def generate_response(self):
+    def generate_response(self, total_moves_made: list[list[str]]):
         move = self.pattern[self.pattern_index]
         self.pattern_index = (self.pattern_index + 1) % len(self.pattern)
 
@@ -412,23 +465,10 @@ class AdaptivePlayer(Player):
         system_prompt: str,
         log_dir: str,
         move_mapping: dict,
+        player_type : str = "ap",
     ):
-        super().__init__(id, system_prompt, log_dir)
+        super().__init__(id, system_prompt, log_dir, player_type)
         self.move_mapping = move_mapping
-        self.moves = list()
-        self.opponent_moves = list()
-
-    def append_context(self, role, content):
-        super().append_context(role, content)
-
-        if "tie" in content:
-            self.opponent_moves.append(self.moves[-1])
-        elif "won" in content:
-            self.opponent_moves.append(self.lose_to_move(self.moves[-1]))
-        elif "lost" in content:
-            self.opponent_moves.append(self.win_to_move(self.moves[-1]))
-        else:
-            raise ValueError("Invalid content, it should contain 'tie', 'won', or 'lost'\n")
         
     def win_to_move(self, move):
         if move == self.move_mapping["rock"]:
@@ -437,26 +477,17 @@ class AdaptivePlayer(Player):
             return self.move_mapping["scissors"]
         else:
             return self.move_mapping["rock"]
-    
-    def lose_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["scissors"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["rock"]
-        else:
-            return self.move_mapping["paper"]
         
-    def generate_response(self):
-        if len(self.opponent_moves) == 0: 
+    def generate_response(self, total_moves_made: list[list[str]]):
+        if len(total_moves_made) == 0:
             move = random.choice(list(self.move_mapping.values()))
         else:
-            move_counts = { move : 0 for move in self.move_mapping.values() }
-            for opponent_move in self.opponent_moves:
-                move_counts[opponent_move] += 1
-            move = max(move_counts, key=move_counts.get)
-            move = self.win_to_move(move)
+            opponent_moves = { k : 0 for k in self.move_mapping.values() }
+            for round_moves in total_moves_made:
+                opponent_moves[round_moves[1 - self.id]] += 1
+            opponent_most_frequent_move = max(opponent_moves, key=opponent_moves.get)
+            move = self.win_to_move(opponent_most_frequent_move)
         
-        self.moves.append(move)
         output_text = f"[move] (adaptive-player) {move}"
         return {
             "output_text": output_text,
@@ -465,7 +496,7 @@ class AdaptivePlayer(Player):
             "total_tokens": len(output_text.split()),
         }
     
-class TitForTatPlayer(Player):
+class TitForTatPlayer(AdaptivePlayer):
     """
     Represents a player who counters the opponent's previous move.
     """
@@ -476,32 +507,13 @@ class TitForTatPlayer(Player):
             log_dir,
             move_mapping : dict,
         ):
-        super().__init__(id, system_prompt, log_dir)
-        self.move_mapping = move_mapping
-        self.opponent_moves = list()
-
-
-    def win_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["paper"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["scissors"]
-        else:
-            return self.move_mapping["rock"]
-    
-    def lose_to_move(self, move):
-        if move == self.move_mapping["rock"]:
-            return self.move_mapping["scissors"]
-        elif move == self.move_mapping["paper"]:
-            return self.move_mapping["rock"]
-        else:
-            return self.move_mapping["paper"]
+        super().__init__(id, system_prompt, log_dir, move_mapping, "tft")
         
-    def generate_response(self):
-        if len(self.opponent_moves) == 0: 
+    def generate_response(self, total_moves_made: list[list[str]]):
+        if len(total_moves_made) == 0: 
             move = random.choice(list(self.move_mapping.values()))
         else:
-            opponent_move = self.opponent_moves[-1]
+            opponent_move = total_moves_made[-1][1 - self.id]
             move = self.win_to_move(opponent_move)
         
         output_text = f"[move] (tit-for-tat-player) {move}"
