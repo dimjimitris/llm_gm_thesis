@@ -66,4 +66,9 @@ if __name__ == "__main__":
     #matches = re.findall(pattern, msg_aux)
     #
     #print(matches[0][-1])
-    pass
+
+    l = list(enumerate(range(10)))
+    random.shuffle(l)
+
+    for i, x in l:
+        print(i, x)

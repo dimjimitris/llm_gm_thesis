@@ -11,7 +11,7 @@ from descriptions.rps import (
     RPS_INIT_DEFAULT,
     RPS_INIT_SPP,
     RPS_INIT_COT,
-    RPS_GAME_SETTINGS,
+    RPS_SETTINGS_COLLECTION,
 )
 
 DESCRIPTIONS = {
@@ -95,7 +95,7 @@ def trial_rps(
                     i,
                     "",
                     os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-                    [v for v in game_settings["move_mapping"].values()]
+                    ["scissors", "rock", "paper"],
                 )
             )
         elif player_type == "ap":
@@ -104,7 +104,7 @@ def trial_rps(
                     i,
                     "",
                     os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-                    game_settings["move_mapping"],
+                    game_settings,
                 )
             )
         elif player_type == "tft":
@@ -113,7 +113,7 @@ def trial_rps(
                     i,
                     "",
                     os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
-                    game_settings["move_mapping"],
+                    game_settings,
                 )
             )
 
@@ -134,7 +134,7 @@ def trial_rps(
 
 VALID_PLAYER_TYPES = ["default", "spp", "cot", "srep", "pp", "ap", "tft"]
 VALID_GAMES = ["rps"]
-VALID_GAME_SETTINGS = [k for k in RPS_GAME_SETTINGS.keys()]
+VALID_GAME_SETTINGS = [k for k in RPS_SETTINGS_COLLECTION.keys()]
 VALID_MODEL_IDS = [model["model_id"] for model in models]
 
 def argument_parser() -> argparse.Namespace:
@@ -179,9 +179,9 @@ def argument_parser() -> argparse.Namespace:
     parser.add_argument(
         "-t", "--temp",
         type=float,
-        default=0.8,
+        default=1.0,
         metavar="TEMP",
-        help="Sampling temperature (default: 0.8)"
+        help="Sampling temperature (default: 1.0)"
     )
     
     parser.add_argument(
@@ -225,7 +225,7 @@ def main():
 
     game_type = args.game
     game_settings_type = args.setting
-    game_settings = RPS_GAME_SETTINGS[game_settings_type]
+    game_settings = RPS_SETTINGS_COLLECTION[game_settings_type]
     model_id = args.model
     temp = args.temp
     model_name = next(model["model_name"] for model in models if model["model_id"] == model_id)
@@ -263,7 +263,7 @@ def main2(iteration : int):
     for model_id in VALID_MODEL_IDS:
         trial_idx = 0
         threads.append(list())
-        for valid_game_setting in ["eq1", "p3"]:
+        for valid_game_setting in VALID_GAME_SETTINGS:
             for player1_type, player2_type in [
                 ("default", "default"),
                 ("default", "spp"),
@@ -290,38 +290,42 @@ def main2(iteration : int):
                         target=trial_rps,
                         args=(
                             trial_idx,
-                            30,
+                            24,
                             valid_game_setting,
-                            RPS_GAME_SETTINGS[valid_game_setting],
+                            RPS_SETTINGS_COLLECTION[valid_game_setting],
                             model_id,
                             next(model["model_name"] for model in models if model["model_id"] == model_id),
-                            0.8,
+                            1.0,
                             4096,
                             [player1_type, player2_type],
-                            [5, 1],
-                            os.path.join("data_tot", f"iteration_{iteration}"),
+                            [1, 1],
+                            os.path.join("data_2", f"iteration_{iteration}"),
                         )
                     )
                 )
                 trial_idx += 1
 
     # do this in batches
-    #for i in range(4):
-    #    for thread_list in threads:
-    #        step = len(thread_list)//4
-    #        for j in range(step*i, step*(i+1)):
-    #            thread_list[j].start()
-#
-    #    for thread_list in threads:
-    #        step = len(thread_list)//4
-    #        for j in range(step*i, step*(i+1)):
-    #            thread_list[j].join()
-    threads[2][21].start()
-    threads[2][35].start()
+    for i in range(4):
+        for thread_list in threads:
+            step = len(thread_list)//4
+            for j in range(step*i, step*(i+1)):
+                thread_list[j].start()
 
-    threads[2][21].join()
-    threads[2][35].join()
+        for thread_list in threads:
+            step = len(thread_list)//4
+            for j in range(step*i, step*(i+1)):
+                thread_list[j].join()
+    #threads[0][0].start()
+    #threads[0][1].start()
+    #threads[0][2].start()
+    ##threads[2][35].start()
+##
+    #threads[0][0].join()
+    #threads[0][1].join()
+    #threads[0][2].join()
+    #threads[2][35].join()
 
 if __name__ == "__main__":
-    for i in range(1,2):
+    for i in range(5):
         main2(i)

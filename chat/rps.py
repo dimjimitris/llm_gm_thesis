@@ -9,7 +9,6 @@ import tabulate
 import json
 from collections import Counter
 import re
-import copy
 
 class RockPaperScissorsGame(BedrockChat):
     """
@@ -181,7 +180,11 @@ class RockPaperScissorsGame(BedrockChat):
             max_count = max(move_counts.values())
             max_moves = [move for move, count in move_counts.items() if count == max_count]
             max_move = random.choice(max_moves)
-            for idx, response in enumerate(responses):
+
+            resp_aux = list(enumerate(responses))
+            random.shuffle(resp_aux)
+
+            for idx, response in resp_aux:
                 if self._parse_move(response) == max_move:
                     player.context = players[idx].context
                     self.trees_of_thought[player.id].append({
@@ -307,7 +310,7 @@ class RockPaperScissorsGame(BedrockChat):
             move made by the player
         """
         msg_aux = msg.lower().strip()
-        pattern = rf'\[move\](?: \(([^)]+)\))? ({re.escape(self.a)|re.escape(self.b)|re.escape(self.c)})'
+        pattern = rf'\[move\](?: \(([^)]+)\))? ({re.escape(self.a)}|{re.escape(self.b)}|{re.escape(self.c)})'
         matches = re.findall(pattern, msg_aux)
        
         return matches[0][-1]
@@ -484,6 +487,7 @@ class RockPaperScissorsGame(BedrockChat):
         for i, player in enumerate(self.players):
             info[f"player_{i}_context"] = player.context
             info[f"player_{i}_points"] = [points[i] for points in total_points]
+            info[f"player_{i}_total_points"] = sum(points[i] for points in total_points)
             info[f"player_{i}_average_points"] = statistics.mean(points[i] for points in total_points)
             info[f"player_{i}_moves"] = [moves[i] for moves in total_moves_made]
             info[f"player_{i}_tokens"] = [tokens[i] for tokens in total_tokens]

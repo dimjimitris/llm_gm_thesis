@@ -507,9 +507,9 @@ class TitForTatPlayer(AdaptivePlayer):
             id,
             system_prompt,
             log_dir,
-            move_mapping : dict,
+            game_settings : dict,
         ):
-        super().__init__(id, system_prompt, log_dir, move_mapping, "tft")
+        super().__init__(id, system_prompt, log_dir, game_settings, "tft")
         
     def generate_response(self, total_moves_made: list[list[str]]):
         if len(total_moves_made) == 0: 
