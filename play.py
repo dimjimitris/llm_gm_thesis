@@ -316,16 +316,16 @@ def main2(iteration : int):
             step = len(thread_list)//4
             for j in range(step*i, step*(i+1)):
                 thread_list[j].join()
-    #threads[0][0].start()
+    threads[2][30].start()
     #threads[0][1].start()
     #threads[0][2].start()
     ##threads[2][35].start()
 ##
-    #threads[0][0].join()
+    threads[2][30].join()
     #threads[0][1].join()
     #threads[0][2].join()
     #threads[2][35].join()
 
 if __name__ == "__main__":
-    for i in range(5):
+    for i in range(1,2):
         main2(i)

@@ -53,6 +53,18 @@ def main(s : str):
 
     print(output_text)
 
+def check_subdirs(path):
+    """
+    Check if all subdirectories in the given path contain a file named "game.json"
+    """
+    for root, dirs, _ in os.walk(path):
+        for dir in dirs:
+            if not dir.startswith("rps_"):
+                continue
+            dir_path = os.path.join(root, dir)
+            if not os.path.isfile(os.path.join(dir_path, "game.json")):
+                print(f"Directory {dir_path} does not contain game.json")
+
 import re
 
 if __name__ == "__main__":
@@ -66,9 +78,4 @@ if __name__ == "__main__":
     #matches = re.findall(pattern, msg_aux)
     #
     #print(matches[0][-1])
-
-    l = list(enumerate(range(10)))
-    random.shuffle(l)
-
-    for i, x in l:
-        print(i, x)
+    check_subdirs("data_2")
