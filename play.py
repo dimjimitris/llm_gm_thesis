@@ -307,18 +307,18 @@ def main2(iteration : int):
 
     # do this in batches
     for i in range(8):
-        thread_list = threads[1]
+        thread_list = threads[2]
         step = len(thread_list)//8
         for j in range(step*i, step*(i+1)):
-            if j in [48]:
+            if j in [46]:
                 thread_list[j].start()
 
         #for thread_list in threads:
         step = len(thread_list)//8
         for j in range(step*i, step*(i+1)):
-            if j in [48]:
+            if j in [46]:
                 thread_list[j].join()
 
 if __name__ == "__main__":
-    for i in range(0,1):
+    for i in range(1,2):
         main2(i)
