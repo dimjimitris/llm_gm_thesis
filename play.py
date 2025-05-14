@@ -261,28 +261,31 @@ def main():
 def main2(iteration : int):
     threads : list[list[Thread]] = list()
     for model_id in VALID_MODEL_IDS:
-        trial_idx = 0
+        trial_idx = 72
         threads.append(list())
         for valid_game_setting in VALID_GAME_SETTINGS:
             for player1_type, player2_type in [
-                ("default", "default"),
-                ("default", "spp"),
-                ("default", "cot"),
-                ("spp", "spp"),
-                ("spp", "cot"),
-                ("cot", "cot"),
-                ("default", "srep"),
-                ("default", "pp"),
-                ("default", "ap"),
-                ("default", "tft"),
-                ("spp", "srep"),
-                ("spp", "pp"),
-                ("spp", "ap"),
-                ("spp", "tft"),
-                ("cot", "srep"),
-                ("cot", "pp"),
-                ("cot", "ap"),
-                ("cot", "tft"),
+                #("default", "default"),
+                #("default", "spp"),
+                #("default", "cot"),
+                #("spp", "spp"),
+                #("spp", "cot"),
+                #("cot", "cot"),
+                #("default", "srep"),
+                #("default", "pp"),
+                #("default", "ap"),
+                #("default", "tft"),
+                #("spp", "srep"),
+                #("spp", "pp"),
+                #("spp", "ap"),
+                #("spp", "tft"),
+                #("cot", "srep"),
+                #("cot", "pp"),
+                #("cot", "ap"),
+                #("cot", "tft"),
+                ("spp", "default"),
+                ("cot", "default"),
+                ("cot", "spp"),
             ]:
                 threads[-1].append(
                     Thread(
@@ -299,26 +302,34 @@ def main2(iteration : int):
                             4096,
                             [player1_type, player2_type],
                             [5, 1],
-                            os.path.join("data_tot_2", f"iteration_{iteration}"),
+                            os.path.join("logs", "logs_3", "data_tot", f"iteration_{iteration}"),
                         )
                     )
                 )
                 trial_idx += 1
 
     # do this in batches
-    for i in range(8):
-        thread_list = threads[2]
-        step = len(thread_list)//8
-        for j in range(step*i, step*(i+1)):
-            if j in [46]:
-                thread_list[j].start()
+    for i in range(2):
+        for k, thread_list in enumerate(threads):
+            step = len(thread_list)//2
+            for j in range(step*i, step*(i+1)):
+                if k == 0 and (j in [78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
+                    thread_list[j].start()
+                elif k == 1:
+                    continue
+                elif k == 2 and (j in [74 - 72, 76 - 72, 78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
+                    thread_list[j].start()
 
-        #for thread_list in threads:
-        step = len(thread_list)//8
-        for j in range(step*i, step*(i+1)):
-            if j in [46]:
-                thread_list[j].join()
+        for k, thread_list in enumerate(threads):
+            step = len(thread_list)//2
+            for j in range(step*i, step*(i+1)):
+                if k == 0 and (j in [78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
+                    thread_list[j].join()
+                elif k == 1:
+                    continue
+                elif k == 2 and (j in [74 - 72, 76 - 72, 78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
+                    thread_list[j].join()
 
 if __name__ == "__main__":
-    for i in range(1,2):
+    for i in range(0,1):
         main2(i)
