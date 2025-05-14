@@ -1,0 +1,399 @@
+[
+  {
+    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: paper, rock, and scissors.\n- paper beats scissors giving the winner 1 points and the loser -1 points.\n- rock beats paper giving the winner 3 points and the loser -3 points.\n- scissors beats rock giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n",
+    "context": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Let's play this game. You are playing against a fresh player. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Let me analyze the payoff structure:\n\n- Rock vs Paper: Rock loses (-3), Paper wins (+3)\n- Paper vs Scissors: Paper loses (-1), Scissors wins (+1) \n- Scissors vs Rock: Scissors loses (-1), Rock wins (+1)\n\nFor a first move against a fresh opponent, I want to balance potential gains and losses. Rock is risky because it can lead to a big loss (-3) if opponent plays paper, but only small gain (+1) if opponent plays scissors. Paper has potential for big gain (+3) but also risk of small loss (-1). Scissors has balanced small payoffs (+1/-1).\n\n[move] rock Since this is the first move against a fresh opponent, I'll choose rock as it provides some protection against scissors while not being overly risky.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "I need to correct my understanding - I made an error in interpreting the scoring. From the game results:\n\nI played rock, opponent played paper, and I scored 3 points. This means:\n- When rock plays against paper, rock wins (+3) and paper loses (-3)\n- This is opposite to what I initially thought\n\nGiven this new information:\n- Rock beats paper (+3/-3)\n- Paper beats scissors (+1/-1)\n- Scissors beats rock (+1/-1)\n\nSince rock just worked well and gave me the maximum possible points (+3), and my opponent now knows I played rock last time, they might try to counter with scissors expecting me to play rock again. \n\n[move] paper I'll play paper this time, which would beat scissors if they try to counter my previous rock move, while risking only a -1 if they play rock.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "I need to further correct my understanding based on the latest results:\n\nI played paper, opponent played scissors, and I won 1 point. This means:\n- Paper beats scissors (not the other way around as I thought)\n\nSo the actual scoring is:\n- Rock beats paper (+3/-3)\n- Paper beats scissors (+1/-1)\n- Scissors beats rock (+1/-1)\n\nSo far:\nRound 1: I played rock, won against paper (+3)\nRound 2: I played paper, won against scissors (+1)\n\nMy opponent has tried paper and scissors, losing both times. They might try rock this time, as it's the only move they haven't tried yet. If they play rock, I should play scissors to win.\n\n[move] scissors Based on this pattern analysis, I'll play scissors expecting them to try rock this time.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Let's analyze what's happened so far:\n\nRound 1: I played rock, they played paper, I won (+3)\nRound 2: I played paper, they played scissors, I won (+1)\nRound 3: I played scissors, they played rock, I won (+1)\n\nI'm noticing that I've been extremely lucky, winning all three rounds! The opponent seems to be choosing moves in a sequence: paper -> scissors -> rock. If they continue this pattern, they should play paper next.\n\nIf they play paper, I should play rock to win +3 points.\n\nEven if they break the pattern, rock is not a bad choice because:\n- vs paper: win +3\n- vs scissors: lose only -1\n- vs rock: tie 0\n\n[move] rock Since I predict they might play paper next based on their pattern, and given the favorable risk/reward ratio, I'll play rock.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Ah, I've suffered my first loss. Let's analyze:\n\nPrevious rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\n\nThe opponent broke their pattern and played scissors instead of the predicted paper. They might be adapting to counter my moves.\n\nCurrent situation:\n- Total score so far: +4 points (+3 +1 +1 -1)\n- Opponent just played scissors and succeeded\n- They might stick with scissors since it worked\n\nGiven this:\n- If they play scissors again, paper would beat it (+1)\n- If they switch to rock to counter my potential paper, paper would still win (+1)\n- If they switch to paper, I'd lose -1\n\n[move] paper I'll play paper as it seems to have the best risk/reward ratio in this situation, potentially winning against either scissors or rock.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Let's analyze:\n\nPrevious rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\n\nTotal score: +4 points\n\nThe opponent just matched my paper move, resulting in a tie. This could mean:\n1. They're trying to read and match my moves\n2. They independently chose paper to counter potential rock play\n\nGiven they matched paper, they might:\n1. Stay with paper expecting me to switch\n2. Switch to scissors to beat expected paper\n3. Switch to rock to mix things up\n\nIf they stay with paper, scissors would lose\nIf they switch to scissors, rock would win (+3)\nIf they switch to rock, paper would win (+1)\n\n[move] rock I'll play rock as it has the highest potential payoff (+3) if they switch to scissors, and only a small loss (-1) if they play paper again.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\n\nTotal score: +3 points (+4 -1)\n\nThe opponent has played scissors twice in a row now and succeeded the last time. There's a decent chance they might:\n1. Stick with scissors since it's working\n2. Switch to rock anticipating I might play paper to counter scissors\n3. Switch to paper to mix things up\n\nPaper would:\n- Beat scissors (+1) if they stick with it\n- Beat rock (+1) if they switch to that\n- Lose to paper (-1) if they switch to that\n\nSince they've had success with scissors, I think there's a good chance they'll stick with it.\n\n[move] paper Going with paper as it seems to have the best expected value given the recent pattern and possible opponent moves.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\n\nTotal score: +4 points\n\nThe opponent has now played scissors three times in a row:\n- First time they won against my rock\n- Second time they lost to my paper\n- Third time they lost to my paper again\n\nAfter losing twice with scissors, they're likely to switch strategies. They might:\n1. Switch to rock to counter potential paper play\n2. Switch to paper for a complete change\n3. Stubbornly stick with scissors hoping I'll switch\n\nGiven that I've just won twice with paper, they're most likely expecting me to play paper again and will try to counter it.\n\n[move] scissors Anticipating they'll switch to rock to counter my successful paper plays, I'll play scissors which would win against rock (+1).\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\n\nTotal score: +4 points\n\nThe opponent finally broke their scissors streak but only to match my scissors move. This could mean:\n1. They're trying to read and match my moves again (like they did with paper earlier)\n2. They independently chose scissors thinking I might play paper again\n\nAfter a tie with scissors, they might:\n1. Stay with scissors expecting me to switch\n2. Switch to rock expecting me to play scissors again\n3. Switch to paper to try something completely different\n\n[move] rock Since they've shown a tendency to stick with moves that worked (like their scissors streak), I'll play rock which would beat scissors (+1) if they stay with it, while only risking a small loss (-1) if they switch to paper.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\n\nTotal score: +3 points\n\nThe opponent has heavily favored scissors throughout the game:\n- They've played scissors in 6 out of 9 rounds\n- They're currently on another scissors streak (2 rounds)\n- Scissors has been their most successful move\n\nTheir commitment to scissors suggests either:\n1. It's their preferred strategy\n2. They've noticed I have trouble dealing with it consistently\n\nGiven their strong preference for scissors:\n\n[move] paper I'll play paper which beats scissors (+1). Even though they might finally switch away from scissors, paper also beats rock (+1) if they switch to that, making it a good calculated risk.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\n\nTotal score: +4 points\n\nThe opponent has now played scissors in 7 out of 10 rounds, including the last 3 rounds:\n- They lost the last round to my paper\n- They won against my rock two rounds ago\n- They tied with my scissors three rounds ago\n\nAfter losing with scissors again, they almost certainly will switch strategies. Given their pattern:\n1. When scissors fails, they tend to switch\n2. They might expect me to play paper again since it just worked\n\n[move] scissors Anticipating they'll switch to rock to counter my successful paper play, I'll choose scissors which would win against rock (+1).\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\n\nTotal score: +4 points\n\nThe opponent has now played scissors in 8 out of 11 rounds, including the last 4 rounds. Their commitment to scissors is remarkable:\n- Even after losses to paper\n- Even after ties\n- They keep returning to scissors\n\nGiven this strong pattern and their seeming reluctance to switch strategies:\n\n[move] paper I'll play paper again. While it might seem predictable, the opponent has shown such a strong preference for scissors that paper seems the best choice. It will win (+1) against scissors if they stick to their pattern, and also win (+1) against rock if they finally decide to switch.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\n\nTotal score: +5 points\n\nThe opponent has now played scissors in 9 out of 12 rounds, including the last 5 rounds. However:\n- They've just lost twice in a row to paper\n- They've lost multiple times to paper throughout the game\n- They must realize their scissors strategy is becoming predictable\n\nThis feels like a critical moment where they almost HAVE to switch strategies. After losing repeatedly to paper:\n\n[move] scissors I'm expecting them to finally abandon scissors and switch to rock (to counter paper). Therefore, I'll play scissors which would win (+1) against their expected rock play.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\n\nTotal score: +6 points\n\nThey finally switched to rock after their long scissors streak, but lost. Now they might:\n1. Return to their preferred scissors strategy\n2. Try paper since they haven't used it much lately\n3. Stick with rock hoping I won't expect them to repeat it\n\nGiven that players often get frustrated and switch completely after a loss:\n\n[move] rock I'll play rock, expecting them to switch to paper after their rock loss. Rock would win (+3) against paper, and only lose small (-1) against scissors if they return to their favorite move.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\n\nTotal score: +9 points\n\nThe opponent has now tried different moves in their last three turns (scissors \u2192 rock \u2192 paper), all losing. After three consecutive losses, they might:\n1. Return to their most-used strategy (scissors)\n2. Try rock again as it's been least used recently\n3. Stick with paper hoping I won't expect a repeat\n\nGiven their history of sticking with moves (especially scissors) and their current state of losing with different moves:\n\n[move] paper I'll play paper, expecting them to return to their comfort zone of scissors. Paper wins against both scissors (+1) and rock (+1) if they try that instead.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\n\nTotal score: +10 points\n\nAs predicted, they returned to scissors but lost again. They've now lost 4 rounds in a row and might be quite frustrated. They've tried all moves recently and lost with each:\n- scissors (just now)\n- paper (previous round)\n- rock (two rounds ago)\n\nIn such situations of consecutive losses, players often:\n1. Try to break patterns completely\n2. Return to their most comfortable move (scissors for them)\n3. Try to counter what just beat them\n\n[move] scissors Expecting them to play rock to counter my successful paper play, I'll choose scissors which would win (+1) against rock.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\n\nTotal score: +11 points\n\nThe opponent has now lost 5 consecutive rounds, trying:\nrock \u2192 paper \u2192 scissors \u2192 rock (in order)\n\nThey're likely in a highly frustrated state after so many consecutive losses. In such situations, players often:\n1. Make an emotional rather than logical choice\n2. Try something completely unexpected\n3. Return to their most successful historical move (scissors)\n\n[move] paper Given their history of returning to scissors when frustrated, and the fact that scissors was their most played move earlier, I'll play paper which beats both scissors (+1) and rock (+1) if they try that instead.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\n\nTotal score: +11 points\n\nAfter their losing streak, they finally managed a tie by matching my paper move. This might:\n1. Give them some confidence to stick with paper\n2. Make them think I'll switch away from paper\n3. Lead them to try to counter paper\n\nAfter ties, players often:\n1. Try to break the tie by switching\n2. Stay with the same move expecting the other to switch\n\n[move] rock Since they just had their first non-loss in 6 rounds with paper, they might stick with it, so I'll play rock which would win (+3) against paper.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\nRound 18: rock (me) vs paper - won +3\n\nTotal score: +14 points\n\nThe opponent is back to losing after trying paper. Their recent sequence:\nrock (loss) \u2192 paper (tie) \u2192 paper (loss)\n\nThey've now lost with every move multiple times, and might be quite frustrated. In their position:\n1. They might return to their historically preferred scissors\n2. They might try rock as it's been least used recently\n3. They might stick with paper hoping third time's the charm\n\n[move] paper Given their history of returning to scissors when frustrated, and scissors being their most-played move overall, I'll play paper which would win against scissors (+1) and also beat rock (+1) if they switch to that.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\nRound 18: rock (me) vs paper - won +3\nRound 19: paper (me) vs scissors - won +1\n\nTotal score: +15 points\n\nThe opponent returned to scissors as predicted but lost again. They've now:\n- Lost 7 of their last 8 rounds (with one tie)\n- Just lost with scissors after returning to their preferred move\n- Tried all three moves recently and lost with each\n\nAfter such a long losing streak and failing with their comfort move:\n\n[move] scissors Expecting them to play rock to counter my successful paper play (and break their losing streak), I'll play scissors which would win (+1) against rock.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\nRound 18: rock (me) vs paper - won +3\nRound 19: paper (me) vs scissors - won +1\nRound 20: scissors (me) vs scissors - tie 0\n\nTotal score: +15 points\n\nThe opponent matched my scissors for a tie, their first non-loss in 7 rounds. After getting a tie:\n1. Players often stick with what gave them a non-loss\n2. They might think I'll switch away from scissors\n3. They might try to counter scissors\n\nGiven their long losing streak before this tie:\n\n[move] rock If they stick with scissors (which just got them their first non-loss in a while), rock would win (+1). If they try paper to counter expected rock, I'd still only lose -1.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\nRound 18: rock (me) vs paper - won +3\nRound 19: paper (me) vs scissors - won +1\nRound 20: scissors (me) vs scissors - tie 0\nRound 21: rock (me) vs scissors - lost -1\n\nTotal score: +14 points\n\nThe opponent has played scissors in their last three moves:\n- scissors (tie)\n- scissors (tie)\n- scissors (win)\n\nThey've finally found success with scissors again after their long losing streak. Given that:\n1. They just won with scissors\n2. Scissors has historically been their most played move\n3. They've now played it three times in a row\n\n[move] paper Given their renewed success with scissors and their historical preference for it, I'll play paper which beats scissors (+1).\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\nRound 18: rock (me) vs paper - won +3\nRound 19: paper (me) vs scissors - won +1\nRound 20: scissors (me) vs scissors - tie 0\nRound 21: rock (me) vs scissors - lost -1\nRound 22: paper (me) vs scissors - won +1\n\nTotal score: +15 points\n\nThe opponent has now played scissors in their last 4 moves:\nscissors (win) \u2192 scissors (loss)\nAND has lost again after their brief success\n\nAfter losing with their most-used move (scissors), they're likely to:\n1. Finally abandon scissors after so many attempts\n2. Try to counter what just beat them (paper)\n3. Make an emotional switch to something completely different\n\n[move] scissors Expecting them to switch to rock (to counter my successful paper play), I'll play scissors which would win (+1) against rock.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Previous rounds:\nRound 1: rock (me) vs paper - won +3\nRound 2: paper (me) vs scissors - won +1\nRound 3: scissors (me) vs rock - won +1\nRound 4: rock (me) vs scissors - lost -1\nRound 5: paper (me) vs paper - tie 0\nRound 6: rock (me) vs scissors - lost -1\nRound 7: paper (me) vs scissors - won +1\nRound 8: scissors (me) vs scissors - tie 0\nRound 9: rock (me) vs scissors - lost -1\nRound 10: paper (me) vs scissors - won +1\nRound 11: scissors (me) vs scissors - tie 0\nRound 12: paper (me) vs scissors - won +1\nRound 13: scissors (me) vs rock - won +1\nRound 14: rock (me) vs paper - won +3\nRound 15: paper (me) vs scissors - won +1\nRound 16: scissors (me) vs rock - won +1\nRound 17: paper (me) vs paper - tie 0\nRound 18: rock (me) vs paper - won +3\nRound 19: paper (me) vs scissors - won +1\nRound 20: scissors (me) vs scissors - tie 0\nRound 21: rock (me) vs scissors - lost -1\nRound 22: paper (me) vs scissors - won +1\nRound 23: scissors (me) vs scissors - tie 0\n\nTotal score: +15 points\n\nThe opponent has now played scissors in 5 consecutive moves:\nloss \u2192 tie \u2192 loss \u2192 tie\nTheir commitment to scissors is remarkable, but they're not having much success with it.\n\nGiven this strong pattern and their seeming inability to switch strategies:\n\n[move] paper I'll play paper again. While it might seem predictable, their extreme commitment to scissors makes paper the logical choice. It will win (+1) against scissors if they maintain their pattern, and also win (+1) against rock if they finally decide to switch.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n"
+          }
+        ]
+      }
+    ]
+  }
+]
