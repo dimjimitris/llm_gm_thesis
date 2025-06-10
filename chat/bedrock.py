@@ -5,8 +5,7 @@ import json
 
 class BedrockChat:
     """
-    Interface to chatting with Bedrock AI models. There is user, and assistant role separation. A system prompt is initially provided to AI agents. We will be using models that support system prompts and the converse API.
-
+    
     Attributes
     ----------
     id : int
@@ -38,9 +37,9 @@ class BedrockChat:
         players : list
             list of player objects, should have two players
         game_type : str
-            type of the game, e.g., "rps"
+            type of the game, e.g., "rps", "pd"
         game_settings_type : str
-            game settings type, one of ["eq1", "ba3", "eq1-alt", "ba3-alt"]
+            game settings type
         log_dir : str
             path to the root log directory
         """

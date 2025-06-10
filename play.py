@@ -8,57 +8,82 @@ from chat.player import (
 from chat.rps import RockPaperScissorsGame
 from chat.prompt import PromptGenerator
 from descriptions.rps import (
-    RPS_INIT_DEFAULT,
+    RPS_INIT_ZS,
     RPS_INIT_SPP,
     RPS_INIT_COT,
     RPS_SETTINGS_COLLECTION,
 )
 
 DESCRIPTIONS = {
-    "default": RPS_INIT_DEFAULT,
+    "default": RPS_INIT_ZS,
     "spp": RPS_INIT_SPP,
     "cot": RPS_INIT_COT,
 }
 
 import os
-import argparse
-import time
-import json
 from threading import Thread
 
 models = [
+    #{
+    #    "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    #    "name" : "Claude 3.5 Sonnet v2",
+    #    "thinking" : False,
+    #},
+    #{
+    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    #    "name" : "Claude 3.7 Sonnet",
+    #    "thinking" : False,
+    #},
     {
-        "model_id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
-        "model_name" : "Claude 3.5 Sonnet v2",
+        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "name" : "Claude 3.7 Sonnet (Thinking)",
+        "thinking" : True,
     },
     {
-        "model_id" : "us.meta.llama3-3-70b-instruct-v1:0",
-        "model_name" : "Llama 3.3 70B Instruct",
+        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "name" : "Claude Sonnet 4",
+        "thinking" : False,
     },
     {
-        "model_id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "model_name" : "Claude 3.7 Sonnet",
+        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "name" : "Claude Sonnet 4 (Thinking)",
+        "thinking" : True,
+    },
+    {
+        "id" : "meta.llama3-1-405b-instruct-v1:0",
+        "name" : "Llama 3.1 405B Instruct",
+        "thinking" : False,
     },
     #{
-    #    "model_id" : "us.deepseek.r1-v1:0",
-    #    "model_name" : "DeepSeek-R1",
+    #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
+    #    "name" : "Llama 3.3 70B Instruct",
+    #    "thinking" : False,
     #},
+    {
+        "id" : "mistral.mistral-large-2407-v1:0",
+        "name" : "Mistral Large (24.07)",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.deepseek.r1-v1:0",
+        "name" : "DeepSeek-R1",
+        "thinking" : False,
+    },
 ]
 
 def trial_rps(
-    id: int,
+    id: str,
     rounds: int,
     game_settings_type: str,
     game_settings: dict,
-    model_id: str,
-    model_name: str,
+    model: dict,
     temp: float,
     max_tokens: int,
     player_types: list[str],
-    player_tot: list[int],
+    player_sc: list[int],
     log_root_dir : str,
 ):
-    log_dir = os.path.join(log_root_dir, model_name)
+    log_dir = os.path.join(log_root_dir, model["name"])
 
     # create player objects
     players = list()
@@ -74,10 +99,11 @@ def trial_rps(
                     ).get_prompt(),
                     os.path.join(log_dir, "rps", game_settings_type, f"rps_{id}"),
                     player_type,
-                    player_tot[i],
-                    model_id,
+                    player_sc[i],
+                    model["id"],
                     temp,
                     max_tokens,
+                    model["thinking"],
                 )
             )
         elif player_type == "srep":
@@ -135,201 +161,124 @@ def trial_rps(
 VALID_PLAYER_TYPES = ["default", "spp", "cot", "srep", "pp", "ap", "tft"]
 VALID_GAMES = ["rps"]
 VALID_GAME_SETTINGS = [k for k in RPS_SETTINGS_COLLECTION.keys()]
-VALID_MODEL_IDS = [model["model_id"] for model in models]
 
-def argument_parser() -> argparse.Namespace:
-    """
-    Argument parser for the script
-
-    Returns:
-        argparse.Namespace: parsed arguments
-    """
-    parser = argparse.ArgumentParser(
-        description="Rock-Paper-Scissors Game Simulator",
-        formatter_class=argparse.RawTextHelpFormatter,
-    )
-    
-    parser.add_argument(
-        "-g", "--game",
-        type=str,
-        choices=VALID_GAMES,
-        required=True,
-        metavar="GAME",
-        help="Game type\n  Options: " + " ".join(VALID_GAMES)
-    )
-    
-    parser.add_argument(
-        "-s", "--setting",
-        type=str,
-        choices=VALID_GAME_SETTINGS,
-        required=True,
-        metavar="SETTING",
-        help="Game setting\n  Options: " + " ".join(VALID_GAME_SETTINGS)
-    )
-    
-    parser.add_argument(
-        "-m", "--model",
-        type=str,
-        choices=VALID_MODEL_IDS,
-        required=True,
-        metavar="MODEL_ID",
-        help="LLM model ID\n  Options:\n    " + "  \n    ".join(VALID_MODEL_IDS)
-    )
-
-    parser.add_argument(
-        "-t", "--temp",
-        type=float,
-        default=1.0,
-        metavar="TEMP",
-        help="Sampling temperature (default: 1.0)"
-    )
-    
-    parser.add_argument(
-        "-i", "--trial_id",
-        type=int,
-        default=0,
-        metavar="TRIAL_ID",
-        help="Trial identifier (default: 0)"
-    )
-    
-    parser.add_argument(
-        "-r", "--rounds",
-        type=int,
-        default=3,
-        metavar="ROUNDS",
-        help="Number of rounds (default: 3)"
-    )
-
-    parser.add_argument(
-        "-p1", "--player1",
-        type=str,
-        choices=VALID_PLAYER_TYPES,
-        required=True,
-        metavar="PLAYER1",
-        help="Player 1 type\n  Options: " + " ".join(VALID_PLAYER_TYPES)
-    )
-
-    parser.add_argument(
-        "-p2", "--player2",
-        type=str,
-        choices=VALID_PLAYER_TYPES,
-        required=True,
-        metavar="PLAYER2",
-        help="Player 2 type\n  Options: " + " ".join(VALID_PLAYER_TYPES)
-    )
-
-    return parser.parse_args()
-
-def main():
-    args = argument_parser()
-
-    game_type = args.game
-    game_settings_type = args.setting
-    game_settings = RPS_SETTINGS_COLLECTION[game_settings_type]
-    model_id = args.model
-    temp = args.temp
-    model_name = next(model["model_name"] for model in models if model["model_id"] == model_id)
-    trial_id = args.trial_id
-    rounds = args.rounds
-    player1_type = args.player1
-    player2_type = args.player2
-
-    # duration calculation
-    start_time = time.time()
-
-    game_outcome = trial_rps(
-        trial_id,
-        rounds,
-        game_settings_type,
-        game_settings,
-        model_id,
-        model_name,
-        temp,
-        1024,
-        [player1_type, player2_type],
-        [1, 1],
-        "logs",
-    )
-
-    end_time = time.time()
-    duration = end_time - start_time
-
-    print(f"Game outcome: {json.dumps(game_outcome, indent=2)}")
-
-    print(f"The script took {duration:.2f} seconds to run {rounds} rounds.\n")
-
-def main2(iteration : int):
-    threads : list[list[Thread]] = list()
-    for model_id in VALID_MODEL_IDS:
-        trial_idx = 72
-        threads.append(list())
+def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread]]:
+    threads : dict[str, list[Thread]] = {}
+    for model in models:
+        threads_list = list()
+        #trial_idx = 200
         for valid_game_setting in VALID_GAME_SETTINGS:
             for player1_type, player2_type in [
-                #("default", "default"),
-                #("default", "spp"),
-                #("default", "cot"),
-                #("spp", "spp"),
-                #("spp", "cot"),
-                #("cot", "cot"),
-                #("default", "srep"),
-                #("default", "pp"),
-                #("default", "ap"),
-                #("default", "tft"),
-                #("spp", "srep"),
-                #("spp", "pp"),
-                #("spp", "ap"),
-                #("spp", "tft"),
-                #("cot", "srep"),
-                #("cot", "pp"),
-                #("cot", "ap"),
-                #("cot", "tft"),
+                ("default", "srep"),
+                ("default", "pp"),
+                ("default", "ap"),
+                ("default", "tft"),
+
+                ("spp", "srep"),
+                ("spp", "pp"),
+                ("spp", "ap"),
+                ("spp", "tft"),
+
+                ("cot", "srep"),
+                ("cot", "pp"),
+                ("cot", "ap"),
+                ("cot", "tft"),
+
+
+                ("default", "default"),
+                ("default", "spp"),
+                ("default", "cot"),
+                
                 ("spp", "default"),
+                ("spp", "spp"),
+                ("spp", "cot"),
+
                 ("cot", "default"),
                 ("cot", "spp"),
+                ("cot", "cot"),
             ]:
-                threads[-1].append(
+                threads_list.append(
                     Thread(
-                        name=f"Thread-{iteration}-{trial_idx}-{model_id}-{valid_game_setting}-{player1_type}-{player2_type}",
+                        name=f"Thread-{iteration}-{model["id"]}-{valid_game_setting}-{player1_type}-{player2_type}",
                         target=trial_rps,
                         args=(
-                            trial_idx,
+                            f"{player1_type}_{player2_type}",
                             24,
                             valid_game_setting,
                             RPS_SETTINGS_COLLECTION[valid_game_setting],
-                            model_id,
-                            next(model["model_name"] for model in models if model["model_id"] == model_id),
+                            model,
                             1.0,
                             4096,
                             [player1_type, player2_type],
-                            [5, 1],
-                            os.path.join("logs", "logs_3", "data_tot", f"iteration_{iteration}"),
+                            [1, 1] if not self_consistency else [5, 1],
+                            os.path.join("logs", "logs_3", "data" + "" if not self_consistency else "_tot", f"iteration_{iteration}"),
                         )
                     )
                 )
-                trial_idx += 1
+                #trial_idx += 1
 
-    # do this in batches
-    for i in range(2):
-        for k, thread_list in enumerate(threads):
-            step = len(thread_list)//2
-            for j in range(step*i, step*(i+1)):
-                if k == 0 and (j in [78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
-                    thread_list[j].start()
-                elif k == 1:
-                    continue
-                elif k == 2 and (j in [74 - 72, 76 - 72, 78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
-                    thread_list[j].start()
+        threads[model["name"]] = threads_list
 
-        for k, thread_list in enumerate(threads):
-            step = len(thread_list)//2
-            for j in range(step*i, step*(i+1)):
-                if k == 0 and (j in [78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
-                    thread_list[j].join()
-                elif k == 1:
-                    continue
-                elif k == 2 and (j in [74 - 72, 76 - 72, 78 - 72, 79 - 72, 80 - 72, 81 - 72, 82 - 72, 83 - 72] or j >= 84 - 72):
-                    thread_list[j].join()
+    return threads
+
+def main2(iterations: int, self_consistency: bool):
+    threads = dict[str, list[Thread]]()
+    # create threads for each model and game settings
+    for i in range(iterations):
+        threads_aux = main2_aux(i, self_consistency)
+        for model_name, model_threads in threads_aux.items():
+            if model_name not in threads:
+                threads[model_name] = []
+            threads[model_name].extend(model_threads)
+
+    # create threads to run exec_threads for each model's threads
+    exec_threads_list : list[Thread] = list()
+    for model_name, model_threads in threads.items():
+        exec_threads_list.append(
+            Thread(
+                name=f"Exec-Threads-{model_threads[0].name}",
+                target=exec_threads,
+                args=(model_threads, 16)
+            )
+        )
+    
+    # start all exec_threads threads
+    for exec_thread in exec_threads_list:
+        exec_thread.start()
+
+    # wait for all exec_threads threads to finish
+    for exec_thread in exec_threads_list:
+        exec_thread.join()
+
+
+def exec_threads(threads: list[Thread], count: int):
+    import time
+    #idx = 0
+    #for i in range(partition):
+    #    for thread in threads[idx:idx + len(threads) // partition]:
+    #        thread.start()
+    #        thread.join()
+#
+    #    idx += len(threads) // partition
+
+    # execute count threads at a time, when one finishes, start the next one
+    running = []
+
+    for _ in range(min(count, len(threads))):
+        t = threads.pop(0)
+        t.start()
+        running.append(t)
+
+    while threads or any(t.is_alive() for t in running):
+        # check for finished threads
+        for t in running[:]:
+            if not t.is_alive():
+                running.remove(t)
+                if threads:
+                    new_thread = threads.pop(0)
+                    new_thread.start()
+                    running.append(new_thread)
+        time.sleep(30.0)
 
 if __name__ == "__main__":
-    for i in range(0,1):
-        main2(i)
+    main2(5, False)

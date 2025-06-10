@@ -74,7 +74,7 @@ class RockPaperScissorsGame(BedrockChat):
         self.b = game_settings["b"]
         self.c = game_settings["c"]
         self.rand_player_seq = rand_player_seq
-        self.trees_of_thought = [list() for _ in range(len(players))]
+        self.self_consistencies = [list() for _ in range(len(players))]
 
     def play_round(self, total_moves_made : list[list[str]]) -> tuple[list[str], list[int]]:
         """
@@ -154,6 +154,8 @@ class RockPaperScissorsGame(BedrockChat):
         
         for player in self.players:
             player.active = True
+
+        
         
         return moves_made, token_counts
 
@@ -187,7 +189,7 @@ class RockPaperScissorsGame(BedrockChat):
             for idx, response in resp_aux:
                 if self._parse_move(response) == max_move:
                     player.context = players[idx].context
-                    self.trees_of_thought[player.id].append({
+                    self.self_consistencies[player.id].append({
                         "options": responses,
                         "opt_id": idx,
                     })
@@ -432,19 +434,19 @@ class RockPaperScissorsGame(BedrockChat):
             total_moves_made.append(round_moves_made)
             total_points.append(round_points)
 
+            # log player context
+            for player in self.players:
+                player.save_context()
+
+            # game info generation
+            info = self._generate_info(total_tokens, total_moves_made, total_points)
+
+            # log the game information
+            self.save_info(info)
+
         # both players are inactive after the game ends
         for player in self.players:
             player.active = False
-
-        # log player context
-        for player in self.players:
-            player.save_context()
-
-        # game info generation
-        info = self._generate_info(total_tokens, total_moves_made, total_points)
-
-        # log the game information
-        self.save_info(info)
 
         return info
     
@@ -523,8 +525,8 @@ class RockPaperScissorsGame(BedrockChat):
         for i, player in enumerate(self.players):
             info[f"player_{i}_prompt"] = player.system_prompt
 
-        # add trees of thought
+        # add self-consistency information
         for i, player in enumerate(self.players):
-            info[f"player_{i}_tot"] = self.trees_of_thought[player.id]
+            info[f"player_{i}_sc"] = self.self_consistencies[player.id]
 
         return info

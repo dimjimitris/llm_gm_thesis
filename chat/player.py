@@ -96,7 +96,7 @@ class Player:
         """
         saves the player's context to the context log file
         """
-        with open(self.context_file, "a+") as f:
+        with open(self.context_file, "w") as f:
             # if context file is not empty, it contains a list of dictionaries
             # so we need to put the current context entries in this list
             f.seek(0)
@@ -227,6 +227,7 @@ class BedrockPlayer(Player):
         model_id: str,
         temp: float,
         max_tokens: int,
+        thinking: bool,
     ):
         """
         Parameters
@@ -253,6 +254,7 @@ class BedrockPlayer(Player):
         self.temp = temp
         self.max_tokens = max_tokens
         self.model_id = model_id
+        self.thinking = thinking
 
     def generate_response(
         self,
@@ -279,16 +281,48 @@ class BedrockPlayer(Player):
             "temperature": self.temp,
         }
 
-        response = client.converse(
-            modelId=self.model_id,
-            messages=self.context,
-            system=BedrockPlayer._system_prompt_wrapper(self.system_prompt),
-            inferenceConfig=inference_config,
-        )
+        if self.thinking:
+            response = client.converse(
+                modelId=self.model_id,
+                messages=self.context,
+                system=BedrockPlayer._system_prompt_wrapper(self.system_prompt),
+                inferenceConfig=inference_config,
+                additionalModelRequestFields={
+                    "thinking" : {
+                        "type": "enabled",
+                        "budget_tokens": self.max_tokens // 5 * 4,  # 80% of max_tokens for thinking,
+                    },
+                },
+            )
+        else:
+            response = client.converse(
+                modelId=self.model_id,
+                messages=self.context,
+                system=BedrockPlayer._system_prompt_wrapper(self.system_prompt),
+                inferenceConfig=inference_config,
+                #additionalModelRequestFields={
+                #    "thinking" : {
+                #        "type": "enabled",
+                #        "budget_tokens": self.max_tokens // 5 * 4,  # 80% of max_tokens for thinking,
+                #    },
+                #},
+            )
 
         #print(f"{self.player_file} Response: {response}")
+        # format json response
+        #import json
+        #print(f"{self.player_file} Response: {json.dumps(response, indent=2)}")
 
-        output_text = response["output"]["message"]["content"][0]["text"]
+        output_list : dict = response["output"]["message"]["content"]
+
+        # if output_list length is > 1, then thinking is enabled, add this check later
+        for item in output_list:
+            if "text" in item:
+                output_text = item["text"]
+                break
+            else:
+                output_text = "[ERROR] No text found in response."
+
         usage = response["usage"]
 
         print(f"{self.player_file}: {output_text}\n")

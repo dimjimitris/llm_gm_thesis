@@ -1,5 +1,5 @@
 
-RPS_INIT_DEFAULT = \
+RPS_INIT_ZS = \
 """You are playing a game against other player(s). The game is based on making moves.
 
 Game Description:
