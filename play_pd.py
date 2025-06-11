@@ -195,24 +195,24 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 ("cot", "spp"),
                 ("cot", "cot"),
             ]:
-                #threads_list.append(
-                #    Thread(
-                #        name=f"Thread-{iteration}-{model["id"]}-{valid_game_setting}-{player1_type}-{player2_type}",
-                #        target=trial_pd,
-                #        args=(
-                #            f"{player1_type}_{player2_type}",
-                #            16,
-                #            valid_game_setting,
-                #            PD_SETTINGS_COLLECTION[valid_game_setting],
-                #            model,
-                #            1.0,
-                #            4096,
-                #            [player1_type, player2_type],
-                #            [1, 1] if not self_consistency else [3, 1],
-                #            os.path.join("logs_pd", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
-                #        )
-                #    )
-                #)
+                threads_list.append(
+                    Thread(
+                        name=f"Thread-{iteration}-{model["id"]}-{valid_game_setting}-{player1_type}-{player2_type}",
+                        target=trial_pd,
+                        args=(
+                            f"{player1_type}_{player2_type}",
+                            16,
+                            valid_game_setting,
+                            PD_SETTINGS_COLLECTION[valid_game_setting],
+                            model,
+                            1.0,
+                            4096,
+                            [player1_type, player2_type],
+                            [1, 1] if not self_consistency else [3, 1],
+                            os.path.join("logs_pd", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
+                        )
+                    )
+                )
                 #trial_idx += 1
                 
                 # create directory for the model:
@@ -240,7 +240,7 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 #            elif os.path.isdir(file_path):
                 #                os.rmdir(file_path)
 
-        #threads[model["name"]] = threads_list
+        threads[model["name"]] = threads_list
 
     #return threads
 
@@ -421,9 +421,7 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    #main2_r(
-    #    "logs_pd/logs_3",
-    #    16,
-    #)
-    for i in range(2):
-        main2_aux(i, True)
+    main2_r(
+        "logs_pd/logs_3",
+        16,
+    )
