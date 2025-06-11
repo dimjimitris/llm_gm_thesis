@@ -216,17 +216,29 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 #trial_idx += 1
                 
                 # create directory for the model:
-                log_dir = os.path.join(
-                    "logs",
-                    "logs_3",
-                    "data" if not self_consistency else "data_tot",
-                    f"iteration_{iteration}",
-                    model["name"],
-                    "rps",
-                    "pd",
-                    f"rps_{player1_type}_{player2_type}"
-                )
-                os.removedirs(log_dir)
+                #log_dir = os.path.join(
+                #    "logs_pd",
+                #    "logs_3",
+                #    "data" if not self_consistency else "data_tot",
+                #    f"iteration_{iteration}",
+                #    model["name"],
+                #    "pd",
+                #    valid_game_setting,
+                #    f"pd_{player1_type}_{player2_type}"
+                #)
+                #
+                #if self_consistency and os.path.exists(os.path.join(log_dir, "game.json")):
+                #    if not os.path.exists(os.path.join(log_dir, "player_10.log")):
+                #        # if game.json exists, but player_10.log does not, it means the game was not played
+                #        print(f"Problem in {log_dir} because player_10.log does not exist")
+#
+                #        # clear all the directory files
+                #        for file in os.listdir(log_dir):
+                #            file_path = os.path.join(log_dir, file)
+                #            if os.path.isfile(file_path):
+                #                os.remove(file_path)
+                #            elif os.path.isdir(file_path):
+                #                os.rmdir(file_path)
 
         #threads[model["name"]] = threads_list
 
@@ -409,7 +421,9 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2_r(
-        "logs_pd/logs_3",
-        16,
-    )
+    #main2_r(
+    #    "logs_pd/logs_3",
+    #    16,
+    #)
+    for i in range(2):
+        main2_aux(i, True)

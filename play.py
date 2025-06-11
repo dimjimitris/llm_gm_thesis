@@ -218,21 +218,21 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 #trial_idx += 1
 
                 # create directory for the model:
-                #log_dir = os.path.join(
-                #    "logs",
-                #    "logs_3",
-                #    "data" if not self_consistency else "data_tot",
-                #    f"iteration_{iteration}",
-                #    model["name"],
-                #    "rps",
-                #    valid_game_setting,
-                #    f"rps_{player1_type}_{player2_type}"
-                #)
-                #os.makedirs(log_dir, exist_ok=True)
+                log_dir = os.path.join(
+                    "logs",
+                    "logs_3",
+                    "data" if not self_consistency else "data_tot",
+                    f"iteration_{iteration}",
+                    model["name"],
+                    "rps",
+                    valid_game_setting,
+                    f"rps_{player1_type}_{player2_type}"
+                )
+                os.makedirs(log_dir, exist_ok=True)
 
-        threads[model["name"]] = threads_list
+        #threads[model["name"]] = threads_list
 
-    return threads
+    #return threads
 
 def main2_remainder(root_dir: str, rounds: int):
     """
@@ -411,4 +411,6 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2(5, False)
+    #main2(5, False)
+    for i in range(2):
+        main2_aux(i, True)
