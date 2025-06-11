@@ -8,6 +8,10 @@ from utils.rps import (
     optimal_strategy as rps_optimal_strategy,
 )
 
+from utils.pd import (
+    optimal_strategy as pd_optimal_strategy,
+)
+
 import os
 import json
 import boto3
@@ -344,6 +348,7 @@ class BedrockPlayer(Player):
             self.model_id,
             self.temp,
             self.max_tokens,
+            self.thinking,
         )
         new_player.active = self.active
         new_player.fresh = self.fresh
@@ -420,6 +425,53 @@ class SingleRoundEquilibriumPlayer(Player):
             move = self.b
         else:
             move = self.c
+
+        output_text = f"[move] (single-round-equilibrium-player) {move}"
+
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
+        }
+    
+class SrepPD(Player):
+    def __init__(
+        self,
+        id: int,
+        system_prompt: str,
+        log_dir: str,
+        game_settings: dict,
+    ):
+        """
+        Parameters
+        ----------
+        id : int
+            player id, should be 0 or 1
+        system_prompt : str
+            initial system prompt to start the game
+        log_dir : str
+            path to the log directory of the specific game played
+        game_settings : dict
+            game settings for the rock-paper-scissors game
+        """
+        super().__init__(id, system_prompt, log_dir, "srep")
+        self.aa = game_settings["aa"]
+        self.ab = game_settings["ab"]
+        self.ba = game_settings["ba"]
+        self.bb = game_settings["bb"]
+        self.a = game_settings["a"]
+        self.b = game_settings["b"]
+
+    def generate_response(self, total_moves_made: list[list[str]]):
+        opt_strategy = pd_optimal_strategy(self.aa, self.ab, self.ba, self.bb)
+    
+        # generate random number in [0, 1)
+        random_number = random.random()
+        if (random_number < opt_strategy["a"]):
+            move = self.a
+        else:
+            move = self.b
 
         output_text = f"[move] (single-round-equilibrium-player) {move}"
 
@@ -516,9 +568,24 @@ class AdaptivePlayer(Player):
         
     def generate_response(self, total_moves_made: list[list[str]]):
         if len(total_moves_made) == 0:
-            move = random.choice(list(self.game_settings.values()))
+            moves = []
+            if "a" in self.game_settings:
+                moves.append(self.game_settings["a"])
+            if "b" in self.game_settings:
+                moves.append(self.game_settings["b"])
+            if "c" in self.game_settings:
+                moves.append(self.game_settings["c"])
+
+            move = random.choice(moves)
         else:
-            opponent_moves = { k : 0 for k in self.game_settings.values() }
+            opponent_moves = {}
+            if "a" in self.game_settings:
+                opponent_moves[self.game_settings["a"]] = 0
+            if "b" in self.game_settings:
+                opponent_moves[self.game_settings["b"]] = 0
+            if "c" in self.game_settings:
+                opponent_moves[self.game_settings["c"]] = 0
+
             for round_moves in total_moves_made:
                 opponent_moves[round_moves[1 - self.id]] += 1
             opponent_most_frequent_move = max(opponent_moves, key=opponent_moves.get)
@@ -531,7 +598,64 @@ class AdaptivePlayer(Player):
             "output_tokens": len(output_text.split()),
             "total_tokens": len(output_text.split()),
         }
-    
+
+class MaximizerFreqP(Player):
+    def __init__(
+        self,
+        id: int,
+        system_prompt: str,
+        log_dir: str,
+        game_settings: dict,
+        player_type : str = "mf",
+    ):
+        super().__init__(id, system_prompt, log_dir, player_type)
+        self.game_settings = game_settings
+        
+    def win_to_move(self, move):
+        if move == self.game_settings["a"]:
+            if self.game_settings["ba"] > self.game_settings["aa"]:
+                return self.game_settings["b"]
+            else:
+                return self.game_settings["a"]
+        elif move == self.game_settings["b"]:
+            if self.game_settings["bb"] > self.game_settings["ab"]:
+                return self.game_settings["b"]
+            else:
+                return self.game_settings["a"] 
+        
+    def generate_response(self, total_moves_made: list[list[str]]):
+        if len(total_moves_made) == 0:
+            moves = []
+            if "a" in self.game_settings:
+                moves.append(self.game_settings["a"])
+            if "b" in self.game_settings:
+                moves.append(self.game_settings["b"])
+            if "c" in self.game_settings:
+                moves.append(self.game_settings["c"])
+
+            move = random.choice(moves)
+        else:
+            opponent_moves = {}
+            if "a" in self.game_settings:
+                opponent_moves[self.game_settings["a"]] = 0
+            if "b" in self.game_settings:
+                opponent_moves[self.game_settings["b"]] = 0
+            if "c" in self.game_settings:
+                opponent_moves[self.game_settings["c"]] = 0
+
+            for round_moves in total_moves_made:
+                opponent_moves[round_moves[1 - self.id]] += 1
+            opponent_most_frequent_move = max(opponent_moves, key=opponent_moves.get)
+            move = self.win_to_move(opponent_most_frequent_move)
+        
+        output_text = f"[move] (adaptive-player) {move}"
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
+        }
+
 class TitForTatPlayer(AdaptivePlayer):
     """
     Represents a player who counters the opponent's previous move.
@@ -547,7 +671,48 @@ class TitForTatPlayer(AdaptivePlayer):
         
     def generate_response(self, total_moves_made: list[list[str]]):
         if len(total_moves_made) == 0: 
-            move = random.choice(list(self.game_settings.values()))
+            moves = []
+            if "a" in self.game_settings:
+                moves.append(self.game_settings["a"])
+            if "b" in self.game_settings:
+                moves.append(self.game_settings["b"])
+            if "c" in self.game_settings:
+                moves.append(self.game_settings["c"])
+                
+            move = random.choice(moves)
+        else:
+            opponent_move = total_moves_made[-1][1 - self.id]
+            move = self.win_to_move(opponent_move)
+        
+        output_text = f"[move] (tit-for-tat-player) {move}"
+        return {
+            "output_text": output_text,
+            "input_tokens": 0,
+            "output_tokens": len(output_text.split()),
+            "total_tokens": len(output_text.split()),
+        }
+    
+class TftPD(MaximizerFreqP):
+    def __init__(
+            self,
+            id,
+            system_prompt,
+            log_dir,
+            game_settings: dict,
+        ):
+        super().__init__(id, system_prompt, log_dir, game_settings, "tft")
+
+    def generate_response(self, total_moves_made: list[list[str]]):
+        if len(total_moves_made) == 0: 
+            moves = []
+            if "a" in self.game_settings:
+                moves.append(self.game_settings["a"])
+            if "b" in self.game_settings:
+                moves.append(self.game_settings["b"])
+            if "c" in self.game_settings:
+                moves.append(self.game_settings["c"])
+
+            move = random.choice(moves)
         else:
             opponent_move = total_moves_made[-1][1 - self.id]
             move = self.win_to_move(opponent_move)

@@ -28,6 +28,13 @@ class PromptGenerator:
                 system_prompt_skeleton, 
                 game_settings,
             )
+        elif game_type == "pd":
+            self.system_prompt = PromptGenerator._generate_prompt_pd(
+                system_prompt_skeleton, 
+                game_settings,
+            )
+        else:
+            raise ValueError(f"Unknown game type: {game_type}")
 
     @staticmethod
     def _generate_prompt_rps(system_prompt_skeleton: str, game_settings: dict) -> str:
@@ -62,6 +69,23 @@ class PromptGenerator:
             cb=cb,
         )
     
+    @staticmethod
+    def _generate_prompt_pd(system_prompt_skeleton: str, game_settings: dict) -> str:
+        a = game_settings["a"]
+        b = game_settings["b"]
+        aa = game_settings["aa"]
+        bb = game_settings["bb"]
+        ab = game_settings["ab"]
+        ba = game_settings["ba"]
+        return system_prompt_skeleton.format(
+            a=a,
+            b=b,
+            aa=aa,
+            bb=bb,
+            ab=ab,
+            ba=ba,
+        )
+
     def get_prompt(self) -> str:
         """
         Returns the system prompt for the game.

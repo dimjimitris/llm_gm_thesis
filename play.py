@@ -34,41 +34,41 @@ models = [
     #    "name" : "Claude 3.7 Sonnet",
     #    "thinking" : False,
     #},
-    {
-        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "name" : "Claude 3.7 Sonnet (Thinking)",
-        "thinking" : True,
-    },
+    #{
+    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    #    "name" : "Claude 3.7 Sonnet (Thinking)",
+    #    "thinking" : True,
+    #},
     {
         "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
         "name" : "Claude Sonnet 4",
         "thinking" : False,
     },
-    {
-        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-        "name" : "Claude Sonnet 4 (Thinking)",
-        "thinking" : True,
-    },
-    {
-        "id" : "meta.llama3-1-405b-instruct-v1:0",
-        "name" : "Llama 3.1 405B Instruct",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    #    "name" : "Claude Sonnet 4 (Thinking)",
+    #    "thinking" : True,
+    #},
+    #{
+    #    "id" : "meta.llama3-1-405b-instruct-v1:0",
+    #    "name" : "Llama 3.1 405B Instruct",
+    #    "thinking" : False,
+    #},
     #{
     #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
     #    "name" : "Llama 3.3 70B Instruct",
     #    "thinking" : False,
     #},
-    {
-        "id" : "mistral.mistral-large-2407-v1:0",
-        "name" : "Mistral Large (24.07)",
-        "thinking" : False,
-    },
-    {
-        "id" : "us.deepseek.r1-v1:0",
-        "name" : "DeepSeek-R1",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "mistral.mistral-large-2407-v1:0",
+    #    "name" : "Mistral Large (24.07)",
+    #    "thinking" : False,
+    #},
+    #{
+    #    "id" : "us.deepseek.r1-v1:0",
+    #    "name" : "DeepSeek-R1",
+    #    "thinking" : False,
+    #},
 ]
 
 def trial_rps(
@@ -238,7 +238,7 @@ def main2(iterations: int, self_consistency: bool):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 16)
+                args=(model_threads, 1)
             )
         )
     
@@ -262,14 +262,14 @@ def exec_threads(threads: list[Thread], count: int):
     #    idx += len(threads) // partition
 
     # execute count threads at a time, when one finishes, start the next one
-    running = []
+    running : list[Thread] = []
 
     for _ in range(min(count, len(threads))):
         t = threads.pop(0)
         t.start()
         running.append(t)
 
-    while threads or any(t.is_alive() for t in running):
+    while threads: #or any(t.is_alive() for t in running):
         # check for finished threads
         for t in running[:]:
             if not t.is_alive():
@@ -278,7 +278,7 @@ def exec_threads(threads: list[Thread], count: int):
                     new_thread = threads.pop(0)
                     new_thread.start()
                     running.append(new_thread)
-        time.sleep(30.0)
+        time.sleep(5.0)
 
 if __name__ == "__main__":
     main2(5, False)

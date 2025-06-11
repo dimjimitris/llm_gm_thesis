@@ -1,19 +1,19 @@
 PD_INIT_ZS = \
-"""You are playing a game against other player(s). The game is based on strategic actions.
+"""You are playing a game against other player(s). The game is based on strategic moves.
 
 Game Description:
-There are two possible actions: {a} and {b}.
+There are two possible moves: {a} and {b}.
 - if both players choose {a}, both get {aa} points.
 - if both players choose {b}, both get {bb} points.
 - if you choose {a} and the other player chooses {b}, you get {ab} points and the other player gets {ba} points.
 - if you choose {b} and the other player chooses {a}, you get {ba} points and the other player gets {ab} points.
 
-In each round of the game you play against one other player. You and the other player each act privately. The actions are compared and you and the other player get your reward/penalty based on the actions made.
+In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
 
 Message Formats:
-Action messages are sent when you want to act.
-Action messages are formatted like this:
-[action] (Optional explanation here) Your action here
+Move messages are sent when you want to make a move.
+Move messages are formatted like this:
+[move] (Optional explanation here) Your move here
 
 Hint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.
 Hint messages are formatted like this:
@@ -24,8 +24,8 @@ Maximize your points and/or minimize your penalties.
 
 Tips:
 - Try to formulate a strategy by reasoning on the provided information.
-- Pay attention to the payoff matrix of the game actions.
-- You should only send action messages. Hint messages will only be provided to you.
+- Pay attention to the payoff matrix of the game moves.
+- You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided.
 """
 
@@ -62,21 +62,21 @@ Now, the game you will be playing is presented. Identify the personas and use th
 
 Game Description:
 
-You are playing a game against other player(s). The game is based on strategic actions.
+You are playing a game against other player(s). The game is based on strategic moves.
 
 Game Description:
-There are two possible actions: {a} and {b}.
+There are two possible moves: {a} and {b}.
 - if both players choose {a}, both get {aa} points.
 - if both players choose {b}, both get {bb} points.
 - if you choose {a} and the other player chooses {b}, you get {ab} points and the other player gets {ba} points.
 - if you choose {b} and the other player chooses {a}, you get {ba} points and the other player gets {ab} points.
 
-In each round of the game you play against one other player. You and the other player each act privately. The actions are compared and you and the other player get your reward/penalty based on the actions made.
+In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
 
 Message Formats:
-Action messages are sent when you want to act.
-Action messages are formatted like this:
-[action] (Optional explanation here) Your action here
+Move messages are sent when you want to make a move.
+Move messages are formatted like this:
+[move] (Optional explanation here) Your move here
 
 Hint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.
 Hint messages are formatted like this:
@@ -87,8 +87,8 @@ Maximize your points and/or minimize your penalties.
 
 Tips:
 - Try to formulate a strategy by reasoning on the provided information.
-- Pay attention to the payoff matrix of the game actions.
-- You should only send action messages. Hint messages will only be provided to you.
+- Pay attention to the payoff matrix of the game moves.
+- You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided.
 """
 
@@ -116,21 +116,21 @@ Now, the game you will be playing is presented. Think step-by-step. Identify the
 
 Game Description:
 
-You are playing a game against other player(s). The game is based on strategic actions.
+You are playing a game against other player(s). The game is based on strategic moves.
 
 Game Description:
-There are two possible actions: {a} and {b}.
+There are two possible moves: {a} and {b}.
 - if both players choose {a}, both get {aa} points.
 - if both players choose {b}, both get {bb} points.
 - if you choose {a} and the other player chooses {b}, you get {ab} points and the other player gets {ba} points.
 - if you choose {b} and the other player chooses {a}, you get {ba} points and the other player gets {ab} points.
 
-In each round of the game you play against one other player. You and the other player each act privately. The actions are compared and you and the other player get your reward/penalty based on the actions made.
+In each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.
 
 Message Formats:
-Action messages are sent when you want to act.
-Action messages are formatted like this:
-[action] (Optional explanation here) Your action here
+Move messages are sent when you want to make a move.
+Move messages are formatted like this:
+[move] (Optional explanation here) Your move here
 
 Hint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.
 Hint messages are formatted like this:
@@ -141,8 +141,8 @@ Maximize your points and/or minimize your penalties.
 
 Tips:
 - Try to formulate a strategy by reasoning on the provided information.
-- Pay attention to the payoff matrix of the game actions.
-- You should only send action messages. Hint messages will only be provided to you.
+- Pay attention to the payoff matrix of the game moves.
+- You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided.
 """
 
