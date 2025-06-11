@@ -24,16 +24,16 @@ import os
 from threading import Thread
 
 models = [
-    #{
-    #    "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    #    "name" : "Claude 3.5 Sonnet v2",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-    #    "name" : "Claude 3.7 Sonnet",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "name" : "Claude 3.5 Sonnet v2",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "name" : "Claude 3.7 Sonnet",
+        "thinking" : False,
+    },
     #{
     #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     #    "name" : "Claude 3.7 Sonnet (Thinking)",
@@ -54,21 +54,21 @@ models = [
     #    "name" : "Llama 3.1 405B Instruct",
     #    "thinking" : False,
     #},
-    #{
-    #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
-    #    "name" : "Llama 3.3 70B Instruct",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "mistral.mistral-large-2407-v1:0",
-    #    "name" : "Mistral Large (24.07)",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "us.deepseek.r1-v1:0",
-    #    "name" : "DeepSeek-R1",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "us.meta.llama3-3-70b-instruct-v1:0",
+        "name" : "Llama 3.3 70B Instruct",
+        "thinking" : False,
+    },
+    {
+        "id" : "mistral.mistral-large-2407-v1:0",
+        "name" : "Mistral Large (24.07)",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.deepseek.r1-v1:0",
+        "name" : "DeepSeek-R1",
+        "thinking" : False,
+    },
 ]
 
 def trial_rps(
@@ -217,9 +217,118 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 )
                 #trial_idx += 1
 
+                # create directory for the model:
+                #log_dir = os.path.join(
+                #    "logs",
+                #    "logs_3",
+                #    "data" if not self_consistency else "data_tot",
+                #    f"iteration_{iteration}",
+                #    model["name"],
+                #    "rps",
+                #    valid_game_setting,
+                #    f"rps_{player1_type}_{player2_type}"
+                #)
+                #os.makedirs(log_dir, exist_ok=True)
+
         threads[model["name"]] = threads_list
 
     return threads
+
+def main2_remainder(root_dir: str, rounds: int):
+    """
+    Find all subdirectories in the given root directory that do not have enough valid games
+    """
+    threads = dict[str, list[Thread]]()
+
+    import os
+    import json
+    for root, dirs, _ in os.walk(root_dir):
+        for dir in dirs:
+            if not dir.startswith("pd_"):
+                continue
+            dir_path = os.path.join(root, dir)
+
+            flag = False
+
+            if not os.path.isfile(os.path.join(dir_path, "game.json")):
+                #print(f"Directory {dir_path} does not contain game.json")\
+                flag = True
+            else:
+                with open(os.path.join(dir_path, "game.json"), "r") as f:
+                    game_data = json.load(f)
+                    rounds_played = game_data.get("valid_outcomes", [])
+                    if len(rounds_played) < rounds:
+                        #print(f"Directory {dir_path} has only {len(rounds_played)} rounds, expected {rounds}")
+                        # check if all values in valid_outcomes are true
+                        #if not all(rounds_played):
+                        #    print(f"Directory {dir_path} has incomplete rounds: {rounds_played}")
+                        # get info from the directory name
+                        flag = True
+
+            if flag:
+                self_consistency, iteration, model_name, game_type, game_settings_type, player_types = get_info(dir_path)
+                if iteration is None or model_name is None or game_type is None or game_settings_type is None or player_types is None:
+                    print(f"Directory {dir_path} does not have a valid name format")
+                    continue
+
+                if model_name in ["Claude Sonnet 4",]:
+                    continue
+
+                if model_name not in threads:
+                    threads[model_name] = []
+                threads[model_name].append(
+                    Thread(
+                        name=f"Thread-{iteration}-{model_name}-{game_type}-{game_settings_type}-{player_types}",
+                        target=trial_rps,
+                        args=(
+                            f"{player_types[0]}_{player_types[1]}",
+                            rounds,
+                            game_settings_type,
+                            RPS_SETTINGS_COLLECTION[game_settings_type],
+                            models[[m["name"] for m in models].index(model_name)],
+                            1.0,
+                            4096,
+                            player_types,
+                            [1, 1] if not self_consistency else [5, 1],
+                            os.path.join("logs", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
+                        )
+                    )
+                )
+        
+    return threads
+
+# directories are of the format data{_tot}/iteration_{i}/model_name/game_type/game_settings_type/pd_{player1_type}_{player2_type}
+def get_info(filename: str) -> tuple[str, str, str, str, str]:
+
+    parts = filename.split(os.sep)
+    if len(parts) < 6:
+        return None, None, None, None, None, None
+    
+    sc = parts[-6]
+    if sc != "data" and sc != "data_tot":
+        return None, None, None, None, None, None
+
+    if sc == "data_tot":
+        sc = True
+    else:
+        sc = False
+    iteration = parts[-5]
+    # get iteration number from iteration_{i}
+    if not iteration.startswith("iteration_"):
+        return None, None, None, None, None, None
+    iteration = iteration[len("iteration_"):]
+    if not iteration.isdigit():
+        return None, None, None, None, None
+    iteration = int(iteration)
+    model_name = parts[-4]
+    game_type = parts[-3]
+    game_settings_type = parts[-2]
+    player_types = parts[-1].split("_")
+    player_types = player_types[1:]
+    if len(player_types) != 2:
+        return None, None, None, None, None, None
+    return sc, iteration, model_name, game_type, game_settings_type, player_types
+
 
 def main2(iterations: int, self_consistency: bool):
     threads = dict[str, list[Thread]]()
@@ -238,7 +347,7 @@ def main2(iterations: int, self_consistency: bool):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 1)
+                args=(model_threads, 5)
             )
         )
     
@@ -250,6 +359,27 @@ def main2(iterations: int, self_consistency: bool):
     for exec_thread in exec_threads_list:
         exec_thread.join()
 
+def main2_r(root_dir: str, rounds: int):
+    threads = main2_remainder(root_dir, rounds)
+
+    # create threads to run exec_threads for each model's threads
+    exec_threads_list : list[Thread] = list()
+    for model_name, model_threads in threads.items():
+        exec_threads_list.append(
+            Thread(
+                name=f"Exec-Threads-{model_threads[0].name}",
+                target=exec_threads,
+                args=(model_threads, 5)
+            )
+        )
+    
+    # start all exec_threads threads
+    for exec_thread in exec_threads_list:
+        exec_thread.start()
+
+    # wait for all exec_threads threads to finish
+    for exec_thread in exec_threads_list:
+        exec_thread.join()
 
 def exec_threads(threads: list[Thread], count: int):
     import time
