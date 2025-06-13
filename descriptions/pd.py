@@ -27,6 +27,7 @@ Tips:
 - Pay attention to the payoff matrix of the game moves.
 - You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided.
+- Do not use markdown formatting in your messsages (e.g., bold text, italic text, etc.).
 """
 
 PD_INIT_SPP = \
@@ -90,6 +91,7 @@ Tips:
 - Pay attention to the payoff matrix of the game moves.
 - You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided.
+- Do not use markdown formatting in your messsages (e.g., bold text, italic text, etc.).
 """
 
 PD_INIT_COT = \
@@ -144,6 +146,7 @@ Tips:
 - Pay attention to the payoff matrix of the game moves.
 - You should only send move messages. Hint messages will only be provided to you.
 - Pay attention to hints when provided.
+- Do not use markdown formatting in your messsages (e.g., bold text, italic text, etc.).
 """
 
 PD_SETTINGS_COLLECTION = {
