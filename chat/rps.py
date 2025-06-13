@@ -311,6 +311,11 @@ class RockPaperScissorsGame(BedrockChat):
         str
             move made by the player
         """
+
+        valid, error_msg = self._validate_move(msg)
+        if not valid:
+            return None
+
         msg_aux = msg.lower().strip()
         pattern = rf'\[move\](?: \(([^)]+)\))? ({re.escape(self.a)}|{re.escape(self.b)}|{re.escape(self.c)})'
         matches = re.findall(pattern, msg_aux)
