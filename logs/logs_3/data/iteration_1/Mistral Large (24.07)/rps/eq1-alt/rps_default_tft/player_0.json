@@ -1,12 +1,12 @@
 [
   {
-    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: paper, rock, and scissors.\n- paper beats scissors giving the winner 1 points and the loser -1 points.\n- rock beats paper giving the winner 1 points and the loser -1 points.\n- scissors beats rock giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n",
+    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: paper, rock, and scissors.\n- paper beats scissors giving the winner 1 points and the loser -1 points.\n- rock beats paper giving the winner 1 points and the loser -1 points.\n- scissors beats rock giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messsages (e.g., bold text, italic text, etc.).\n",
     "context": [
       {
         "role": "user",
         "content": [
           {
-            "text": "[hint] Let's play this game. You are playing against a fresh player. Please make your move.\n\nThe other player has aborted the game. The game has ended.\n\nThe round ended abnormally. You scored 0 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] Let's play this game. You are playing against a fresh player. Please make your move.\n"
           }
         ]
       },
@@ -14,7 +14,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] rock (Starting with a solid move to establish a baseline)\n"
+            "text": "[move] paper (Starting with paper as a neutral choice.)\n"
           }
         ]
       },
@@ -22,7 +22,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
           }
         ]
       },
@@ -30,23 +30,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (Switching to paper to counter a potential rock)\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[move] scissors (Switching to scissors to counter a potential paper)\n"
+            "text": "[move] scissors (Switching to scissors to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -62,7 +46,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (Switching back to paper to counter a potential rock)\n"
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock or scissors.)\n"
           }
         ]
       },
@@ -78,7 +62,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] scissors (Anticipating the opponent might switch to rock)\n"
+            "text": "[move] rock (Switching to rock to potentially counter the opponent's scissors or paper.)\n"
           }
         ]
       },
@@ -86,7 +70,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
           }
         ]
       },
@@ -94,7 +78,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] rock (Switching to rock to counter a potential scissors)\n"
+            "text": "[move] scissors (Switching to scissors to potentially counter the opponent's paper.)\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] rock (Switching to rock to potentially counter the opponent's scissors or paper.)\n"
           }
         ]
       },
@@ -110,7 +110,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (Taking advantage of the opponent's previous patterning)\n"
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -126,7 +126,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] scissors (Anticipating the opponent might switch to paper)\n"
+            "text": "[move] scissors (Switching to scissors to potentially counter the opponent's paper.)\n"
           }
         ]
       },
@@ -142,7 +142,55 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] rock (Switching to rock to anticipate the opponent switching to scissors)\n"
+            "text": "[move] paper (Trying to anticipate the opponent switching to scissors.)\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] rock (Switching to rock to potentially counter the opponent's scissors.)\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] scissors (Switching to scissors to potentially counter the opponent's paper.)\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] rock (Switching to rock to potentially counter the opponent's scissors.)\n"
           }
         ]
       },
@@ -158,7 +206,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (Switching to paper to counter the opponent's potential rock)\n"
+            "text": "[move] paper (Anticipating the opponent might switch to rock.)\n"
           }
         ]
       },
@@ -174,7 +222,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] scissors (Switching to scissors to counter a potential paper)\n"
+            "text": "[move] scissors (Trying to counter the opponent's potential switch to paper.)\n"
           }
         ]
       },
@@ -190,7 +238,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] rock (Following the pattern of alternating moves to keep the opponent guessing)\n"
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -198,7 +246,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
           }
         ]
       },
@@ -206,7 +254,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (To counter a potential rock)\n"
+            "text": "[move] rock (Switching to rock to potentially counter the opponent's scissors.)\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -222,7 +286,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] scissors (Anticipating the opponent might switch to paper)\n"
+            "text": "[move] scissors (Switching to scissors to potentially counter the opponent's paper.)\n"
           }
         ]
       },
@@ -238,7 +302,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] rock (Switching to rock anticipating the opponent might choose scissors)\n"
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -246,7 +310,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
           }
         ]
       },
@@ -254,7 +318,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (Switching to paper to counter the opponent's potential rock)\n"
+            "text": "[move] rock\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -270,7 +350,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] scissors (Anticipating the opponent might switch to paper)\n"
+            "text": "[move] scissors (Switching to scissors to potentially counter the opponent's paper.)\n"
           }
         ]
       },
@@ -286,7 +366,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] rock (Switching to rock to counter a potential scissors)\n"
+            "text": "[move] paper (Switching to paper to potentially counter the opponent's rock.)\n"
           }
         ]
       },
@@ -294,7 +374,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
           }
         ]
       },
@@ -302,7 +382,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[move] paper (Switching to paper to counter the opponent's potential rock)\n"
+            "text": "[move] rock (Switching to rock to potentially counter the opponent's scissors.)\n"
           }
         ]
       },
@@ -310,71 +390,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[move] scissors (Anticipating the opponent might switch to paper)\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[move] rock (Switching to rock to potentially counter a scissors move)\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[move] paper (Switching to paper to counter potential rock)\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[move] scissors (Anticipating the opponent might switch to paper)\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n"
           }
         ]
       }

@@ -24,26 +24,26 @@ import os
 from threading import Thread
 
 models = [
-    {
-        "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
-        "name" : "Claude 3.5 Sonnet v2",
-        "thinking" : False,
-    },
-    {
-        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "name" : "Claude 3.7 Sonnet",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    #    "name" : "Claude 3.5 Sonnet v2",
+    #    "thinking" : False,
+    #},
+    #{
+    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    #    "name" : "Claude 3.7 Sonnet",
+    #    "thinking" : False,
+    #},
     #{
     #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     #    "name" : "Claude 3.7 Sonnet (Thinking)",
     #    "thinking" : True,
     #},
-    {
-        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-        "name" : "Claude Sonnet 4",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    #    "name" : "Claude Sonnet 4",
+    #    "thinking" : False,
+    #},
     #{
     #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
     #    "name" : "Claude Sonnet 4 (Thinking)",
@@ -54,21 +54,21 @@ models = [
     #    "name" : "Llama 3.1 405B Instruct",
     #    "thinking" : False,
     #},
-    {
-        "id" : "us.meta.llama3-3-70b-instruct-v1:0",
-        "name" : "Llama 3.3 70B Instruct",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
+    #    "name" : "Llama 3.3 70B Instruct",
+    #    "thinking" : False,
+    #},
     {
         "id" : "mistral.mistral-large-2407-v1:0",
         "name" : "Mistral Large (24.07)",
         "thinking" : False,
     },
-    {
-        "id" : "us.deepseek.r1-v1:0",
-        "name" : "DeepSeek-R1",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.deepseek.r1-v1:0",
+    #    "name" : "DeepSeek-R1",
+    #    "thinking" : False,
+    #},
 ]
 
 def trial_rps(
@@ -164,7 +164,13 @@ VALID_GAME_SETTINGS = [k for k in RPS_SETTINGS_COLLECTION.keys()]
 
 def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread]]:
     threads : dict[str, list[Thread]] = {}
-    for model in models:
+    for model in [
+        {
+            "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+            "name" : "Claude Sonnet 4",
+            "thinking" : False,
+        },
+    ]:
         threads_list = list()
         #trial_idx = 200
         for valid_game_setting in VALID_GAME_SETTINGS:
@@ -257,7 +263,7 @@ def main2_remainder(root_dir: str, rounds: int):
                 with open(os.path.join(dir_path, "game.json"), "r") as f:
                     game_data = json.load(f)
                     rounds_played = game_data.get("valid_outcomes", [])
-                    if len(rounds_played) < rounds or not all(rounds_played):
+                    if len(rounds_played) < rounds: #or not all(rounds_played):
                         #print(f"Directory {dir_path} has only {len(rounds_played)} rounds, expected {rounds}")
                         # check if all values in valid_outcomes are true
                         #if not all(rounds_played):
@@ -412,7 +418,4 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2_r(
-        "logs/logs_3",
-        24
-    )
+    main2_r("logs/logs_3", 24)

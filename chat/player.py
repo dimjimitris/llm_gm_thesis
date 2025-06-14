@@ -328,18 +328,20 @@ class BedrockPlayer(Player):
                 reasoning_content = item["reasoningContent"]["reasoningText"]["text"]
 
         if reasoning_content is not None and ttext is not None:
-            output_text =f"Reasoning:\n{reasoning_content}\n\nFinal Answer:\n{ttext}"
-
+            #output_text =f"Reasoning:\n{reasoning_content}\n\nFinal Answer:\n{ttext}"
+            output_text = ttext
         elif ttext is not None:
             output_text = ttext
         elif reasoning_content is not None:
-            output_text = f"Reasoning:\n{reasoning_content}"
+            #output_text = f"Reasoning:\n{reasoning_content}"
+            output_text = "[ERROR] No response generated."
         else:
             output_text = "[ERROR] No response generated."
 
         usage = response["usage"]
 
-        print(f"{self.player_file}: {output_text}\n")
+        #print(f"{self.system_prompt}")
+        print(f"{self.player_file}: Reasoning: {reasoning_content}\n Final Answer: {output_text}\n")
 
         return {
             "output_text": output_text,

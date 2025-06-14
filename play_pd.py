@@ -24,16 +24,16 @@ import os
 from threading import Thread
 
 models = [
-    {
-        "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
-        "name" : "Claude 3.5 Sonnet v2",
-        "thinking" : False,
-    },
-    {
-        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-        "name" : "Claude 3.7 Sonnet",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+    #    "name" : "Claude 3.5 Sonnet v2",
+    #    "thinking" : False,
+    #},
+    #{
+    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+    #    "name" : "Claude 3.7 Sonnet",
+    #    "thinking" : False,
+    #},
     #{
     #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     #    "name" : "Claude 3.7 Sonnet (Thinking)",
@@ -54,21 +54,21 @@ models = [
     #    "name" : "Llama 3.1 405B Instruct",
     #    "thinking" : False,
     #},
-    {
-        "id" : "us.meta.llama3-3-70b-instruct-v1:0",
-        "name" : "Llama 3.3 70B Instruct",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
+    #    "name" : "Llama 3.3 70B Instruct",
+    #    "thinking" : False,
+    #},
     {
         "id" : "mistral.mistral-large-2407-v1:0",
         "name" : "Mistral Large (24.07)",
         "thinking" : False,
     },
-    {
-        "id" : "us.deepseek.r1-v1:0",
-        "name" : "DeepSeek-R1",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.deepseek.r1-v1:0",
+    #    "name" : "DeepSeek-R1",
+    #    "thinking" : False,
+    #},
 ]#
 
 def trial_pd(
@@ -166,33 +166,33 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
     for model in models:
         threads_list = list()
         #trial_idx = 200
-        for valid_game_setting in VALID_GAME_SETTINGS:
+        for valid_game_setting in ["pd-alt"]:#VALID_GAME_SETTINGS:
             for player1_type, player2_type in [
-                ("zs", "srep"),
-                ("zs", "pp"),
-                ("zs", "mf"),
-                ("zs", "tft"),
+                #("zs", "srep"),
+                #("zs", "pp"),
+                #("zs", "mf"),
+                #("zs", "tft"),
+#
+                #("spp", "srep"),
+                #("spp", "pp"),
+                #("spp", "mf"),
+                #("spp", "tft"),
+#
+                #("cot", "srep"),
+                #("cot", "pp"),
+                #("cot", "mf"),
+                #("cot", "tft"),
+#
+                #("zs", "zs"),
+                #("zs", "spp"),
+                #("zs", "cot"),
+                #
+                #("spp", "zs"),
+                #("spp", "spp"),
+                #("spp", "cot"),
 
-                ("spp", "srep"),
-                ("spp", "pp"),
-                ("spp", "mf"),
-                ("spp", "tft"),
-
-                ("cot", "srep"),
-                ("cot", "pp"),
-                ("cot", "mf"),
-                ("cot", "tft"),
-
-                ("zs", "zs"),
-                ("zs", "spp"),
-                ("zs", "cot"),
-                
-                ("spp", "zs"),
-                ("spp", "spp"),
-                ("spp", "cot"),
-
-                ("cot", "zs"),
-                ("cot", "spp"),
+                #("cot", "zs"),
+                #("cot", "spp"),
                 ("cot", "cot"),
             ]:
                 threads_list.append(
@@ -267,7 +267,7 @@ def main2_remainder(root_dir: str, rounds: int):
                 with open(os.path.join(dir_path, "game.json"), "r") as f:
                     game_data = json.load(f)
                     rounds_played = game_data.get("valid_outcomes", [])
-                    if len(rounds_played) < rounds or not all(rounds_played):
+                    if len(rounds_played) < rounds: #or not all(rounds_played):
                         #print(f"Directory {dir_path} has only {len(rounds_played)} rounds, expected {rounds}")
                         # check if all values in valid_outcomes are true
                         #if not all(rounds_played):
