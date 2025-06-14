@@ -319,13 +319,23 @@ class BedrockPlayer(Player):
 
         output_list : dict = response["output"]["message"]["content"]
 
+        reasoning_content, ttext = None, None
         # if output_list length is > 1, then thinking is enabled, add this check later
         for item in output_list:
             if "text" in item:
-                output_text = item["text"]
-                break
-            else:
-                output_text = "[ERROR] No text found in response."
+                ttext = item["text"]
+            elif "reasoningContent" in item:
+                reasoning_content = item["reasoningContent"]["reasoningText"]["text"]
+
+        if reasoning_content is not None and ttext is not None:
+            output_text =f"Reasoning:\n{reasoning_content}\n\nFinal Answer:\n{ttext}"
+
+        elif ttext is not None:
+            output_text = ttext
+        elif reasoning_content is not None:
+            output_text = f"Reasoning:\n{reasoning_content}"
+        else:
+            output_text = "[ERROR] No response generated."
 
         usage = response["usage"]
 

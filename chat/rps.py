@@ -254,7 +254,7 @@ class RockPaperScissorsGame(BedrockChat):
         if self._is_move_message(msg):
             return self._validate_move(msg)
         else:
-            return False, f"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: '{self.a}', '{self.b}', or '{self.c}'. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here"
+            return False, f"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: '{self.a}', '{self.b}', or '{self.c}'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here"
     
     def _is_move_message(self, msg : str) -> bool:
         """
@@ -293,7 +293,7 @@ class RockPaperScissorsGame(BedrockChat):
         matches = re.findall(pattern, msg_aux)
 
         if len(matches) == 0:
-            return False, f"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: '{self.a}', '{self.b}', or '{self.c}'. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here"
+            return False, f"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: '{self.a}', '{self.b}', or '{self.c}'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here"
 
         return True, ""
     
