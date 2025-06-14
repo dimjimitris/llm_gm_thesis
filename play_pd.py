@@ -39,11 +39,11 @@ models = [
     #    "name" : "Claude 3.7 Sonnet (Thinking)",
     #    "thinking" : True,
     #},
-    {
-        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-        "name" : "Claude Sonnet 4",
-        "thinking" : False,
-    },
+    #{
+    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    #    "name" : "Claude Sonnet 4",
+    #    "thinking" : False,
+    #},
     #{
     #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
     #    "name" : "Claude Sonnet 4 (Thinking)",
@@ -69,7 +69,7 @@ models = [
         "name" : "DeepSeek-R1",
         "thinking" : False,
     },
-]
+]#
 
 def trial_pd(
     id: str,
@@ -242,7 +242,7 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
 
         threads[model["name"]] = threads_list
 
-    #return threads
+    return threads
 
 def main2_remainder(root_dir: str, rounds: int):
     """
@@ -267,7 +267,7 @@ def main2_remainder(root_dir: str, rounds: int):
                 with open(os.path.join(dir_path, "game.json"), "r") as f:
                     game_data = json.load(f)
                     rounds_played = game_data.get("valid_outcomes", [])
-                    if len(rounds_played) < rounds:
+                    if len(rounds_played) < rounds or not all(rounds_played):
                         #print(f"Directory {dir_path} has only {len(rounds_played)} rounds, expected {rounds}")
                         # check if all values in valid_outcomes are true
                         #if not all(rounds_played):
@@ -421,7 +421,4 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2_r(
-        "logs_pd/logs_3",
-        16,
-    )
+    main2_r("logs_pd/logs_3", 16)

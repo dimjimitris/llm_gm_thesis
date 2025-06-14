@@ -257,7 +257,7 @@ def main2_remainder(root_dir: str, rounds: int):
                 with open(os.path.join(dir_path, "game.json"), "r") as f:
                     game_data = json.load(f)
                     rounds_played = game_data.get("valid_outcomes", [])
-                    if len(rounds_played) < rounds:
+                    if len(rounds_played) < rounds or not all(rounds_played):
                         #print(f"Directory {dir_path} has only {len(rounds_played)} rounds, expected {rounds}")
                         # check if all values in valid_outcomes are true
                         #if not all(rounds_played):
