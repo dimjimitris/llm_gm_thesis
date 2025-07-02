@@ -317,34 +317,40 @@ class BedrockPlayer(Player):
         #import json
         #print(f"{self.player_file} Response: {json.dumps(response, indent=2)}")
 
-        output_list : dict = response["output"]["message"]["content"]
+        output_list : list[dict] = response["output"]["message"]["content"]
 
-        reasoning_content, ttext = None, None
+        thinking_text, reasoning_text, output_text = None, None, None
         # if output_list length is > 1, then thinking is enabled, add this check later
         for item in output_list:
-            if "text" in item:
-                ttext = item["text"]
+            if "type" in item and item["type"] == "thinking":
+                thinking_text = item["thinking"]
+            elif "text" in item:
+                output_text = item["text"]
             elif "reasoningContent" in item:
-                reasoning_content = item["reasoningContent"]["reasoningText"]["text"]
+                reasoning_text = item["reasoningContent"]["reasoningText"]["text"]
 
-        if reasoning_content is not None and ttext is not None:
-            #output_text =f"Reasoning:\n{reasoning_content}\n\nFinal Answer:\n{ttext}"
-            output_text = ttext
-        elif ttext is not None:
-            output_text = ttext
-        elif reasoning_content is not None:
-            #output_text = f"Reasoning:\n{reasoning_content}"
+        #if reasoning_text is not None and output_text is not None:
+        #    #output_text =f"Reasoning:\n{reasoning_content}\n\nFinal Answer:\n{ttext}"
+        #    output_text = output_text
+        #elif output_text is not None:
+        #    output_text = output_text
+        #elif reasoning_text is not None:
+        #    #output_text = f"Reasoning:\n{reasoning_content}"
+        #    output_text = "[ERROR] No response generated."
+        #else:
+        #    output_text = "[ERROR] No response generated."
+        if output_text is None:
             output_text = "[ERROR] No response generated."
-        else:
-            output_text = "[ERROR] No response generated."
-
+        
         usage = response["usage"]
 
         #print(f"{self.system_prompt}")
-        print(f"{self.player_file}: Reasoning: {reasoning_content}\n Final Answer: {output_text}\n")
+        #print(f"{self.player_file}: Thinking: {thinking_text}\nReasoning: {reasoning_text}\nFinal Answer: {output_text}\n")
 
         return {
             "output_text": output_text,
+            "thinking_text": thinking_text,
+            "reasoning_text": reasoning_text,
             "input_tokens": int(usage["inputTokens"]),
             "output_tokens": int(usage["outputTokens"]),
             "total_tokens": int(usage["totalTokens"]),

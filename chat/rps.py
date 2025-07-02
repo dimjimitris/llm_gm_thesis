@@ -74,6 +74,7 @@ class RockPaperScissorsGame(BedrockChat):
         self.b = game_settings["b"]
         self.c = game_settings["c"]
         self.rand_player_seq = rand_player_seq
+        self.response_objects = [list() for _ in range(len(players))]
         self.self_consistencies = [list() for _ in range(len(players))]
 
     def play_round(self, total_moves_made : list[list[str]]) -> tuple[list[str], list[int]]:
@@ -122,11 +123,14 @@ class RockPaperScissorsGame(BedrockChat):
             other_idx = 1 - idx
             other_player = self.players[other_idx]
 
-            response_text, tokens = self._player_response(player, total_moves_made)
+            response_obj, tokens = self._player_response(player, total_moves_made)
+            response_text = response_obj["output_text"]
             token_counts[idx] += tokens
 
+            self.response_objects[idx].append(response_obj)
+
             # log the response
-            self.save_log(f"[player_{idx}] {response_text}\n")
+            self.save_log(f"[player_{idx}] {json.dumps(response_obj, indent=2)}\n")
 
             if "[abort]" in response_text:
                 player.append_context(
@@ -168,29 +172,29 @@ class RockPaperScissorsGame(BedrockChat):
             return self._player_response_aux(player, total_moves_made)
         else:
             total_tokens = 0
-            responses = list()
+            response_objs = list()
             players : list[Player] = list()
             for i in range(player.k):
                 new_player : BedrockPlayer = player.copy(i)
-                response, tokens = self._player_response_aux(new_player, total_moves_made)
+                response_obj, tokens = self._player_response_aux(new_player, total_moves_made)
                 total_tokens += tokens
-                responses.append(response)
+                response_objs.append(response_obj)
                 players.append(new_player)
             
             # voting phase - most popular move wins, pick randomly a response with that move
-            move_counts = Counter(self._parse_move(response) for response in responses)
+            move_counts = Counter(self._parse_move(response["output_text"]) for response in response_objs)
             max_count = max(move_counts.values())
             max_moves = [move for move, count in move_counts.items() if count == max_count]
             max_move = random.choice(max_moves)
 
-            resp_aux = list(enumerate(responses))
+            resp_aux = list(enumerate(response_objs))
             random.shuffle(resp_aux)
 
             for idx, response in resp_aux:
-                if self._parse_move(response) == max_move:
+                if self._parse_move(response["output_text"]) == max_move:
                     player.context = players[idx].context
                     self.self_consistencies[player.id].append({
-                        "options": responses,
+                        "options": response_objs,
                         "opt_id": idx,
                     })
                     return response, total_tokens
@@ -199,28 +203,29 @@ class RockPaperScissorsGame(BedrockChat):
         self,
         player : Player,
         total_moves_made : list[list[str]],
-    ) -> tuple[str, int]:
+    ) -> tuple[dict, int]:
         tokens = 0
-        response_text = None
+        response_obj = None
+        agent_output_text = None
         error_cnt = 0
         while True:
             response_obj = player.generate_response(total_moves_made)
-            response_text : str = response_obj["output_text"]
-            if not response_text.endswith("\n"):
-                response_text += "\n"
+            agent_output_text : str = response_obj["output_text"]
+            if not agent_output_text.endswith("\n"):
+                agent_output_text += "\n"
 
             tokens += response_obj["total_tokens"]
 
             # log the response
-            player.save_log(f"[assistant] {response_text}\n")
+            player.save_log(f"[assistant] {agent_output_text}\n")
 
-            is_valid, error_msg = self._validate_response(response_text)
+            is_valid, error_msg = self._validate_response(agent_output_text)
             if is_valid:
                 break
 
             player.append_context(
                 PlayerRole.ASSISTANT,
-                response_text,
+                agent_output_text,
             )
             player.append_context(
                 PlayerRole.USER,
@@ -232,10 +237,10 @@ class RockPaperScissorsGame(BedrockChat):
 
             error_cnt += 1
             if error_cnt >= 5:
-                response_text = "[abort]\n"
+                agent_output_text = "[abort]\n"
                 break
             
-        return response_text, tokens
+        return response_obj, tokens
 
     def _validate_response(self, msg : str) -> tuple[bool, str]:
         """
@@ -493,6 +498,7 @@ class RockPaperScissorsGame(BedrockChat):
         info["valid_outcomes"] = [None not in moves_made for moves_made in total_moves_made]
         for i, player in enumerate(self.players):
             info[f"player_{i}_context"] = player.context
+            info[f"player_{i}_response_objects"] = self.response_objects[i]
             info[f"player_{i}_points"] = [points[i] for points in total_points]
             info[f"player_{i}_total_points"] = sum(points[i] for points in total_points)
             info[f"player_{i}_average_points"] = statistics.mean(points[i] for points in total_points)
