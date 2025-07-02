@@ -345,7 +345,7 @@ class BedrockPlayer(Player):
         usage = response["usage"]
 
         #print(f"{self.system_prompt}")
-        #print(f"{self.player_file}: Thinking: {thinking_text}\nReasoning: {reasoning_text}\nFinal Answer: {output_text}\n")
+        print(f"{self.player_file}: Thinking: {thinking_text}\nReasoning: {reasoning_text}\nFinal Answer: {output_text}\n")
 
         return {
             "output_text": output_text,
