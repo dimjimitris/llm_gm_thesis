@@ -5,10 +5,10 @@ def optimal_strategy(
     bb : int,
 ):
     """
-    aa : a cooperating with a giving aa points
-    ab : a cooperating with b giving ab points
-    ba : b cooperating with a giving ba points
-    bb : b cooperating with b giving bb points
+    aa : a paired with a giving aa points
+    ab : a paired with b giving ab points
+    ba : b paired with a giving ba points
+    bb : b paired with b giving bb points
 
     The payoff matrix is given below:
 
@@ -24,13 +24,13 @@ def optimal_strategy(
     Parameters
     ----------
     aa : int
-        reward of a cooperating with a
+        reward of a paired with a
     ab : int
-        reward of a cooperating with b
+        reward of a paired with b
     ba : int
-        reward of b cooperating with a
+        reward of b paired with a
     bb : int
-        reward of b cooperating with b
+        reward of b paired with b
     """
     if ba > aa and aa > bb and bb > ab and 2 * aa > ba + ab:
         # Prisoner's Dilemma
@@ -41,6 +41,6 @@ def optimal_strategy(
     elif aa > ba and ba >= bb and bb > ab:
         # Stag Hunt
         return {
-            "a": (ba - ab) / (aa - ab + ba - bb),
-            "b": (aa - bb) / (aa - ab + ba - bb),
+            "a": (bb - ab) / (aa - ab + bb - ba),
+            "b": (aa - ba) / (aa - ab + bb - ba),
         }
