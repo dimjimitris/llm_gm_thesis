@@ -34,21 +34,21 @@ models = [
     #    "name" : "Claude 3.7 Sonnet",
     #    "thinking" : False,
     #},
-    #{
-    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-    #    "name" : "Claude 3.7 Sonnet (Thinking)",
-    #    "thinking" : True,
-    #},
+    {
+        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "name" : "Claude 3.7 Sonnet (Thinking)",
+        "thinking" : True,
+    },
     #{
     #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
     #    "name" : "Claude Sonnet 4",
     #    "thinking" : False,
     #},
-    #{
-    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-    #    "name" : "Claude Sonnet 4 (Thinking)",
-    #    "thinking" : True,
-    #},
+    {
+        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "name" : "Claude Sonnet 4 (Thinking)",
+        "thinking" : True,
+    },
     #{
     #    "id" : "meta.llama3-1-405b-instruct-v1:0",
     #    "name" : "Llama 3.1 405B Instruct",
@@ -59,16 +59,16 @@ models = [
     #    "name" : "Llama 3.3 70B Instruct",
     #    "thinking" : False,
     #},
-    {
-        "id" : "mistral.mistral-large-2407-v1:0",
-        "name" : "Mistral Large (24.07)",
-        "thinking" : False,
-    },
     #{
-    #    "id" : "us.deepseek.r1-v1:0",
-    #    "name" : "DeepSeek-R1",
+    #    "id" : "mistral.mistral-large-2407-v1:0",
+    #    "name" : "Mistral Large (24.07)",
     #    "thinking" : False,
     #},
+    {
+        "id" : "us.deepseek.r1-v1:0",
+        "name" : "DeepSeek-R1",
+        "thinking" : False,
+    },
 ]
 
 def trial_rps(
@@ -164,13 +164,7 @@ VALID_GAME_SETTINGS = [k for k in RPS_SETTINGS_COLLECTION.keys()]
 
 def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread]]:
     threads : dict[str, list[Thread]] = {}
-    for model in [
-        {
-            "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-            "name" : "Claude Sonnet 4",
-            "thinking" : False,
-        },
-    ]:
+    for model in models:
         threads_list = list()
         #trial_idx = 200
         for valid_game_setting in VALID_GAME_SETTINGS:
@@ -217,7 +211,7 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                             4096,
                             [player1_type, player2_type],
                             [1, 1] if not self_consistency else [5, 1],
-                            os.path.join("logs", "logs_3", "data" + "" if not self_consistency else "_tot", f"iteration_{iteration}"),
+                            os.path.join("logs", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
                         )
                     )
                 )
@@ -354,7 +348,7 @@ def main2(iterations: int, self_consistency: bool):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 5)
+                args=(model_threads, 4)
             )
         )
     
@@ -418,4 +412,4 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2_r("logs/logs_3", 24)
+    main2(2, True)

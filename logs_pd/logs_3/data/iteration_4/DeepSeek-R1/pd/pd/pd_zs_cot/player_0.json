@@ -1,6 +1,6 @@
 [
   {
-    "system_prompt": "You are playing a game against other player(s). The game is based on strategic moves.\n\nGame Description:\nThere are two possible moves: cooperation and defection.\n- if both players choose cooperation, both get 4 points.\n- if both players choose defection, both get 2 points.\n- if you choose cooperation and the other player chooses defection, you get 1 points and the other player gets 6 points.\n- if you choose defection and the other player chooses cooperation, you get 6 points and the other player gets 1 points.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n",
+    "system_prompt": "You are playing a game against other player(s). The game is based on strategic moves.\n\nGame Description:\nThere are two possible moves: cooperation and defection.\n- if both players choose cooperation, both get 4 points.\n- if both players choose defection, both get 2 points.\n- if you choose cooperation and the other player chooses defection, you get 1 points and the other player gets 6 points.\n- if you choose defection and the other player chooses cooperation, you get 6 points and the other player gets 1 points.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messages (e.g., bold text, italic text, etc.).\n",
     "context": [
       {
         "role": "user",
@@ -14,7 +14,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] Since this is a one-time interaction with a new player, defecting maximizes my potential payoff (6 if they cooperate) and avoids the risk of getting only 1 point if they defect. Defection\n"
+            "text": "\n\n[move] Since this is the first round against a new player and there's no established trust, defecting maximizes potential gain (6 points if they cooperate) while avoiding the risk of being exploited (only 2 points if they also defect). Defection\n"
           }
         ]
       },
@@ -22,7 +22,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
           }
         ]
       },
@@ -30,23 +30,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Since this is a one-time interaction with a new player, defecting maximizes my potential payoff (6 if they cooperate) and avoids the risk of getting only 1 point if they defect.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Since this is a one-time interaction with a new player, defecting maximizes my potential payoff of 6 if they cooperate and avoids the risk of getting only 1 point if they defect.) defection\n"
+            "text": "\n\n[move] (First round with new player; defecting avoids exploitation risk) defection"
           }
         ]
       },
@@ -62,7 +46,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the dominant strategy to avoid exploitation and secure a higher potential payoff.) defection\n"
+            "text": "\n\n[move] (After mutual defection last round, maintaining defection avoids lower payoff risks) defection"
           }
         ]
       },
@@ -78,7 +62,39 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction scenario, defection remains the optimal choice to avoid exploitation risk while preserving the chance for maximum payoff if the opponent cooperates.) defection\n"
+            "text": "\n\n[move] (Testing cooperation to break mutual defection cycle; potential for higher payoff) cooperation"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: cooperation. Your opponent choose the move: defection.\nYou scored 1 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Opponent consistently defects; defecting ensures higher minimum payoff) defection"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 6 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Testing opponent's response after their cooperation; defecting secures higher minimum gain) defection"
           }
         ]
       },
@@ -94,7 +110,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the dominant strategy to avoid exploitation risk and secure a higher potential payoff, despite the mutual defection outcome.) defection\n"
+            "text": "\n\n[move] (Opponent's inconsistent cooperation; defection maintains safer payoff) defection"
           }
         ]
       },
@@ -110,55 +126,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection remains the rational choice to avoid exploitation risk while preserving the chance for maximum payoff (6) if the opponent cooperates, even though mutual defection yields 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection remains the rational choice to avoid exploitation risk while preserving the chance for maximum payoff (6) if the opponent cooperates, even though mutual defection yields 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection remains the rational choice to avoid exploitation risk while preserving the chance for maximum payoff (6) if the opponent cooperates, even though mutual defection yields 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection remains the rational choice to avoid exploitation risk while preserving the chance for maximum payoff if the opponent cooperates.) defection\n"
+            "text": "\n\n[move] (Opponent's pattern leans toward defection; maintaining defection ensures consistent payoff) defection"
           }
         ]
       },
@@ -174,7 +142,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the optimal choice to avoid exploitation risk while preserving the chance for maximum payoff (6) if the opponent cooperates, even though mutual defection yields 2 points.) defection\n"
+            "text": "\n\n[move] (Persistent mutual defection yields low but stable payoffs; testing cooperation risks exploitation but may break cycle) cooperation"
           }
         ]
       },
@@ -182,7 +150,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: cooperation. Your opponent choose the move: defection.\nYou scored 1 points.\n\nLet's play another round. Please choose your move.\n"
           }
         ]
       },
@@ -190,7 +158,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains optimal to avoid exploitation risk while preserving the chance for maximum payoff if the opponent cooperates.) defection\n"
+            "text": "\n\n[move] (Opponent repeatedly defects after cooperation attempts; defection minimizes loss) defection"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 6 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Opponent cooperated after recent defections; defecting again to capitalize on potential cooperation) defection"
           }
         ]
       },
@@ -206,23 +190,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the optimal choice to avoid exploitation risk while preserving the chance for maximum payoff (6) if the opponent cooperates, even though mutual defection yields 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection avoids exploitation risk and preserves the chance for maximum payoff if the opponent cooperates.) defection\n"
+            "text": "\n\n[move] (Opponent's inconsistent pattern; defection maintains stable payoff without exploitation risk) defection"
           }
         ]
       },
@@ -238,23 +206,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the rational choice to avoid exploitation risk while preserving the chance for maximum payoff (6) if the opponent cooperates, even though mutual defection yields 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection avoids exploitation risk and preserves the chance for maximum payoff if the opponent cooperates.) defection\n"
+            "text": "\n\n[move] (Opponent's tendency to defect outweighs cooperation; maintaining defection ensures minimal loss) defection"
           }
         ]
       },
@@ -270,23 +222,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the dominant strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction, defection avoids exploitation risk and maximizes potential payoff.) defection\n"
+            "text": "\n\n[move] (Persistent mutual defection yields predictable outcomes; no incentive for unilateral cooperation given opponent's pattern) defection"
           }
         ]
       },
@@ -302,23 +238,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection remains the Nash equilibrium strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection is the Nash equilibrium to avoid exploitation risk and maximize potential payoff.) defection\n"
+            "text": "\n\n[move] (Opponent's consistent defection pattern; mutual defection ensures stable, albeit low, payoff) defection"
           }
         ]
       },
@@ -334,23 +254,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection is the Nash equilibrium to avoid exploitation risk and maximize potential payoff.) defection\n"
+            "text": "\n\n[move] (Persistent mutual defection remains the safest choice given opponent's unyielding strategy; cooperation risks exploitation without reciprocation) defection"
           }
         ]
       },
@@ -366,7 +270,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
+            "text": "\n\n[move] (Opponent's consistent defection pattern offers no incentive to cooperate; mutual defection ensures stable, albeit minimal, payoff) defection"
           }
         ]
       },
@@ -374,151 +278,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation risk and maximize potential payoff.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection is the Nash equilibrium to avoid exploitation risk and maximize potential payoff.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection is the Nash equilibrium strategy to avoid exploitation risk and maximize potential payoff.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection is the Nash equilibrium strategy to avoid exploitation risk and maximize potential payoff.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with a new player, defection remains the Nash equilibrium strategy to avoid exploitation risk (1 point) and secure a higher potential payoff (6 points) if the opponent cooperates, despite mutual defection yielding 2 points.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (In a one-time interaction with no prior history, defection is the Nash equilibrium strategy to avoid exploitation risk and maximize potential payoff.) defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 6 points.\n"
           }
         ]
       }

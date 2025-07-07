@@ -1,0 +1,415 @@
+[
+  {
+    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: paper, rock, and scissors.\n- paper beats scissors giving the winner 1 points and the loser -1 points.\n- rock beats paper giving the winner 1 points and the loser -1 points.\n- scissors beats rock giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messages (e.g., bold text, italic text, etc.).\n",
+    "context": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Let's play this game. You are playing against a fresh player. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[move] I'll start with paper, as new players often default to rock as their first move.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'paper', 'rock', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "I'll start with paper since new players often default to rock as their first move.\n\n[move] (New players commonly choose rock first) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "I was wrong about the new player defaulting to rock - they actually did choose rock! Now I need to think about their next move. They might stick with rock since it worked, or they might try to counter what they think I'll do next.\n\n[move] (They might expect me to switch to rock after losing with paper) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Interesting - they also played scissors! They went from rock to scissors, so they're changing their strategy. They might expect me to play rock next since rock beats scissors, so they could counter with paper.\n\n[move] (Going with rock since they just played scissors) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Good prediction! They played paper after scissors, which suggests they might be cycling through moves. If they continue the pattern (rock \u2192 scissors \u2192 paper \u2192 rock), they should play rock next.\n\n[move] (If they're cycling through moves, rock should be next) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Wait, I think I see a pattern! Looking at their moves, they seem to be playing the move that beats whatever I played in the previous round:\n- Round 2: They played scissors (beats my paper from round 1)\n- Round 3: They played paper (beats my scissors from round 2) \n- Round 4: They played scissors (beats my rock from round 3)\n\nIf this continues, they should play paper next (to beat my paper from round 4).\n\n[move] (They seem to counter my previous move, so expecting paper) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Hmm, my pattern theory didn't hold up perfectly. Looking at their sequence: rock, scissors, paper, scissors, rock. They just played rock again, which breaks the simple counter-my-previous-move pattern I thought I saw.\n\n[move] (Their pattern is less clear now, going with scissors) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Two ties in a row now. Looking at their full sequence: rock, scissors, paper, scissors, rock, scissors. They seem to favor scissors - they've played it 4 out of 6 times. I'll bet on that tendency continuing.\n\n[move] (They seem to favor scissors, playing it frequently) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Three ties in a row! Their sequence so far: rock, scissors, paper, scissors, rock, scissors, rock. They seem to alternate between rock and scissors primarily. After their last rock, they might go back to scissors.\n\n[move] (Expecting scissors based on their rock-scissors alternating pattern) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They broke the alternating pattern by playing paper! Their sequence: rock, scissors, paper, scissors, rock, scissors, rock, paper. They might expect me to stick with rock since it just won, so they could play paper again to counter.\n\n[move] (They might expect me to repeat rock, so anticipating paper) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Another tie with scissors! Their sequence: rock, scissors, paper, scissors, rock, scissors, rock, paper, scissors. They've now played scissors 5 out of 9 times - it's clearly their most frequent choice.\n\n[move] (Scissors is their most common move, betting on it again) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played paper again! Looking at their pattern, after playing paper they tend to follow with scissors (happened twice before). I'll predict scissors and counter accordingly.\n\n[move] (They tend to play scissors after paper) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played paper three times in the last four rounds! They seem to be heavily favoring paper now. If they continue this trend, I should counter with scissors.\n\n[move] (They're heavily favoring paper lately) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They just played scissors again. Looking at their behavior after playing scissors, it's been mixed - sometimes paper, sometimes rock. Since I've been successful with rock lately, they might expect me to continue with rock and counter with paper.\n\n[move] (Expecting they might counter my recent rock success with paper) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played rock after scissors. Looking at their history, after playing rock they usually follow with scissors (happened twice before) or sometimes paper. I'll bet on scissors being more likely.\n\n[move] (They tend to play scissors after rock) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played paper again after rock. Looking at their history, after playing paper they've gone to scissors 3 out of 4 times. I'll bet on that pattern continuing.\n\n[move] (They usually play scissors after paper) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played scissors after paper as I predicted, but I just realized I've been misunderstanding the rules! Scissors beats rock in this game. After playing scissors, they might go back to rock or paper.\n\n[move] (Adjusting strategy with correct rules - expecting rock or paper after scissors) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played rock after scissors. Looking at their recent pattern, it seems like they might be cycling: paper \u2192 scissors \u2192 rock. If this cycle continues, they should play paper next.\n\n[move] (Expecting paper if they're cycling through moves) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played paper as I predicted in the cycle! If they continue the pattern (scissors \u2192 rock \u2192 paper \u2192 scissors), they should play scissors next.\n\n[move] (Expecting scissors to continue the cycle) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They broke the cycle by playing rock instead of scissors. Looking at their history, after playing rock they usually go to scissors next. I'll stick with my rock strategy.\n\n[move] (They typically play scissors after rock) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played scissors after rock as I predicted, but I need to remember the rules correctly: scissors beats rock. After playing scissors, they've had varied responses in the past. I'll go with paper since it beats scissors if they repeat.\n\n[move] (Covering the possibility they repeat scissors) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played paper again. Looking at their history, after playing paper they've mostly gone to scissors. I'll counter with rock.\n\n[move] (They usually play scissors after paper) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Another tie! They just played rock, and looking at their history, after playing rock they go to scissors about 67% of the time. I need to remember that paper beats scissors.\n\n[move] (They usually play scissors after rock, and paper beats scissors) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They played paper again. Looking at their recent moves, I'm seeing a clearer pattern: scissors \u2192 rock \u2192 paper \u2192 scissors \u2192 rock \u2192 paper. If this cycle continues, they should play scissors next.\n\n[move] (Expecting scissors in their cycle pattern) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "They've played paper twice in a row now. Looking at their history, after playing paper they most commonly go to scissors (about half the time). I'll counter with rock.\n\n[move] (They most often play scissors after paper) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored -1 points.\n"
+          }
+        ]
+      }
+    ]
+  }
+]
