@@ -24,46 +24,46 @@ import os
 from threading import Thread
 
 models = [
-    #{
-    #    "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    #    "name" : "Claude 3.5 Sonnet v2",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-    #    "name" : "Claude 3.7 Sonnet",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "name" : "Claude 3.5 Sonnet v2",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "name" : "Claude 3.7 Sonnet",
+        "thinking" : False,
+    },
     {
         "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
         "name" : "Claude 3.7 Sonnet (Thinking)",
         "thinking" : True,
     },
-    #{
-    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-    #    "name" : "Claude Sonnet 4",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "name" : "Claude Sonnet 4",
+        "thinking" : False,
+    },
     {
         "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
         "name" : "Claude Sonnet 4 (Thinking)",
         "thinking" : True,
     },
-    #{
-    #    "id" : "meta.llama3-1-405b-instruct-v1:0",
-    #    "name" : "Llama 3.1 405B Instruct",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
-    #    "name" : "Llama 3.3 70B Instruct",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "mistral.mistral-large-2407-v1:0",
-    #    "name" : "Mistral Large (24.07)",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "meta.llama3-1-405b-instruct-v1:0",
+        "name" : "Llama 3.1 405B Instruct",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.meta.llama3-3-70b-instruct-v1:0",
+        "name" : "Llama 3.3 70B Instruct",
+        "thinking" : False,
+    },
+    {
+        "id" : "mistral.mistral-large-2407-v1:0",
+        "name" : "Mistral Large (24.07)",
+        "thinking" : False,
+    },
     {
         "id" : "us.deepseek.r1-v1:0",
         "name" : "DeepSeek-R1",
@@ -271,9 +271,9 @@ def main2_remainder(root_dir: str, rounds: int):
                     print(f"Directory {dir_path} does not have a valid name format")
                     continue
 
-                if model_name in ["Claude Sonnet 4", "Llama 3.1 405B Instruct"]:
-                    # skip models that are in the above list
-                    continue
+                #if model_name in ["Claude Sonnet 4", "Llama 3.1 405B Instruct"]:
+                #    # skip models that are in the above list
+                #    continue
 
                 if model_name not in threads:
                     threads[model_name] = []
@@ -288,7 +288,7 @@ def main2_remainder(root_dir: str, rounds: int):
                             RPS_SETTINGS_COLLECTION[game_settings_type],
                             models[[m["name"] for m in models].index(model_name)],
                             1.0,
-                            4096,
+                            6144,
                             player_types,
                             [1, 1] if not self_consistency else [5, 1],
                             os.path.join("logs", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
@@ -370,7 +370,7 @@ def main2_r(root_dir: str, rounds: int):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 5)
+                args=(model_threads, 3)
             )
         )
     
@@ -412,4 +412,4 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2(2, True)
+    main2_r("logs/logs_3", 24)
