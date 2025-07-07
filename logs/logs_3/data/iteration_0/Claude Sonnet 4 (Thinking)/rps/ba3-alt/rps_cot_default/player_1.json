@@ -1,0 +1,399 @@
+[
+  {
+    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: paper, rock, and scissors.\n- paper beats scissors giving the winner 1 points and the loser -1 points.\n- rock beats paper giving the winner 3 points and the loser -3 points.\n- scissors beats rock giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messages (e.g., bold text, italic text, etc.).\n",
+    "context": [
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Let's play this game. You are playing against a fresh player. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Looking at this game, I need to consider the payoff structure carefully. Rock offers the highest potential reward (+3) but also the highest risk (-3). Paper and scissors have lower variance with \u00b11 point outcomes.\n\nSince I'm facing a fresh player with no established patterns, I'll assume they might play somewhat randomly. In that case, scissors gives me the best expected value - I win 1 point against paper, lose 1 point against rock, and tie against scissors.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Good start! I won with scissors against rock, earning 1 point.\n\nFor this round, I'm thinking the opponent might try to adjust their strategy. Since they played rock and lost to my scissors, they might either stick with rock or switch to try to counter what they think I'll do next.\n\nIf they expect me to play scissors again, they might stick with rock. But they could also switch to paper or scissors. Given the payoff structure, rock offers the highest potential reward (+3 against paper) while scissors and paper have more balanced risk/reward.\n\n[move] rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Excellent! Another win with rock beating paper for 3 points. I'm now at 4 total points.\n\nLooking at the pattern: my opponent played rock, then paper. They might be cycling through moves or trying to counter my previous plays. Since they've now used rock and paper, they might try scissors next, or they could return to rock.\n\nIf they play scissors, I want rock for the big 3-point win. If they go back to rock, paper would give me another 3-point victory. Given that rock was their opening move, there's a decent chance they might return to it.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Another win! Paper beat scissors for 1 point, bringing me to 5 total points.\n\nLooking at my opponent's moves: rock, paper, scissors - they've played each move once in sequence. This suggests they might be cycling through all three moves systematically. If this pattern continues, their next move should be rock again.\n\nIf they play rock, I want paper to get that valuable 3-point victory. Even if they break the pattern, paper still gives me a decent chance since it beats rock for the high reward and only loses 1 point to scissors.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Ouch! Lost 3 points there, bringing me down to 2 total points. My opponent played rock when I expected them to continue a pattern, but they actually did play rock as I predicted - I just chose the wrong counter.\n\nTheir sequence so far: rock, paper, scissors, rock. They seem to be cycling through moves but not in a perfectly predictable way. Since they just played rock successfully, they might either stick with it or move to the next move in their cycle (which would be paper).\n\nIf they stick with rock, I need paper for the 3-point win. If they go to paper, I need scissors for the 1-point win. Given that they just had success with rock, there's a decent chance they might repeat it.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Another tough loss! Paper lost to rock again for -3 points. I'm now at -1 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock. They've now played rock twice in a row after finding success with it. They seem to have identified that rock is working well against my recent paper plays.\n\nSince they've had success with rock in the last two rounds, there's a good chance they'll stick with it again. If they play rock, I need scissors to beat it for 1 point. Even if they switch to paper or scissors, scissors still gives me reasonable outcomes.\n\nTime to break their rock streak.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Great! Scissors beat rock for 1 point, bringing me back to 0 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock. They've now played rock three times in a row. They seem to have gotten stuck in a rock pattern, but after losing this last round, they might finally switch.\n\nIf they stick with rock again, scissors wins for 1 point. If they switch to paper (trying to counter my scissors), scissors still wins for 1 point. Only if they switch to scissors would I lose 1 point.\n\nGiven their recent rock streak and that scissors has been working well for me, I'll stick with it.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Lost 1 point there with scissors vs paper, putting me at -1 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper. They broke their rock streak and switched to paper, which successfully countered my scissors. This shows they're adapting their strategy based on what's working.\n\nSince paper just worked well for them against my scissors, they might stick with it. If they play paper again, I need scissors to beat it for 1 point. But they might also switch back to rock for the high-reward potential, in which case I'd want paper.\n\nGiven their recent success with paper, I think there's a good chance they'll repeat it.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Nice! Scissors beat rock for 1 point, bringing me back to 0 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock. They've now played rock 5 out of 8 times, showing a clear preference for it. They did switch to paper when I was on a scissors streak, but then went right back to rock.\n\nGiven their strong tendency toward rock and that they just played it successfully, there's a good chance they'll stick with rock again. Scissors beats rock for 1 point, and even if they switch to scissors for a tie, that's better than the -1 or -3 point losses I'd get from other mismatches.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Excellent! Another scissors victory over rock for 1 point. I'm now at 1 total point.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock. They've played rock 6 out of 9 times - that's a 67% rock preference! They seem to have a strong bias toward rock, only switching to paper briefly when I was on a scissors streak.\n\nGiven this overwhelming tendency toward rock, scissors continues to be the optimal choice. It beats their most likely move (rock) for 1 point, and even if they surprise me with a different move, the downside is manageable.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Lost 1 point with scissors vs paper, back to 0 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper. They've now played rock 6 times, paper 3 times, and scissors only once. They clearly favor rock but strategically switch to paper when I'm having success with scissors.\n\nThey just played paper successfully against my scissors, so they might stick with it. However, their overall pattern shows they tend to return to rock after brief switches. \n\nScissors still seems optimal - it beats their most common move (rock) and also beats paper if they repeat it. The only downside is a tie if they play scissors, which they've only done once.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Another loss with scissors vs paper, bringing me to -1 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper. They've now played rock 6 times, paper 4 times, and scissors only once. They've clearly adapted to my scissors strategy by increasing their paper usage - the last two moves were both paper.\n\nThey might continue with paper since it's been working against my scissors, or they could return to their overall rock preference. Given their recent paper success, there's a decent chance they'll stick with it.\n\nBut I'm noticing a pattern shift. Maybe I should switch strategies and try rock to potentially capitalize on their rock preference for a big 3-point win if they return to rock.\n\n[move] rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Fantastic! Rock beat paper for 3 points, bringing me to 2 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper. They've now played rock 6 times, paper 5 times, and scissors only once. They just had three papers in a row, but my rock broke that streak.\n\nAfter losing with paper against my rock, they might switch strategies. Given their historical preference for rock (50% of their moves), there's a good chance they'll return to it, especially after the paper streak failed.\n\nIf they go back to rock, I want paper for the valuable 3-point win. Even if they try scissors to counter my rock, paper only loses 1 point, which is manageable given my current positive position.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Great win! Paper beat scissors for 1 point, bringing me to 3 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors. They've now played rock 6 times, paper 5 times, and scissors 2 times. They seem to adapt when strategies fail - after their paper streak was broken, they tried scissors but it didn't work.\n\nThey might return to their most successful move (rock) after the scissors failure, or they could try paper again. Given their 46% rock preference historically and that scissors just failed, there's a good chance they'll go back to rock.\n\nIf they play rock, I want paper for the big 3-point win. Even if they surprise me with scissors or paper, the downside is only 1 point, which is manageable given my current 3-point lead.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "A tie with both playing paper, so I'm still at 3 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper. They've now played rock 6 times, paper 6 times, and scissors only 2 times - they're tied between rock and paper preferences.\n\nThey just played paper, which suggests they might be entering another paper phase. However, since we tied, they might either stick with paper or switch strategies. Given their tendency to play in streaks and adapt when things aren't working perfectly, there's a good chance they'll continue with paper.\n\nScissors beats both paper and rock for 1 point each, and they've barely used scissors (only 14% of the time). This seems like a solid choice.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Another win! Scissors beat rock for 1 point, bringing me to 4 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock. They've now played rock 7 times (47%), paper 6 times (40%), and scissors only 2 times (13%) out of 15 moves.\n\nThey just returned to rock after trying paper, which fits their pattern of favoring these two moves. Given their strong preference for rock and paper combined (87% of their moves), scissors continues to be an excellent choice since it beats both for 1 point each.\n\nThe only downside would be a tie if they play scissors, but they've only done that twice in 15 rounds.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Lost 1 point with scissors vs paper, bringing me to 3 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper. They've now played rock 7 times (44%), paper 7 times (44%), and scissors only 2 times (12%) out of 16 moves.\n\nThey're clearly alternating between rock and paper as their main strategies, with scissors being very rare. They just played paper successfully, so they might either stick with it or return to rock.\n\nGiven their 88% combined preference for rock and paper, scissors remains the optimal choice since it beats both of their favored moves for 1 point each. The risk of them playing scissors (only 12% historically) is quite low.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Lost another point with scissors vs paper, bringing me to 2 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper. They've now played rock 7 times (41%), paper 8 times (47%), and scissors only 2 times (12%) out of 17 moves.\n\nThey just played paper twice in a row successfully against my scissors. They've clearly adapted to counter my scissors strategy by increasing their paper usage. Since paper beats scissors, I need to change my approach.\n\nGiven their recent paper trend and overall 47% paper preference, rock would be the optimal counter - it beats paper for the valuable 3-point win. Even if they switch back to rock, I only lose 3 points, but the potential upside is worth it.\n\n[move] rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Excellent! Rock beat paper for 3 points, bringing me to 5 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper, paper. They've now played rock 7 times (39%), paper 9 times (50%), and scissors only 2 times (11%) out of 18 moves.\n\nThey just had three papers in a row until my rock broke that streak. After losing with paper, they might switch strategies. Given their pattern of adapting when things don't work, they could return to rock (their second favorite move) or try scissors to counter my rock.\n\nIf they switch to rock, I want paper for the big 3-point win. Even if they try scissors to counter my recent rock success, paper only loses 1 point, which is manageable with my 5-point lead.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Great win! Paper beat scissors for 1 point, bringing me to 6 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper, paper, scissors. They've now played rock 7 times (37%), paper 9 times (47%), and scissors 3 times (16%) out of 19 moves.\n\nThey tried scissors to counter my recent rock success, but my paper beat it. After this failure, they'll likely return to their preferred moves - rock or paper. Given that scissors just failed and rock is their second most common choice (37%), there's a good chance they'll go back to rock.\n\nIf they play rock, I want paper for the valuable 3-point win. Even if they return to paper, paper only ties for 0 points, which maintains my strong position.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Lost 3 points with paper vs rock, bringing me to 3 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper, paper, scissors, rock. They've now played rock 8 times (40%), paper 9 times (45%), and scissors 3 times (15%) out of 20 moves.\n\nThey just played rock successfully against my paper. Given their pattern of sticking with moves that work, there's a good chance they'll repeat rock. However, they could also switch to paper, their most common move.\n\nSince they have an 85% combined preference for rock and paper, scissors is the optimal choice - it beats both of their favored moves for 1 point each. The risk of them playing scissors (only 15% historically) is relatively low.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Great win! Scissors beat rock for 1 point, bringing me to 4 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper, paper, scissors, rock, rock. They've now played rock 9 times (43%), paper 9 times (43%), and scissors 3 times (14%) out of 21 moves.\n\nThey just had two rocks in a row, with the second one losing to my scissors. Given their pattern of adapting when moves fail, they'll likely switch from rock. They could go to paper (their equally preferred move) or try scissors to counter my recent scissors success.\n\nSince they have an 86% combined preference for rock and paper, scissors remains the optimal choice - it beats both of their main moves for 1 point each. The risk of them playing scissors (only 14% historically) is relatively low.\n\n[move] scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Lost 1 point with scissors vs paper, bringing me to 3 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper, paper, scissors, rock, rock, paper. They've now played rock 9 times (41%), paper 10 times (45%), and scissors 3 times (14%) out of 22 moves.\n\nThey just switched to paper after their rock streak failed, and it successfully beat my scissors. Given that paper just worked and it's their most common move (45%), there's a good chance they'll stick with it.\n\nIf they repeat paper, rock would give me the valuable 3-point win. Even if they switch back to rock, I only lose 3 points, but the potential upside of beating paper is significant. Their scissors usage is so low (14%) that the risk is manageable.\n\n[move] rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: paper.\nYou scored 3 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "Excellent! Rock beat paper for 3 points, bringing me to 6 total points.\n\nMy opponent's sequence: rock, paper, scissors, rock, rock, rock, paper, rock, rock, paper, paper, paper, scissors, paper, rock, paper, paper, paper, scissors, rock, rock, paper, paper. They've now played rock 9 times (39%), paper 11 times (48%), and scissors 3 times (13%) out of 23 moves.\n\nThey just had two papers in a row until my rock broke that streak. After losing with paper, they'll likely switch strategies. Given their adaptation pattern, they could return to rock (their second most common move) or try scissors to counter my recent rock success.\n\nIf they switch to rock, I want paper for the valuable 3-point win. Even if they try scissors to counter my rock, paper only loses 1 point, which is manageable with my strong 6-point lead.\n\n[move] paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: rock.\nYou scored -3 points.\n"
+          }
+        ]
+      }
+    ]
+  }
+]

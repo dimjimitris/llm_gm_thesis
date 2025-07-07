@@ -1,6 +1,6 @@
 [
   {
-    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: rock, paper, and scissors.\n- rock beats scissors giving the winner 1 points and the loser -1 points.\n- paper beats rock giving the winner 1 points and the loser -1 points.\n- scissors beats paper giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n",
+    "system_prompt": "You are playing a game against other player(s). The game is based on making moves.\n\nGame Description:\nThere are three possible moves: rock, paper, and scissors.\n- rock beats scissors giving the winner 1 points and the loser -1 points.\n- paper beats rock giving the winner 1 points and the loser -1 points.\n- scissors beats paper giving the winner 1 points and the loser -1 points.\n- If both players make the same move, the game is a tie and no points are awarded.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messages (e.g., bold text, italic text, etc.).\n",
     "context": [
       {
         "role": "user",
@@ -14,7 +14,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] Anticipating a common first move of rock from a new player, choosing paper to counter. Paper beats rock.  \nPaper\n"
+            "text": "\n\n[move] Anticipating a common first move. Paper\n"
           }
         ]
       },
@@ -22,7 +22,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
           }
         ]
       },
@@ -30,39 +30,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating a common first move of rock from a new player, choosing paper to counter) Paper\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Expecting a repeat of paper after the tie, countering with scissors) Scissors\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Anticipating a shift to Rock after consecutive ties, countering with Paper) Paper\n"
+            "text": "\n\n[move] (Anticipating a common first move) paper"
           }
         ]
       },
@@ -78,7 +46,103 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Attempting to break the tie cycle by predicting a shift to Rock) Paper\n"
+            "text": "\n\n[move] (Expecting a repeat after a tie) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Countering potential repeat of rock) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to counter previous paper with scissors) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Anticipating another paper to counter expected rock) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to repeat rock) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent's cycle to repeat with paper) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to counter previous scissors with rock) paper"
           }
         ]
       },
@@ -94,7 +158,87 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Predicting a switch to Scissors to counter previous Paper, choosing Rock) Rock\n"
+            "text": "\n\n[move] (Anticipating opponent to counter previous paper with scissors) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to repeat paper) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to counter previous scissors with rock) paper"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Anticipating opponent to continue with paper) scissors"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: scissors.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to continue with scissors) rock"
           }
         ]
       },
@@ -110,7 +254,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Predicting another Rock after consecutive ties, countering with Paper) Paper\n"
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Anticipating potential rock repetition) paper"
           }
         ]
       },
@@ -126,7 +286,55 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating a repeat of scissors after their recent win, countering with rock) Rock\n"
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Countering expected scissors from opponent's paper counter) rock"
           }
         ]
       },
@@ -142,7 +350,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Predicting a repeat of Paper after their recent win, countering with Scissors) Scissors\n"
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Anticipating opponent to repeat paper) scissors"
           }
         ]
       },
@@ -158,7 +382,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating another Rock to counter my previous Scissors, choosing Paper) Paper\n"
+            "text": "\n\n[move] (Predicting opponent to counter previous scissors with rock) paper"
           }
         ]
       },
@@ -174,7 +398,23 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Predicting opponent will counter previous Paper with Scissors, choosing Rock to win) Rock\n"
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Countering opponent's previous scissors) rock"
           }
         ]
       },
@@ -190,7 +430,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[ERROR] No text found in response.\n"
+            "text": "[ERROR] No response generated.\n"
           }
         ]
       },
@@ -198,7 +438,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
           }
         ]
       },
@@ -206,7 +446,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Predicting opponent will counter previous Rock with Paper, choosing Scissors to win) Scissors\n"
+            "text": "[ERROR] No response generated.\n"
           }
         ]
       },
@@ -214,7 +454,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
           }
         ]
       },
@@ -222,55 +462,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating a return to Rock after recent losses, countering with Paper) Paper\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[ERROR] No text found in response.\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Predicting opponent continues with scissors, countering with rock) Rock\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: rock. Your opponent made the move: paper.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Predicting opponent continues cycling through moves, expecting Rock next) Paper\n"
+            "text": "\n\n[move] (Countering expected rock from opponent's previous pattern) paper"
           }
         ]
       },
@@ -286,7 +478,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating opponent to counter previous Paper with Scissors, choosing Rock) Rock\n"
+            "text": "\n\n[move] (Predicting opponent to counter previous paper with scissors) rock"
           }
         ]
       },
@@ -302,7 +494,39 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating opponent continues with paper, countering with scissors) Scissors\n"
+            "text": "[ERROR] No response generated.\n"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Predicting opponent to counter previous paper with scissors) rock"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: rock.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Anticipating opponent to switch to paper after rock tie) scissors"
           }
         ]
       },
@@ -318,87 +542,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Predicting opponent switches to Rock after Scissors tie, countering with Paper) Paper\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Predicting opponent continues with paper after recent ties, countering with scissors) Scissors\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: scissors. Your opponent made the move: rock.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[ERROR] No text found in response.\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Anticipating opponent continues favoring rock, countering with paper) Paper\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou lost the round. You made the move: paper. Your opponent made the move: scissors.\nYou scored -1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "[ERROR] No text found in response.\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Anticipating opponent continues with scissors, countering with rock) Rock\n"
+            "text": "\n\n[move] (Anticipating opponent to repeat scissors after tie) rock"
           }
         ]
       },
@@ -414,71 +558,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "[ERROR] No text found in response.\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] and not contain other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'rock', 'paper', or 'scissors'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Anticipating opponent's next move as Rock after Scissors, choosing Paper) Paper\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: paper. Your opponent made the move: rock.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Predicting opponent switches to scissors after rock loss, countering with rock) Rock\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nYou won the round. You made the move: rock. Your opponent made the move: scissors.\nYou scored 1 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Anticipating opponent expects a repeat of Rock, countering with Paper) Paper\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended in a tie. Both players made the same move: paper.\nYou scored 0 points.\n\nLet's play another round. Please make your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Anticipating opponent may repeat Paper after the tie, countering with Scissors) Scissors\n"
+            "text": "\n\n[move] (Anticipating opponent to repeat paper) scissors"
           }
         ]
       },
