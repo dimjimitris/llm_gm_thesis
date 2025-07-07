@@ -24,41 +24,41 @@ import os
 from threading import Thread
 
 models = [
-    #{
-    #    "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
-    #    "name" : "Claude 3.5 Sonnet v2",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-    #    "name" : "Claude 3.7 Sonnet",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "anthropic.claude-3-5-sonnet-20241022-v2:0",
+        "name" : "Claude 3.5 Sonnet v2",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "name" : "Claude 3.7 Sonnet",
+        "thinking" : False,
+    },
     #{
     #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
     #    "name" : "Claude 3.7 Sonnet (Thinking)",
     #    "thinking" : True,
     #},
-    #{
-    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-    #    "name" : "Claude Sonnet 4",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "name" : "Claude Sonnet 4",
+        "thinking" : False,
+    },
     #{
     #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
     #    "name" : "Claude Sonnet 4 (Thinking)",
     #    "thinking" : True,
     #},
-    #{
-    #    "id" : "meta.llama3-1-405b-instruct-v1:0",
-    #    "name" : "Llama 3.1 405B Instruct",
-    #    "thinking" : False,
-    #},
-    #{
-    #    "id" : "us.meta.llama3-3-70b-instruct-v1:0",
-    #    "name" : "Llama 3.3 70B Instruct",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "meta.llama3-1-405b-instruct-v1:0",
+        "name" : "Llama 3.1 405B Instruct",
+        "thinking" : False,
+    },
+    {
+        "id" : "us.meta.llama3-3-70b-instruct-v1:0",
+        "name" : "Llama 3.3 70B Instruct",
+        "thinking" : False,
+    },
     {
         "id" : "mistral.mistral-large-2407-v1:0",
         "name" : "Mistral Large (24.07)",
@@ -69,7 +69,7 @@ models = [
     #    "name" : "DeepSeek-R1",
     #    "thinking" : False,
     #},
-]#
+]
 
 def trial_pd(
     id: str,
@@ -166,34 +166,33 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
     for model in models:
         threads_list = list()
         #trial_idx = 200
-        for valid_game_setting in ["pd-alt"]:#VALID_GAME_SETTINGS:
+        for valid_game_setting in VALID_GAME_SETTINGS:
             for player1_type, player2_type in [
-                #("zs", "srep"),
+                ("zs", "srep"),
                 #("zs", "pp"),
                 #("zs", "mf"),
                 #("zs", "tft"),
-#
-                #("spp", "srep"),
+
+                ("spp", "srep"),
                 #("spp", "pp"),
                 #("spp", "mf"),
                 #("spp", "tft"),
-#
-                #("cot", "srep"),
+
+                ("cot", "srep"),
                 #("cot", "pp"),
                 #("cot", "mf"),
                 #("cot", "tft"),
-#
+
                 #("zs", "zs"),
                 #("zs", "spp"),
                 #("zs", "cot"),
-                #
+                
                 #("spp", "zs"),
                 #("spp", "spp"),
                 #("spp", "cot"),
-
                 #("cot", "zs"),
                 #("cot", "spp"),
-                ("cot", "cot"),
+                #("cot", "cot"),
             ]:
                 threads_list.append(
                     Thread(
@@ -281,8 +280,8 @@ def main2_remainder(root_dir: str, rounds: int):
                     print(f"Directory {dir_path} does not have a valid name format")
                     continue
 
-                if model_name in ["Claude Sonnet 4",]:
-                    continue
+                #if model_name in ["Claude Sonnet 4",]:
+                #    continue
 
                 if model_name not in threads:
                     threads[model_name] = []
@@ -357,7 +356,7 @@ def main2(iterations: int, self_consistency: bool):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 5)
+                args=(model_threads, 4)
             )
         )
     
@@ -379,7 +378,7 @@ def main2_r(root_dir: str, rounds: int):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 5)
+                args=(model_threads, 4)
             )
         )
     
@@ -421,4 +420,5 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2_r("logs_pd/logs_3", 16)
+    main2(5, False)
+    main2(2, True)

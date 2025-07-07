@@ -1,6 +1,6 @@
 [
   {
-    "system_prompt": "You are playing a game against other player(s). The game is based on strategic moves.\n\nGame Description:\nThere are two possible moves: cooperation and defection.\n- if both players choose cooperation, both get 6 points.\n- if both players choose defection, both get 2 points.\n- if you choose cooperation and the other player chooses defection, you get 1 points and the other player gets 4 points.\n- if you choose defection and the other player chooses cooperation, you get 4 points and the other player gets 1 points.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n",
+    "system_prompt": "You are playing a game against other player(s). The game is based on strategic moves.\n\nGame Description:\nThere are two possible moves: cooperation and defection.\n- if both players choose cooperation, both get 6 points.\n- if both players choose defection, both get 2 points.\n- if you choose cooperation and the other player chooses defection, you get 1 points and the other player gets 4 points.\n- if you choose defection and the other player chooses cooperation, you get 4 points and the other player gets 1 points.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messages (e.g., bold text, italic text, etc.).\n",
     "context": [
       {
         "role": "user",
@@ -14,23 +14,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] As a new player might be more likely to cooperate initially, choosing defection allows me to maximize potential gain (4 points if they cooperate) while avoiding the worst-case scenario (1 point if I cooperate and they defect). Defect.\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'cooperation' or 'defection'.\nFormat: [move] (Optional explanation here) Your move here\"\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (A new player may start with cooperation, so defecting could maximize my points by either gaining 4 if they cooperate or 2 if they defect, avoiding the risk of losing with 1.) Defection\n"
+            "text": "\n\n[move] Defection  \nIn a one-time interaction with a new player, defection maximizes potential gain (4 if they cooperate) while minimizing risk (2 if they defect), as mutual cooperation is unlikely without prior trust."
           }
         ]
       },
@@ -46,7 +30,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (After mutual defection last round, the opponent may continue defecting. Defecting again ensures at least 2 points and avoids the risk of a 1-point loss if they defect again, while still capitalizing if they switch to cooperation.) Defection\n"
+            "text": "\n\n[move] Defection  \nRepeating defection maintains a stable outcome (2 points) without risking exploitation. Without signals of cooperation from the opponent, mutual defection remains the safer choice in a low-trust scenario."
           }
         ]
       },
@@ -62,7 +46,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (The opponent switched to cooperation after my defection, possibly signaling a willingness to cooperate. Cooperating now could establish mutual trust for higher future payoffs, while risking a 1-point loss if they defect again.) Cooperation\n"
+            "text": "\n\n[move] Cooperation  \nAfter the opponent unexpectedly cooperated following mutual defection, reciprocating with cooperation could encourage mutual trust. The potential for 6-point mutual reward outweighs the risk of 1-point loss, especially if the opponent is signaling a shift toward cooperative play."
           }
         ]
       },
@@ -78,7 +62,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (The opponent defected after my cooperation, indicating possible exploitation. Mirroring their last move by defecting prevents further losses and may encourage future cooperation if they reciprocate.) Defection\n"
+            "text": "\n\n[move] Defection  \nGiven the opponent's recent exploitation of cooperation, reverting to defection minimizes vulnerability. Securing 2-4 points is preferable to risking another 1-point loss, especially with an opponent demonstrating opportunistic behavior."
           }
         ]
       },
@@ -94,103 +78,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (The opponent's recent cooperation after my defection suggests possible unpredictability. Defecting again secures a minimum of 2 points if they defect and capitalizes on another 4 points if they cooperate, balancing risk and reward.) Defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (The opponent's inconsistent responses make predicting their next move uncertain. Defecting ensures a minimum of 2 points and avoids exploitation if they defect again, while still benefiting if they switch to cooperation.) Defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (The opponent's recent cooperation after my defection might indicate an attempt to re-establish trust. However, their history of exploiting my cooperation suggests caution. Defecting secures a minimum of 2 points and capitalizes on another potential 4 if they cooperate again, balancing risk and reward.) Defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Persistent mutual defection yields low rewards. Testing cooperation could reset the cycle for higher gains, but the opponent's inconsistency poses risk. Defecting maintains a safer baseline while capitalizing if they attempt cooperation again.) Defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (The opponent's repeated cooperation after my defections might indicate a willingness to restore mutual cooperation. However, their past exploitation of my cooperation suggests caution. Defecting secures a minimum of 2 points if they defect again, while still benefiting from 4 points if they persist in cooperating.) Defection\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Persistent mutual defection yields minimal rewards. Testing cooperation again could break the cycle for higher mutual gains, especially if the opponent is signaling willingness to cooperate. While risky, the potential 6-point payoff justifies the attempt.) Cooperation\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: cooperation.\nYou scored 6 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Mutual cooperation yielded the highest reward. Continuing to cooperate reinforces trust, encouraging the opponent to maintain cooperation for sustained high payoffs. However, remaining vigilant to potential defection in future rounds.) Cooperation\n"
+            "text": "\n\n[move] Cooperation  \nDespite previous exploitation, the opponent's recent cooperation suggests possible willingness to rebuild trust. Testing mutual cooperation again could unlock higher rewards (6 points) if reciprocated, while accepting the 1-point risk as part of strategic negotiation. This balances optimism with the need to probe their strategy."
           }
         ]
       },
@@ -206,7 +94,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (The opponent defected after the recent cooperation, indicating a possible pattern of exploitation. Mirroring their last move by defecting prevents further losses and may encourage future cooperation through consistent retaliation.) Defection\n"
+            "text": "\n\n[move] Defection  \nThe opponent has consistently exploited cooperation attempts (1-point losses) while occasionally cooperating after defection (4-point gains). Prioritizing self-protection by defecting secures a minimum 2 points and capitalizes on their unpredictable cooperation, avoiding further vulnerability. Trust is unsustainable given their repeated betrayal pattern."
           }
         ]
       },
@@ -222,7 +110,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (The opponent's recent cooperation after my defection may indicate a shift towards mutual cooperation. However, their history of exploiting my trust suggests caution. Cooperating now risks a 1-point loss but could re-establish trust for higher future gains, while defecting secures 2-4 points. Balancing risk, defection remains safer.) Defection\n"
+            "text": "\n\n[move] Defection  \nThe opponent's inconsistent responses\u2014cooperating after defection but exploiting cooperation\u2014make sustained trust unviable. Defecting secures a baseline of 2-4 points while avoiding the high risk of exploitation, given their repeated tendency to defect when I cooperate. Prioritizing self-interest aligns with their unpredictable strategy."
           }
         ]
       },
@@ -238,7 +126,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Persistent defection leads to low rewards. To test if mutual cooperation can be re-established, cooperating now might incentivize the opponent to reciprocate, aiming for higher 6-point gains. While risky, the potential payoff justifies the attempt given the cycle of low-scoring defections.) Cooperation\n"
+            "text": "\n\n[move] Defection  \nPersistent defection remains optimal given the opponent's unreliable cooperation history. Securing 2 points through mutual defection is preferable to risking another 1-point loss, as their actions show no consistent pattern of reciprocating goodwill. Trust-building attempts have repeatedly failed, necessitating self-preservation."
           }
         ]
       },
@@ -246,7 +134,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: cooperation.\nYou scored 6 points.\n\nLet's play another round. Please choose your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
           }
         ]
       },
@@ -254,7 +142,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (After two consecutive rounds of mutual cooperation yielding maximum points, maintaining cooperation encourages continued mutual benefit. While there's a risk of exploitation, the recent trend suggests the opponent may be stabilizing into a cooperative pattern. Prioritizing sustained high rewards over short-term caution.) Cooperation\n"
+            "text": "\n\n[move] Defection  \nThe opponent's sporadic cooperation after defection (yielding 4 points) doesn't justify risking another 1-point loss. Their exploitative pattern when I cooperate (1 point) makes defection the rational choice to secure 2-4 points, prioritizing consistent gains over unstable trust-building attempts."
           }
         ]
       },
@@ -262,7 +150,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: cooperation. Your opponent choose the move: defection.\nYou scored 1 points.\n\nLet's play another round. Please choose your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
           }
         ]
       },
@@ -270,7 +158,103 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (The opponent has a pattern of defecting after my cooperation, exploiting trust. Defecting now prevents a 1-point loss and either secures 2 points if they defect or 4 if they cooperate, maintaining a safer strategy while testing their response.) Defection\n"
+            "text": "\n\n[move] Defection  \nPersistent defection maintains a stable payoff floor (2 points) while exploiting the opponent\u2019s occasional cooperation (4 points). Their failure to consistently reciprocate cooperation\u2014and repeated exploitation of it\u2014makes trust too costly. Securing predictable gains outweighs the diminishing prospect of mutual cooperation."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] Defection  \nThe opponent\u2019s intermittent cooperation after defection (yielding 4 points) does not offset the repeated exploitation of my cooperation (1 point). Defecting ensures a stable 2-4 point range, avoiding vulnerability to their opportunistic defections. Trust remains unviable given their inconsistent reciprocity, making self-interest the rational strategy."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] Defection  \nThe opponent\u2019s sporadic cooperation (4 points) doesn\u2019t justify abandoning a self-protective strategy. Their history of exploiting cooperation (1 point) and lack of consistent reciprocity make defection the rational choice. Securing 2-4 points reliably outweighs the unproven potential for mutual cooperation, given their unpredictable behavior."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] Defection  \nThe opponent\u2019s sporadic cooperation (4 points) remains insufficient to offset the high risk of exploitation (1 point) when cooperating. Defecting ensures a stable 2-4 point range, leveraging their occasional cooperation while avoiding vulnerability. Their inconsistent reciprocity and history of betrayal make trust irrational. Prioritizing self-interest maximizes expected utility."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] Defection  \nGiven the opponent's inconsistent reciprocity and history of exploiting cooperation, maintaining defection secures a stable 2-4 point range. Trust-building attempts have repeatedly failed (1-point losses), while defection capitalizes on their occasional cooperation (4 points) without risking vulnerability. Rational self-interest prioritizes predictable gains over unproven cooperation."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: defection. Your opponent choose the move: cooperation.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] Defection  \nPersistent defection remains optimal: the opponent\u2019s sporadic cooperation (4 points) does not justify risking exploitation (1 point). Their inconsistent reciprocity and history of betraying cooperation make trust irrational. Defending secures a stable 2-4 point range, prioritizing self-interest over unreliable cooperation attempts."
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: defection.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] Defection  \nPersistent defection remains the rational choice:  \n- Opponent\u2019s behavior remains erratic, alternating between exploitation (1-point loss when I cooperate) and sporadic cooperation (4-point gain when I defect).  \n- Mutual defection (2 points) provides a stable baseline, avoiding vulnerability to their unpredictable strategy.  \n- Trust-building attempts have consistently failed, and their lack of pattern justifies prioritizing self-interest.  \n- Maximizing *minimum guaranteed gains* (2-4 points) outweighs the unproven risk/reward of cooperation (1-6 points)."
           }
         ]
       },

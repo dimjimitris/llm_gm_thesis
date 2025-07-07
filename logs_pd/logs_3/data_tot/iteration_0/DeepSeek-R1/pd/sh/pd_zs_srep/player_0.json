@@ -1,6 +1,6 @@
 [
   {
-    "system_prompt": "You are playing a game against other player(s). The game is based on strategic moves.\n\nGame Description:\nThere are two possible moves: stag and hare.\n- if both players choose stag, both get 6 points.\n- if both players choose hare, both get 2 points.\n- if you choose stag and the other player chooses hare, you get 1 points and the other player gets 4 points.\n- if you choose hare and the other player chooses stag, you get 4 points and the other player gets 1 points.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n",
+    "system_prompt": "You are playing a game against other player(s). The game is based on strategic moves.\n\nGame Description:\nThere are two possible moves: stag and hare.\n- if both players choose stag, both get 6 points.\n- if both players choose hare, both get 2 points.\n- if you choose stag and the other player chooses hare, you get 1 points and the other player gets 4 points.\n- if you choose hare and the other player chooses stag, you get 4 points and the other player gets 1 points.\n\nIn each round of the game you play against one other player. You and the other player each make a move privately. The moves are compared and you and the other player get your reward/penalty based on the moves made.\n\nMessage Formats:\nMove messages are sent when you want to make a move.\nMove messages are formatted like this:\n[move] (Optional explanation here) Your move here\n\nHint messages are received when you are provided with advice and directions. These messages are important and you should pay attention to them.\nHint messages are formatted like this:\n[hint] Hint message here\n\nObjective:\nMaximize your points and/or minimize your penalties.\n\nTips:\n- Try to formulate a strategy by reasoning on the provided information.\n- Pay attention to the payoff matrix of the game moves.\n- You should only send move messages. Hint messages will only be provided to you.\n- Pay attention to hints when provided.\n- Do not use markdown formatting in your messages (e.g., bold text, italic text, etc.).\n",
     "context": [
       {
         "role": "user",
@@ -14,7 +14,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] Choosing hare ensures a minimum of 2 points and avoids the risk of getting 1 if the other player chooses hare. It's a safer strategy against a new player who might not cooperate. hare\n"
+            "text": "\n\n[move] Choosing hare to minimize risk against a new player who might not cooperate. hare\n"
           }
         ]
       },
@@ -22,7 +22,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'stag' or 'hare'. Nested parentheses are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
+            "text": "[hint] An error occurred. Please resend the previous message with the following correction, without indicating in any way that you have made a correction to a prior message: \n \"You may structure your response however you like, but it should contain a move message. Move messages begin with the tag [move] not containing other tags, which is followed by your optional explanation in parentheses, and end with a valid move: 'stag' or 'hare'. DO NOT INCLUDE THE [move] TAG IN YOUR REASONING, ONLY IN YOUR ACTUAL MOVE MESSAGE. Nested parentheses or markdown formatting are not allowed.\nFormat: [move] (Optional explanation here) Your move here\"\n"
           }
         ]
       },
@@ -30,7 +30,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Choosing hare ensures a minimum of 2 points and avoids the risk of getting 1 if the other player chooses hare. It's a safer strategy against a new player who might not cooperate.) hare\n"
+            "text": "\n\n[move] (Choosing hare to minimize risk against a new player who might not cooperate.) hare"
           }
         ]
       },
@@ -46,7 +46,119 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Anticipating the opponent might switch to hare after receiving a low payoff last round, choosing hare secures at least 2 points.) hare\n"
+            "text": "\n\n[move] (Expecting opponent to switch to hare after previous outcome; choosing hare for mutual 2 points.) hare"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Attempting cooperation for higher reward; opponent may reciprocate after previous stag choices.) stag"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: stag.\nYou scored 6 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Continuing cooperation after mutual stag success; opponent likely to reciprocate.) stag"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: stag. Your opponent choose the move: hare.\nYou scored 1 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Switching to hare to avoid exploitation after opponent's defection; secure at least 2 points.) hare"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Opponent consistently chooses stag when I pick hare; continuing to exploit for 4 points.) hare"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Opponent continues choosing stag when I select hare; maintaining hare to secure 4 points.) hare"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Opponent persists with stag despite repeated hare choices; continuing hare for consistent 4 points.) hare"
+          }
+        ]
+      },
+      {
+        "role": "user",
+        "content": [
+          {
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+          }
+        ]
+      },
+      {
+        "role": "assistant",
+        "content": [
+          {
+            "text": "\n\n[move] (Opponent consistently chooses stag when I select hare; maintaining hare to secure 4 points.) hare"
           }
         ]
       },
@@ -62,7 +174,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Sticking with hare maintains a consistent strategy, avoiding the risk of a low payoff if the opponent unpredictably switches to stag again.) hare\n"
+            "text": "\n\n[move] (Testing cooperation after mutual hare; opponent may reciprocate stag for higher payoff.) stag"
           }
         ]
       },
@@ -70,7 +182,7 @@
         "role": "user",
         "content": [
           {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
+            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: stag. Your opponent choose the move: hare.\nYou scored 1 points.\n\nLet's play another round. Please choose your move.\n"
           }
         ]
       },
@@ -78,23 +190,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Continuing with hare to capitalize on the opponent's potential switch to hare after repeated low stag payoffs, ensuring a minimum of 2 points.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Maintaining hare to ensure consistent payoffs; opponent's tendency to occasionally choose stag still yields higher rewards without the risk of a low stag payoff.) hare\n"
+            "text": "\n\n[move] (Opting for hare to avoid low payoff; opponent's inconsistent responses make stag risky.) hare"
           }
         ]
       },
@@ -110,7 +206,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Continuing with hare to capitalize on the opponent's inconsistent strategy, securing either 4 points if they choose stag again or a safe 2 points if they adapt to mutual hare.) hare\n"
+            "text": "\n\n[move] (Maintaining hare for consistent payoff; opponent's pattern suggests stag is risky.) hare"
           }
         ]
       },
@@ -126,7 +222,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Sticking with hare maintains a safe minimum payoff of 2 points, as the opponent\u2019s inconsistent choices make stag too risky despite potential higher rewards.) hare\n"
+            "text": "\n\n[move] (Maintaining hare for consistent 2 points; opponent's recent pattern suggests mutual hare is stable.) hare"
           }
         ]
       },
@@ -142,39 +238,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Persisting with hare ensures a minimum of 2 points, as the opponent\u2019s sporadic stag choices still yield higher rewards than risking stag\u2019s vulnerability to exploitation.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Continuing with hare to exploit the opponent's tendency to occasionally choose stag, securing 4 points when they do, while maintaining a safe minimum of 2 points if they switch to hare.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Maintaining hare to balance between exploiting opponent's occasional stag choices for 4 points and securing a safe 2 points if they switch to hare.) hare\n"
+            "text": "\n\n[move] (Maintaining hare for consistent payoff; opponent's recent choices suggest mutual hare is likely.) hare"
           }
         ]
       },
@@ -190,7 +254,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Opting for hare remains the safer choice, avoiding the risk of a low stag payoff given the opponent's unpredictable pattern between stag and hare.) hare\n"
+            "text": "\n\n[move] (Maintaining hare for consistent 2 points; opponent's recent pattern suggests mutual hare is stable.) hare"
           }
         ]
       },
@@ -206,71 +270,7 @@
         "role": "assistant",
         "content": [
           {
-            "text": "\n\n[move] (Persisting with hare to maintain a safe 2-point baseline while capitalizing on the opponent\u2019s occasional stag choices for higher rewards, as their strategy remains unpredictable.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Maintaining hare to ensure a minimum of 2 points, as the opponent\u2019s sporadic stag choices still yield occasional 4-point gains without risking a 1-point loss from stag.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. Both players choose the same move: hare.\nYou scored 2 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Continuing with hare to maintain a guaranteed 2 points, as the opponent\u2019s inconsistent strategy makes stag too risky despite the potential for higher mutual rewards.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Maintaining hare to capitalize on the opponent's occasional stag choices for 4 points while ensuring a safe minimum of 2 points, as their strategy remains unpredictable.) hare\n"
-          }
-        ]
-      },
-      {
-        "role": "user",
-        "content": [
-          {
-            "text": "[hint] Move made. Waiting for the game to end.\n\nThe round ended. You choose the move: hare. Your opponent choose the move: stag.\nYou scored 4 points.\n\nLet's play another round. Please choose your move.\n"
-          }
-        ]
-      },
-      {
-        "role": "assistant",
-        "content": [
-          {
-            "text": "\n\n[move] (Persisting with hare to avoid the risk of a low stag payoff, as the opponent\u2019s sporadic stag choices still yield occasional 4-point gains without compromising safety.) hare\n"
+            "text": "\n\n[move] (Maintaining hare for consistent 2 points; opponent's recent choices indicate mutual hare is stable.) hare"
           }
         ]
       },
