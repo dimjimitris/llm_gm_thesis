@@ -34,21 +34,21 @@ models = [
         "name" : "Claude 3.7 Sonnet",
         "thinking" : False,
     },
-    #{
-    #    "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
-    #    "name" : "Claude 3.7 Sonnet (Thinking)",
-    #    "thinking" : True,
-    #},
+    {
+        "id" : "us.anthropic.claude-3-7-sonnet-20250219-v1:0",
+        "name" : "Claude 3.7 Sonnet (Thinking)",
+        "thinking" : True,
+    },
     {
         "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
         "name" : "Claude Sonnet 4",
         "thinking" : False,
     },
-    #{
-    #    "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
-    #    "name" : "Claude Sonnet 4 (Thinking)",
-    #    "thinking" : True,
-    #},
+    {
+        "id" : "us.anthropic.claude-sonnet-4-20250514-v1:0",
+        "name" : "Claude Sonnet 4 (Thinking)",
+        "thinking" : True,
+    },
     {
         "id" : "meta.llama3-1-405b-instruct-v1:0",
         "name" : "Llama 3.1 405B Instruct",
@@ -64,11 +64,11 @@ models = [
         "name" : "Mistral Large (24.07)",
         "thinking" : False,
     },
-    #{
-    #    "id" : "us.deepseek.r1-v1:0",
-    #    "name" : "DeepSeek-R1",
-    #    "thinking" : False,
-    #},
+    {
+        "id" : "us.deepseek.r1-v1:0",
+        "name" : "DeepSeek-R1",
+        "thinking" : False,
+    },
 ]
 
 def trial_pd(
@@ -378,7 +378,7 @@ def main2_r(root_dir: str, rounds: int):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 4)
+                args=(model_threads, 3)
             )
         )
     
@@ -420,5 +420,4 @@ def exec_threads(threads: list[Thread], count: int):
         time.sleep(5.0)
 
 if __name__ == "__main__":
-    main2(5, False)
-    main2(2, True)
+    main2_r("logs_pd/logs_3", 16)
