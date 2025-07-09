@@ -50,11 +50,6 @@ models = [
         "thinking" : True,
     },
     {
-        "id" : "meta.llama3-1-405b-instruct-v1:0",
-        "name" : "Llama 3.1 405B Instruct",
-        "thinking" : False,
-    },
-    {
         "id" : "us.meta.llama3-3-70b-instruct-v1:0",
         "name" : "Llama 3.3 70B Instruct",
         "thinking" : False,
@@ -208,7 +203,7 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                             RPS_SETTINGS_COLLECTION[valid_game_setting],
                             model,
                             1.0,
-                            4096,
+                            10_240,
                             [player1_type, player2_type],
                             [1, 1] if not self_consistency else [5, 1],
                             os.path.join("logs", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
@@ -275,9 +270,21 @@ def main2_remainder(root_dir: str, rounds: int):
                 #    # skip models that are in the above list
                 #    continue
 
-                if model_name not in threads:
-                    threads[model_name] = []
-                threads[model_name].append(
+                # find model_id from models list
+                # find model_id from models list
+                model_id = [m["id"] for m in models if m["name"] == model_name]
+
+                if not model_id:
+                    model_id = None
+                else:
+                    model_id = model_id[0]
+                
+                if not model_id:
+                    raise ValueError(f"Model {model_name} not found in models list")
+
+                if model_id not in threads:
+                    threads[model_id] = []
+                threads[model_id].append(
                     Thread(
                         name=f"Thread-{iteration}-{model_name}-{game_type}-{game_settings_type}-{player_types}",
                         target=trial_rps,
@@ -288,7 +295,7 @@ def main2_remainder(root_dir: str, rounds: int):
                             RPS_SETTINGS_COLLECTION[game_settings_type],
                             models[[m["name"] for m in models].index(model_name)],
                             1.0,
-                            6144,
+                            10_240,
                             player_types,
                             [1, 1] if not self_consistency else [5, 1],
                             os.path.join("logs", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
@@ -411,5 +418,75 @@ def exec_threads(threads: list[Thread], count: int):
                     running.append(new_thread)
         time.sleep(5.0)
 
+def generate_game_dirs(iteration : int, self_consistency : bool) -> dict[str, list[Thread]]:
+    threads : dict[str, list[Thread]] = {}
+    for model in models:
+        threads_list = list()
+        #trial_idx = 200
+        for valid_game_setting in VALID_GAME_SETTINGS:
+            for player1_type, player2_type in [
+                ("default", "srep"),
+                ("default", "pp"),
+                ("default", "ap"),
+                ("default", "tft"),
+
+                ("spp", "srep"),
+                ("spp", "pp"),
+                ("spp", "ap"),
+                ("spp", "tft"),
+
+                ("cot", "srep"),
+                ("cot", "pp"),
+                ("cot", "ap"),
+                ("cot", "tft"),
+
+
+                ("default", "default"),
+                ("default", "spp"),
+                ("default", "cot"),
+                
+                ("spp", "default"),
+                ("spp", "spp"),
+                ("spp", "cot"),
+
+                ("cot", "default"),
+                ("cot", "spp"),
+                ("cot", "cot"),
+            ]:
+                threads_list.append(
+                    Thread(
+                        name=f"Thread-{iteration}-{model["id"]}-{valid_game_setting}-{player1_type}-{player2_type}",
+                        target=trial_rps,
+                        args=(
+                            f"{player1_type}_{player2_type}",
+                            24,
+                            valid_game_setting,
+                            RPS_SETTINGS_COLLECTION[valid_game_setting],
+                            model,
+                            1.0,
+                            10_240,
+                            [player1_type, player2_type],
+                            [1, 1] if not self_consistency else [5, 1],
+                            os.path.join("logs", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
+                        )
+                    )
+                )
+                #trial_idx += 1
+
+                # create directory for the model:
+                log_dir = os.path.join(
+                    "logs",
+                    "logs_3",
+                    "data" if not self_consistency else "data_tot",
+                    f"iteration_{iteration}",
+                    model["name"],
+                    "rps",
+                    valid_game_setting,
+                    f"rps_{player1_type}_{player2_type}"
+                )
+                os.makedirs(log_dir, exist_ok=True)
+
+
 if __name__ == "__main__":
     main2_r("logs/logs_3", 24)
+    
