@@ -209,20 +209,20 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 #trial_idx += 1
                 
                 # create directory for the model:
-                log_dir = os.path.join(
-                    "logs_pd",
-                    "logs_3",
-                    "data" if not self_consistency else "data_tot",
-                    f"iteration_{iteration}",
-                    model["name"],
-                    "pd",
-                    valid_game_setting,
-                    f"pd_{player1_type}_{player2_type}"
-                )
-
-                # create the directory if it does not exist
-                if not os.path.exists(log_dir):
-                    os.makedirs(log_dir)
+                #log_dir = os.path.join(
+                #    "logs_pd",
+                #    "logs_3",
+                #    "data" if not self_consistency else "data_tot",
+                #    f"iteration_{iteration}",
+                #    model["name"],
+                #    "pd",
+                #    valid_game_setting,
+                #    f"pd_{player1_type}_{player2_type}"
+                #)
+#
+                ## create the directory if it does not exist
+                #if not os.path.exists(log_dir):
+                #    os.makedirs(log_dir)
                 
                 #if self_consistency and os.path.exists(os.path.join(log_dir, "game.json")):
                 #    if not os.path.exists(os.path.join(log_dir, "player_10.log")):
@@ -237,9 +237,9 @@ def main2_aux(iteration : int, self_consistency : bool) -> dict[str, list[Thread
                 #            elif os.path.isdir(file_path):
                 #                os.rmdir(file_path)
 
-        #threads[model["name"]] = threads_list
+        threads[model["name"]] = threads_list
 
-    #return threads
+    return threads
 
 def main2_remainder(root_dir: str, rounds: int):
     """
@@ -417,5 +417,77 @@ def exec_threads(threads: list[Thread], count: int):
                     running.append(new_thread)
         time.sleep(5.0)
 
+def generate_game_dirs(iteration : int, self_consistency : bool):
+    for model in models:
+        threads_list = list()
+        #trial_idx = 200
+        for valid_game_setting in VALID_GAME_SETTINGS:
+            for player1_type, player2_type in [
+                ("zs", "srep"),
+                ("zs", "pp"),
+                ("zs", "mf"),
+                ("zs", "tft"),
+
+                ("spp", "srep"),
+                ("spp", "pp"),
+                ("spp", "mf"),
+                ("spp", "tft"),
+
+                ("cot", "srep"),
+                ("cot", "pp"),
+                ("cot", "mf"),
+                ("cot", "tft"),
+                ("zs", "zs"),
+                ("zs", "spp"),
+                ("zs", "cot"),
+            
+                ("spp", "zs"),
+                ("spp", "spp"),
+                ("spp", "cot"),
+                ("cot", "zs"),
+                ("cot", "spp"),
+                ("cot", "cot"),
+            ]:
+                threads_list.append(
+                    Thread(
+                        name=f"Thread-{iteration}-{model["id"]}-{valid_game_setting}-{player1_type}-{player2_type}",
+                        target=trial_pd,
+                        args=(
+                            f"{player1_type}_{player2_type}",
+                            16,
+                            valid_game_setting,
+                            PD_SETTINGS_COLLECTION[valid_game_setting],
+                            model,
+                            1.0,
+                            4096,
+                            [player1_type, player2_type],
+                            [1, 1] if not self_consistency else [3, 1],
+                            os.path.join("logs_pd", "logs_3", "data" if not self_consistency else "data_tot", f"iteration_{iteration}"),
+                        )
+                    )
+                )
+                #trial_idx += 1
+                
+                # create directory for the model:
+                log_dir = os.path.join(
+                    "logs_pd",
+                    "logs_3",
+                    "data" if not self_consistency else "data_tot",
+                    f"iteration_{iteration}",
+                    model["name"],
+                    "pd",
+                    valid_game_setting,
+                    f"pd_{player1_type}_{player2_type}"
+                )
+
+                # create the directory if it does not exist
+                if not os.path.exists(log_dir):
+                    os.makedirs(log_dir)
+
 if __name__ == "__main__":
-    main2_r("logs_pd/logs_3/data_tot", 16)
+#    for i in range(5):
+#        generate_game_dirs(i, False)
+#    for i in range(2):
+#        generate_game_dirs(i, True)
+    main2_r("logs_pd/logs_3", 16)
+    
