@@ -377,7 +377,7 @@ def main2_r(root_dir: str, rounds: int):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 4)
+                args=(model_threads, 3)
             )
         )
     
@@ -492,5 +492,5 @@ if __name__ == "__main__":
 #        generate_game_dirs(i, False)
 #    for i in range(2):
 #        generate_game_dirs(i, True)
-    main2_r("logs/logs_3/data", 24)
+    main2_r("logs/logs_3/data_tot", 24)
     

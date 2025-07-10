@@ -294,7 +294,7 @@ class BedrockPlayer(Player):
                 additionalModelRequestFields={
                     "thinking" : {
                         "type": "enabled",
-                        "budget_tokens": self.max_tokens // 5 * 4,  # 80% of max_tokens for thinking,
+                        "budget_tokens": self.max_tokens // 5 * 3,  # 60% of max_tokens for thinking,
                     },
                 },
             )
