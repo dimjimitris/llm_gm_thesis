@@ -377,7 +377,7 @@ def main2_r(root_dir: str, rounds: int):
             Thread(
                 name=f"Exec-Threads-{model_threads[0].name}",
                 target=exec_threads,
-                args=(model_threads, 3)
+                args=(model_threads, 4)
             )
         )
     
@@ -488,5 +488,9 @@ def generate_game_dirs(iteration : int, self_consistency : bool) -> dict[str, li
 
 
 if __name__ == "__main__":
-    main2_r("logs/logs_3", 24)
+#    for i in range(5):
+#        generate_game_dirs(i, False)
+#    for i in range(2):
+#        generate_game_dirs(i, True)
+    main2_r("logs/logs_3/data", 24)
     
