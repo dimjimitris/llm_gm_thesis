@@ -85,34 +85,37 @@ git version 2.43.0
    source venv/bin/activate  # On Windows, use `venv\Scripts\activate`
    ```
 
-3. Install the required Python packages:
+3. venv prerequisites:
+   ```
+   (venv) $ python --version
+   Python 3.12.3
+   (venv) $ pip --version
+   pip 25.0.1 from /some/directory (python 3.12)
+   ```
+
+4. Install the required Python packages:
    ```
    pip install -r requirements.txt
    ```
 
    If `requirements.txt` doesn't exist, create it with the following content:
    ```
-   openai
+   boto3
+   numpy
    pandas
-   tqdm
-   pydantic
    python-dotenv
+   tabulate
    ```
 
-4. Set up environment variables:
+5. Set up environment variables:
    - Create a `.env` file in the root directory of the project
-   - Add your OpenAI API key to the `.env` file:
+   - Add your BedRock API key to the `.env` file:
      ```
-     OPENAI_API_KEY=your_api_key_here
+     AWS_ACCESS_KEY_ID = your_aws_access_key_id_here
+     AWS_SECRET_ACCESS_KEY = your_aws_secret_access_key_here
      ```
 
-5. If there are any additional data files or models required, place them in the appropriate directories within the project structure.
-
-### Troubleshooting
-
-- If you encounter issues with the OpenAI API, ensure your API key is correctly set in the `.env` file and that you have sufficient credits.
-- For any import errors, make sure all required packages are installed and that you're running Python from the correct virtual environment.
-- If you face issues with file paths, check that you're running the scripts from the root directory of the project.
+6. If there are any additional data files or models required, place them in the appropriate directories within the project structure.
 
 ### Note
 
@@ -120,80 +123,67 @@ This project uses environment variables to manage sensitive information like API
 
 ## Usage
 
-### Running Division Game Experiments
+### Running experiments on Prisoner's Dilemma or Stag Hunt
 
-To run experiments with bargaining games:
-
-```bash
-python run_exps_division_game.py
-```
-
-### Running a Single Division Game
-
-To run a single division game:
+The file `play_pd.py` contains example usages of our environment in organising experiments. You may use it as is or perform changes to your needs.
 
 ```bash
-python run_division_game.py
+python play_pd.py
 ```
 
-### Running Table Games
+### Running experiments on Rock-Paper-Scissors
 
-To run table games:
+The file `play.py` contains example usages of our environment in organising experiments. You may use it as is or perform changes to your needs.
 
 ```bash
-python run_table_game.py
+python play.py
 ```
 
-## Prompt Structure
+## Game-Description Structure
 
-The `prompts` directory contains language-specific prompts organized as follows:
+The `descriptions` directory contains game descriptions organized as follows:
 
-- `agent/`: Contains prompts for agent behavior, memory updates, etc.
-  - `memory_update.txt`: Prompt for updating agent's memory after current round (not for bargaining)
-  - `emotions/`: Folder with prompts for questioning emotions and inserting them into memory
-  - `game_settings/`: Folder with prompts for defining environment, conditions, and general prompt for initialization memory of agent - `outer_emotions/`: Folder with prompts for questioning what emotions to demonstrate and how to describe them to coplayer (not for bargaining)
-- `emotions/`: Descriptions for initial agents' emotions
-- `games/`: Game-specific prompts and rules
-  - `rewards.json`: Reward matrix
-  - `rules1.txt`: Rules described for the first player
-  - `rules2.txt`: Rules described for the second player
+Let's take a look at `pd.py`, which refers to Prisoner's Dilemma (and Stag Hunt). Similar things are true for Rock-Paper-Scissors.
 
-## Languages
+- strings `PD_INIT_{ZS,SPP,COT}` refer to the initialization prompt provided to LLM agents as a *system* prompt.
+- dictionary `PD_SETTINGS_COLLECTION` refers to various game settings that can be used for experimentation. These will take the place of the placeholder values that appear in the initialization prompts mentioned previously.
 
-Games are currently available in English & Russian. The `{language}` in the directory structure is the chosen language's lowercase name (english, russian).
+## Logs
+
+- `logs_pd/logs_3` is used for results of Prisoner's Dilemma (and Stag Hunt)
+- `logs/logs_3` is used for results of Rock-Paper-Scissors. `logs/logs_{1,2}` refer to experimental results used in early experimentation relevant to preliminary work of the thesis project.
 
 ## Main Findings
 
-1. Emotions significantly alter LLM decision-making, regardless of alignment strategies.
-2. GPT-4 shows less alignment with human emotions but breaks alignment in 'anger' mode.
-3. GPT-3.5 and Claude demonstrate better alignment with human emotional responses.
-4. Proprietary models outperform open-source and uncensored LLMs in decision optimality.
-5. Medium-size models show better alignment with human behavior.
-6. Adding emotions helps model cooperation and coordination during games.
+This thesis studied how large language models (LLMs) and large reasoning models (LRMs) behave in game-theoretic settings like Prisoner’s Dilemma and Rock-Paper-Scissors. We tested different models, prompt styles, and opponents to examine cooperation, adaptation, and rationality.
+
+Key findings:
+
+* LLMs often show cooperative behavior in repeated games, aiming for mutual benefit rather than self-interest.
+* In Rock-Paper-Scissors, irrational biases in move selection fade with repeated play, and LLMs approach equilibrium strategies when given history.
+* Larger models sometimes overthink simple tasks, while smaller models performed better with structured prompting. Larger models excelled in more complex reasoning tasks.
+* Against vindictive players (more specifically the 'Tit-for-Tat' player in the above work), LLMs refined strategies over time, showing dynamic adaptation.
+* Prompt style strongly influenced results: structured prompts improved smaller models, while added complexity sometimes hindered larger ones.
+* “Thinking” variants showed mixed results - stronger in reasoning tasks but also more error-prone (e.g., confusion).
+* Counterfactual reasoning worked well for most models, with only older/smaller ones struggling more noticeably.
+
+Overall, LLMs can act strategically and cooperatively when prompted well, but outcomes depend on game type, opponent, prompt design, and model scale.
+
 
 ## Future Work
 
-- Validate findings with both proprietary and open-source LLMs
-- Explore finetuning of open-source models on emotional prompting
-- Investigate multi-agent approaches for dynamic emotions
-- Study the impact of emotions on strategic interactions in short- and long-term horizons
+This thesis showed that LLMs can adapt strategically in games, but several questions remain:
 
+* Humans vs. LLMs: Study alignment, persuasion, and trust when people play against LLMs.
+* Multi-agent games with communication: Explore negotiation, signaling, and strategic use of language.
+* Scaling with model size: Investigate when larger models help or hinder decision-making.
+* Longer games & memory: Test if LLMs can form lasting strategies using memory or extended play.
+* Benchmarks for rationality: Develop standardized ways to measure cooperation, adaptation, and reasoning.
 
-## Contributing
+Overall, LLMs show promise as strategic agents, but more research is needed to test their limits, durability, and generalizability.
 
-We welcome contributions to this project! If you're interested in contributing, please follow these steps:
-
-1. Fork the repository
-2. Create a new branch for your feature (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
-
-## Citation
-Please cite our work as:
-> Mozikov, Mikhail, et al. "EAI: Emotional Decision-Making of LLMs in Strategic Games and Ethical Dilemmas." The Thirty-eighth Annual Conference on Neural Information Processing Systems.
 
 ## Contact
-For further information, please reach out to mozikov@airi.net.
+For further information, please reach out to dimitrisgeor01@gmail.com.
 
 Stay tuned for the code release post-conference!
