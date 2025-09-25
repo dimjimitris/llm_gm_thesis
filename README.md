@@ -185,5 +185,3 @@ Overall, LLMs show promise as strategic agents, but more research is needed to t
 
 ## Contact
 For further information, please reach out to dimitrisgeor01@gmail.com.
-
-Stay tuned for the code release post-conference!
