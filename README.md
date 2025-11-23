@@ -1,6 +1,6 @@
 # Probing LLM Counterfactual Reasoning in Game Theory
 
-This repository contains the codebase for the diploma thesis *"Probing LLM Counterfactual Reasoning in Game Theory"* of the author. That work takes a deeper look into reasoning abilities of Large Language Models in Games; discussing their emergency and techniques to trigger them. It establishes performance metrics for agents in Games.
+This repository contains the codebase for the diploma thesis *"Probing LLM Counterfactual Reasoning in Game Theory"* of the author; the full pdf of said thesis can be found in the `docs` directory along with a 20 min PowerPoint presentation. That work takes a deeper look into reasoning abilities of Large Language Models in Games; discussing their emergency and techniques to trigger them. It establishes performance metrics for agents in Games.
 
 ## Author
 Dimitrios Georgousis, Electrical and Computer Engineer at NTUA (MEng)
@@ -36,6 +36,9 @@ By systematically varying both the game settings and the prompting techniques, t
 ├── descriptions
 │   ├── pd.py
 │   └── rps.py
+├── docs
+│   ├── D_Georgousis_Diploma_Thesis.pdf
+│   └── thesis_defense.pptx
 │── utils
 │   ├── globals.py
 │   ├── pd.py
@@ -182,6 +185,5 @@ This thesis showed that LLMs can adapt strategically in games, but several quest
 
 Overall, LLMs show promise as strategic agents, but more research is needed to test their limits, durability, and generalizability.
 
-
 ## Contact
-For further information, please reach out to dimitrisgeor01@gmail.com.
+For further information, please reach out to dimjimitris@gmail.com.
