@@ -3,7 +3,7 @@
 This repository contains the codebase for the diploma thesis *"Probing LLM Counterfactual Reasoning in Game Theory"* of the author. That work takes a deeper look into reasoning abilities of Large Language Models in Games; discussing their emergency and techniques to trigger them. It establishes performance metrics for agents in Games.
 
 ## Author
-Dimitrios Georgousis, Electrical and Computer Engineering at NTUA
+Dimitrios Georgousis, Electrical and Computer Engineer at NTUA (MEng)
 
 ## Overview
 
